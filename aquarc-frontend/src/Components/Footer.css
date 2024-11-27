@@ -1,0 +1,131 @@
+/* Footer.css */
+.footer-container {
+  background-color: #ffffff;
+  padding: 40px 20px;
+  width: 100%;
+  border-top: 1px solid #eaeaea;
+  margin-top: auto;
+}
+
+.footer-grid {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 40px;
+  align-items: start;
+}
+
+.footer-left {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.footer-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.logo-icon {
+  height: 32px;
+  width: auto;
+}
+
+.footer-description {
+  color: #666;
+  line-height: 1.5;
+  max-width: 400px;
+}
+
+/* Center section */
+.footer-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.footer-heading {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 16px;
+}
+
+.contact-info {
+  line-height: 1.5;
+}
+
+.contact-link {
+  color: #0066cc;
+  text-decoration: none;
+}
+
+.contact-link:hover {
+  text-decoration: underline;
+}
+
+/* Right section */
+.footer-right {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 8px; /* Aligns with the Aquarc text */
+}
+
+.social-icons {
+  display: flex;
+  gap: 16px;
+}
+
+.social-icons a {
+  display: flex;
+}
+
+.social-icons img {
+  width: 24px;
+  height: 24px;
+  transition: opacity 0.2s;
+}
+
+.social-icons img:hover {
+  opacity: 0.8;
+}
+
+/* Make App a flex container to push footer to bottom */
+.App {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Media query for better mobile responsiveness */
+@media screen and (max-width: 768px) {
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    text-align: center;
+  }
+
+  .footer-left, .footer-center, .footer-right {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding-top: 0;
+  }
+
+  .footer-logo {
+    justify-content: center;
+  }
+
+  .footer-description {
+    text-align: center;
+  }
+
+  .social-icons {
+    justify-content: center;
+  }
+}

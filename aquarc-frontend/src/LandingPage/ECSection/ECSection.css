@@ -1,0 +1,98 @@
+.extracurricular-section {
+    background-color: rgb(250, 245, 252);
+    padding: 6rem 2rem;
+    margin: 0 auto;
+    max-width: 1100px;
+}
+
+.extracurricular-container {
+    display: grid; 
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+}
+
+.extracurricular-image-container {
+    position: relative;
+    border-radius: 1.5rem;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.extracurricular-image {
+    width: 100%;
+    height: 400px;
+    object-fit: cover;
+}
+
+.extracurricular-content {
+    padding: 2rem;
+}
+
+.extracurricular-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 1.5rem;
+    line-height: 1.2;
+}
+
+.extracurricular-description {
+    font-size: 1.125rem;
+    color: #4b5563;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+
+.activities-list {
+    margin: 2rem 0;
+}
+
+.activity-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    color: #374151;
+    font-size: 1.125rem;
+}
+
+.activity-icon {
+    width: 24px;
+    height: 24px;
+    color: #2563eb;
+}
+
+.extracurricular-cta {
+    display: inline-flex;
+    align-items: center;
+    background: linear-gradient(to right, #1e3a8a, #2563eb);
+    color: white;
+    padding: 0.875rem 1.75rem;
+    border-radius: 9999px;
+    font-size: 1.125rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: transform 0.2s ease;
+    width: fit-content;
+    white-space: nowrap;
+}
+
+.extracurricular-cta:hover {
+    transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+    .extracurricular-container {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+    
+    .extracurricular-title {
+        font-size: 2.5rem;
+    }
+    
+    .extracurricular-image {
+        height: 300px;
+    }
+}
