@@ -9,6 +9,7 @@
     min-height: 100vh;
     background: rgb(243, 238, 245);
     padding-top: 80px; 
+    width: 100%;
   }
   
   .main-content {
@@ -112,10 +113,50 @@
 }
   
 @media (max-width: 768px) {
+    .headline {
+        font-size: 3.5rem; /* Reduce font size for better mobile display */
+        padding: 0 1rem; /* Add padding on both sides */
+    }
+
+    .subheadline {
+        font-size: 1.25rem;
+        padding: 0 1.5rem; /* Add padding on both sides */
+    
+        margin-bottom: 1.5rem;
+        
+    }
+
+    .subheadline-second-line {
+        margin-left: 0; /* Remove left margin on mobile */
+    }
+
     .stats {
         grid-template-columns: 1fr;
         gap: 1.5rem;
+        padding: 1rem 1rem; /* Add padding to stats section */
     }
+
+    .headline-container {
+        padding: 0 1rem; /* Add padding to the container */
+    }
+
+    /* Ensure the button doesn't touch edges */
+    .sat-button {
+        margin: 2rem 1rem;
+    }
+          .SAT-content {
+          padding: 2rem;
+          margin: 0 1rem;
+      }
+    
+      .SAT-title {
+          font-size: 2.5rem;
+      }
+    
+      .SAT-description {
+          font-size: 1.1rem;
+      }
+      
 }
   
 .stat-item {

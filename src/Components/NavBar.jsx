@@ -16,6 +16,11 @@ const Navbar = () => {
     navigate('/');
   };
 
+  const handleLinkClick = () => {
+    setIsMenuOpen(false);
+    document.body.style.overflow = '';
+  };
+
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (isMenuOpen && !e.target.closest('.mobile-drawer') && !e.target.closest('.menu-toggle')) {
@@ -59,12 +64,12 @@ const Navbar = () => {
 
       <div className={`mobile-drawer ${isMenuOpen ? 'open' : 'closed'}`}>
         <div className="mobile-link-container">
-          <Link to="/" className="mobile-link">Home</Link>
-          <Link to="/sat" className="mobile-link">SAT</Link>
-          <Link to="/static/ec/ec.html" className="mobile-link">Extracurriculars</Link>
-          <a href="https://aquarc.beehiiv.com" className="mobile-link">Newsletter</a>
-          <Link to="/feedback" className="mobile-link">Feedback</Link>
-          <Link to="/sat" className="button">
+          <Link to="/" className="mobile-link" onClick={handleLinkClick}>Home</Link>
+          <Link to="/sat" className="mobile-link" onClick={handleLinkClick}>SAT</Link>
+          <Link to="/static/ec/ec.html" className="mobile-link" onClick={handleLinkClick}>Extracurriculars</Link>
+          <a href="https://aquarc.beehiiv.com" className="mobile-link" onClick={handleLinkClick}>Newsletter</a>
+          <Link to="/feedback" className="mobile-link" onClick={handleLinkClick}>Feedback</Link>
+          <Link to="/sat" className="button" onClick={handleLinkClick}>
             Get Started →
           </Link>
         </div>

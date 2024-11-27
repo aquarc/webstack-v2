@@ -1,6 +1,6 @@
 .newsletter-section {
     background-color: rgb(250, 245, 252);
-    padding: 6rem 2rem;
+    padding: 6rem 5rem;
     margin: 0 auto;
     max-width: 100%;
 }
@@ -54,10 +54,9 @@
     white-space: nowrap; /* Keeps text on single line */
 }
 
-
 .newsletter-image-container {
     position: relative;
-    width: 100%;
+    width: 95%;
     height: 400px;
     border-radius: 1rem;
     overflow: hidden;
@@ -86,26 +85,30 @@
     .newsletter-container {
         grid-template-columns: 1fr;
         text-align: center;
+        gap: 2rem;
+        padding: 0 1rem; /* Add padding for better mobile spacing */
     }
     
     .newsletter-content {
         align-items: center;
-    }
-    
-    .newsletter-title {
-        font-size: 2.5rem;
+        padding-left: 0; /* Remove the left padding on mobile */
     }
     
     .newsletter-description {
         margin-left: auto;
         margin-right: auto;
+        padding: 0 1rem; /* Add some padding to prevent text from touching edges */
     }
     
     .newsletter-image-container {
         height: 300px;
         order: -1;
+        width: 100%; /* Make image container full width */
+        padding-right: 0; /* Remove padding on mobile */
+        margin: 0 auto; /* Center the image container */
     }
 }
+
 
 @media (max-width: 640px) {
     .newsletter-section {
