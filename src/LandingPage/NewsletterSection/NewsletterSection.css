@@ -1,6 +1,6 @@
 .newsletter-section {
     background-color: rgb(250, 245, 252);
-    padding: 6rem 5rem;
+    padding: 6rem 3rem;
     margin: 0 auto;
     max-width: 100%;
 }
@@ -17,8 +17,7 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding-left: 50px; /* Added this line to move the entire content, including the button, 50px to the left */
-
+    padding-left: 80px; /* Added this line to move the entire content, including the button, 50px to the left */
 }
 
 .newsletter-title {
@@ -39,12 +38,10 @@
 }
 
 .newsletter-cta {
-    
     align-items: center;
     background: linear-gradient(to right, #1e3a8a, #2563eb);
     color: white;
     padding: 0.875rem 1.75rem;
-    
     border-radius: 9999px;
     font-size: 1.125rem;
     font-weight: 600;
@@ -64,7 +61,6 @@
 }
 
 .newsletter-image {
-    width: 100%;
     height: 100%;
     object-fit: cover;
     border-radius: 1rem;
