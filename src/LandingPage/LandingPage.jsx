@@ -136,13 +136,13 @@ const LandingPage = () => {
         </div>
       </div>
 
-      <section class="SAT-section">
-          <div class="SAT-content">
-            <h2 class="SAT-title">Improve your SAT score</h2>
-            <p class="SAT-description">
+      <section className="SAT-section">
+          <div className="SAT-content">
+            <h2 className="SAT-title">Improve your SAT score</h2>
+            <p className="SAT-description">
               we provide you with the most recent SAT questions to help train you to get the score you want.
             </p>
-            <a href="/sat" class="cta-button">try our tool →</a>
+            <a href="/sat" className="cta-button">try our tool →</a>
           </div>
         </section>
         <NewsletterSection/>

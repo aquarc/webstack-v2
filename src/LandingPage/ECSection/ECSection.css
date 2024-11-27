@@ -2,7 +2,7 @@
     background-color: rgb(250, 245, 252);
     padding: 6rem 2rem;
     margin: 0 auto;
-    max-width: 1100px;
+    max-width: 100%;
 }
 
 .extracurricular-container {
@@ -10,6 +10,8 @@
     grid-template-columns: 1fr 1fr;
     gap: 4rem;
     align-items: center;
+    padding-left: 50px;
+
 }
 
 .extracurricular-image-container {
@@ -42,6 +44,7 @@
     color: #4b5563;
     margin-bottom: 2rem;
     line-height: 1.6;
+    padding-right: 50px;
 }
 
 .activities-list {

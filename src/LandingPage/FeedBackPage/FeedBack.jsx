@@ -2,40 +2,39 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './FeedBack.css';
 
-
 const Feedback = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    feedback: ''
+    feedback: '',
   });
-  
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prevData => ({
+    setFormData((prevData) => ({
       ...prevData,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     try {
       const response = await fetch('https://submit-form.com/VaXdTtgHh', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json'
+          Accept: 'application/json',
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
 
       if (response.ok) {
-        // First navigate, then trigger the toast
-        navigate('/', { 
-          state: { showToast: true }
+        // Navigate to the landing page
+        navigate('/', {
+          state: { showToast: true },
         });
       } else {
         throw new Error('Submission failed');
@@ -46,52 +45,51 @@ const Feedback = () => {
   };
 
   return (
-      <div className="container">
-        <h1>Share Your Feedback</h1>
-        
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="name">Name</label>
-            <input 
-              type="text" 
-              id="name" 
-              name="name" 
-              value={formData.name}
-              onChange={handleChange}
-              required 
-              placeholder="Enter your name"
-            />
-          </div>
+    <div className="container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 'calc(100vh - 100px)' }}>
+      <h1>Share Your Feedback</h1>
 
-          <div className="form-group">
-            <label htmlFor="email">Email</label>
-            <input 
-              type="email" 
-              id="email" 
-              name="email" 
-              value={formData.email}
-              onChange={handleChange}
-              required 
-              placeholder="Enter your email"
-            />
-          </div>
+      <form onSubmit={handleSubmit} style={{ width: '100%', maxWidth: '500px' }}>
+        <div className="form-group">
+          <label htmlFor="name">Name</label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            required
+            placeholder="Enter your name"
+          />
+        </div>
 
-          <div className="form-group">
-            <label htmlFor="feedback">Your Feedback</label>
-            <textarea 
-              id="feedback" 
-              name="feedback" 
-              value={formData.feedback}
-              onChange={handleChange}
-              required 
-              placeholder="Share your thoughts with us..."
-            />
-          </div>
+        <div className="form-group">
+          <label htmlFor="email">Email</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            required
+            placeholder="Enter your email"
+          />
+        </div>
 
-          <button type="submit">Submit Feedback</button>
-        </form>
-      </div>
+        <div className="form-group">
+          <label htmlFor="feedback">Your Feedback</label>
+          <textarea
+            id="feedback"
+            name="feedback"
+            value={formData.feedback}
+            onChange={handleChange}
+            required
+            placeholder="Share your thoughts with us..."
+          />
+        </div>
 
+        <button type="submit">Submit Feedback</button>
+      </form>
+    </div>
   );
 };
 
