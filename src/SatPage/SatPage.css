@@ -1,0 +1,50 @@
+.sat-page {
+    display: flex;
+    height: 100vh;
+    width: 100%;
+  }
+  
+  .sat-main-content {
+    width: 70%;
+    padding: 20px;
+    -color: #f4f4f4;
+  }
+  
+  .main-content h1 {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+  
+  .checkbox-column {
+    width: 30%;
+    padding: 20px;
+    background-color: white;
+    border-left: 1px solid #e0e0e0;
+    box-shadow: -2px 0 5px rgba(0,0,0,0.05);
+  }
+  
+  .checkbox-column h2 {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+  
+  .checkbox-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .checkbox-item {
+    display: flex;
+    align-items: center;
+  }
+  
+  .checkbox-item input {
+    margin-right: 10px;
+  }
+  
+  .checkbox-item label {
+    color: #333;
+  }
