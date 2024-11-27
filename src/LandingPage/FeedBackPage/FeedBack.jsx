@@ -32,7 +32,7 @@ const Feedback = () => {
       });
 
       if (response.ok) {
-        // Navigate to the landing page
+        // Navigate to the landing page and show a toast message
         navigate('/', {
           state: { showToast: true },
         });

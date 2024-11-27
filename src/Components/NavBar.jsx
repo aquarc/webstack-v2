@@ -1,14 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './NavBar.css';
 
 const Navbar = () => {
+  const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const toggleMenu = (e) => {
     e.stopPropagation();
     setIsMenuOpen(!isMenuOpen);
     document.body.style.overflow = !isMenuOpen ? 'hidden' : '';
+  };
+
+  const handleLogoClick = () => {
+    navigate('/');
   };
 
   useEffect(() => {
@@ -26,14 +31,14 @@ const Navbar = () => {
   return (
     <div style={{ position: 'relative' }}>
       <nav className="nav">
-        <div className="logo">
+        <div className="logo" onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
           <img src="/aquLogo.png" alt="Aquarc Logo" className="logo-image" />
           <span>Aquarc</span>
         </div>
         
         <div className="nav-links">
           <Link to="/sat" className="link">SAT</Link>
-          <Link to="/static/ec/ec.html" className="link">Extracurriculars</Link>
+          <Link to="/EC" className="link">Extracurriculars</Link>
           <a href="https://aquarc.beehiiv.com" className="link">Newsletter</a>
           <Link to="/feedback" className="link">Feedback</Link>
         </div>
