@@ -16,6 +16,11 @@ const Navbar = () => {
     navigate('/');
   };
 
+  const handleLinkClick = () => {
+    setIsMenuOpen(false);
+    document.body.style.overflow = '';
+  };
+
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (isMenuOpen && !e.target.closest('.mobile-drawer') && !e.target.closest('.menu-toggle')) {
