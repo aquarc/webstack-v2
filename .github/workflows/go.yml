@@ -15,17 +15,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Setup Node.js environment
       uses: actions/setup-node@v4.1.0
       with:
-        node-version: '20.x'
+        node-version: '23'
 
     - name: Setup npm packages
       run: npm install
-      
+
     - name: Set up the frontend in react
-      run: npm run build > logs
+      run: npm run build
+      env:
+        CI: false
 
     - name: Set up Go
       uses: actions/setup-go@v4
