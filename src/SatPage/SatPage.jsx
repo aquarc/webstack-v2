@@ -4,6 +4,7 @@ import './SatPage.css';
 function SATPage() {
   const [selectedTestSection, setSelectedTestSection] = useState('');
   const [selectedSubdomains, setSelectedSubdomains] = useState({});
+  const [selectedDifficulties, setSelectedDifficulties] = useState({});
 
   const handleTestSectionChange = (section) => {
     setSelectedTestSection(section);
@@ -16,6 +17,10 @@ function SATPage() {
       [subdomain]: !prev[subdomain],
     }));
   };
+
+  const handleDifficultyChange = (difficulty) => {
+    setSelectedDifficulties(difficulty);
+  }
 
   return (
     <div className="sat-page">
@@ -316,6 +321,37 @@ function SATPage() {
               </div>
             </>
           )}
+        </div>
+        <div className="filter-group">
+          <h3>Difficulty</h3>
+          <p>Select all that apply</p>
+          <div className="checkbox-group">
+            <input
+              type="radio"
+              id="easy"
+              name="difficulty"
+              onChange={() => handleDifficultyChange('Easy')}
+            />
+            <label htmlFor="english">Easy</label>
+          </div>
+          <div className="checkbox-group">
+            <input
+              type="radio"
+              id="medium"
+              name="difficulty"
+              onChange={() => handleDifficultyChange('Medium')}
+            />
+            <label htmlFor="english">Medium</label>
+          </div>
+          <div className="checkbox-group">
+            <input
+              type="radio"
+              id="hard"
+              name="difficulty"
+              onChange={() => handleDifficultyChange('Hard')}
+            />
+            <label htmlFor="english">Hard</label>
+          </div>
         </div>
 
         <button className="next-button">Next</button>
