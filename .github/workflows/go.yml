@@ -26,6 +26,8 @@ jobs:
 
     - name: Set up the frontend in react
       run: npm run build
+      env:
+        CI: false
 
     - name: Set up Go
       uses: actions/setup-go@v4
