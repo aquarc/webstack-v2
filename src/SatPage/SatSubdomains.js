@@ -39,7 +39,7 @@ export const MathSubdomains = {
       },
       { 
         id: 'nonlinear-equations', 
-        label: 'Nonlinear equations in one variable and systems of equations in two variables', 
+        label: 'Nonlinear and Systems of Equations', 
         value: 'Nonlinear equations in one variable and systems of equations in two variables' 
       }
     ],

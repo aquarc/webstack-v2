@@ -1,14 +1,25 @@
 import React, { useState } from 'react';
 import './SatPage.css';
-import { MathSubdomains, EnglishSubdomains } from './SatSubdomains';
+import { 
+  getSearchPayload, 
+  fetchQuestions, 
+  prepareSubdomains, 
+  renderQuestionDisplay 
+} from './SatPageFunctions';
 
 function SATPage() {
   const [selectedTest, setSelectedTest] = useState('');
   const [selectedTestSection, setSelectedTestSection] = useState('');
   const [selectedSubdomains, setSelectedSubdomains] = useState({});
-  const [selectedDifficulties, setSelectedDifficulties] = useState('');
+  const [selectedDifficulties, setSelectedDifficulties] = useState({
+    Easy: false,
+    Medium: false,
+    Hard: false
+  });
   const [currentQuestions, setCurrentQuestions] = useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const handleTestChange = (test) => {
     setSelectedTest(test);
@@ -16,9 +27,9 @@ function SATPage() {
 
   const handleTestSectionChange = (section) => {
     setSelectedTestSection(section);
-    setSelectedSubdomains({}); // Reset subdomains when switching sections
+    setSelectedSubdomains({});
   };
-
+  
   const handleSubdomainChange = (subdomain) => {
     setSelectedSubdomains((prev) => ({
       ...prev,
@@ -27,7 +38,10 @@ function SATPage() {
   };
 
   const handleDifficultyChange = (difficulty) => {
-    setSelectedDifficulties(difficulty);
+    setSelectedDifficulties((prev) => ({
+      ...prev,
+      [difficulty]: !prev[difficulty]
+    }));
   };
 
   const handleNavigateNext = () => {
@@ -44,10 +58,89 @@ function SATPage() {
     }
   };
 
-  const renderSubdomains = () => {
-    const subdomainConfig = selectedTestSection === 'Math' ? MathSubdomains : EnglishSubdomains;
-    
-    return Object.entries(subdomainConfig).map(([category, subdomains]) => (
+  const handleSearch = async () => {
+    // Validate test selection
+    if (!selectedTest) {
+      setError('Please select a test type.');
+      return;
+    }
+  
+    // Validate test section selection
+    if (!selectedTestSection) {
+      setError('Please select a test section.');
+      return;
+    }
+  
+    // Prepare difficulties
+    const difficulty = Object.entries(selectedDifficulties)
+      .filter(([_, isSelected]) => isSelected)
+      .map(([difficulty]) => difficulty);
+  
+    // Prepare subdomains based on selected test section
+    const subdomain = Object.entries(selectedSubdomains)
+      .filter(([_, isSelected]) => isSelected)
+      .map(([subdomain]) => subdomain);
+  
+    // Construct search payload
+    const searchPayload = {
+      test: selectedTest,
+      difficulty: difficulty.length > 0 ? difficulty : [""],
+      subdomain: subdomain.length > 0 ? subdomain : [""]
+    };
+  
+    console.log('Sending search request with payload:', searchPayload);
+  
+    setIsLoading(true);
+    setError(null);
+  
+    try {
+      const response = await fetch('/sat/find-questions-v2', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(searchPayload)
+      });
+  
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+  
+      const questions = await response.json();
+  
+      if (questions.length > 0) {
+        setCurrentQuestions(questions);
+        setCurrentQuestionIndex(0);
+        setError(null);
+      } else {
+        setCurrentQuestions([]);
+        setError('No questions found matching your search criteria.');
+      }
+    } catch (error) {
+      console.error('Error fetching questions:', error);
+      setError(error.message || 'An error occurred while searching for questions.');
+      setCurrentQuestions([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const subdomainData = selectedTestSection 
+    ? prepareSubdomains(selectedTestSection, selectedSubdomains, handleSubdomainChange) 
+    : [];
+
+  const questionDisplay = renderQuestionDisplay(
+    isLoading, 
+    error, 
+    currentQuestions, 
+    currentQuestionIndex, 
+    handleNavigatePrevious, 
+    handleNavigateNext
+  );
+
+  const renderSubdomainInputs = () => {
+    return subdomainData.map(({ category, subdomains }) => (
       <React.Fragment key={category}>
         <h4>{category}</h4>
         {subdomains.map((subdomain) => (
@@ -55,7 +148,8 @@ function SATPage() {
             <input
               type="checkbox"
               id={subdomain.id}
-              onChange={() => handleSubdomainChange(subdomain.value)}
+              onChange={subdomain.onChange}
+              checked={subdomain.checked}
             />
             <label htmlFor={subdomain.id}>{subdomain.label}</label>
           </div>
@@ -64,104 +158,115 @@ function SATPage() {
     ));
   };
 
+  const renderQuestionView = () => {
+    switch (questionDisplay.type) {
+      case 'loading':
+        return <div>{questionDisplay.content}</div>;
+      case 'error':
+        return <div className="error">{questionDisplay.content}</div>;
+      case 'question':
+        return (
+          <div>
+            <div>{questionDisplay.content.text}</div>
+            <div className="navigation-buttons">
+              <button 
+                onClick={handleNavigatePrevious} 
+                disabled={!questionDisplay.content.navigation.hasPrevious}
+              >
+                Previous
+              </button>
+              <span>
+                {`${questionDisplay.content.navigation.currentIndex} / ${questionDisplay.content.navigation.totalQuestions}`}
+              </span>
+              <button 
+                onClick={handleNavigateNext} 
+                disabled={!questionDisplay.content.navigation.hasNext}
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="sat-page">
       <div className="sat-main-content">
         <h1>SAT Questions</h1>
+        {renderQuestionView()}
       </div>
 
       <div className="checkbox-column">
         <div className="filter-group">
-          <br></br>
           <h3>Assessment</h3>
           <p>Please select one</p>
-          <div className="checkbox-group">
-            <input
-              type="radio"
-              id="sat"
-              name="assessment"
-              onChange={() => handleTestChange('SAT')}
-            />
-            <label htmlFor="sat">SAT</label>
-          </div>
-          <div className="checkbox-group">
-            <input
-              type="radio"
-              id="act"
-              name="assessment"
-              onChange={() => handleTestChange('ACT')}
-            />
-            <label htmlFor="act">ACT</label>
-          </div>
+          {['SAT', 'ACT', 'PSAT 10/11', 'PSAT 8/9'].map((test) => (
+            <div key={test} className="checkbox-group">
+              <input
+                type="radio"
+                id={test}
+                name="assessment"
+                onChange={() => handleTestChange(test)}
+                checked={selectedTest === test}
+              />
+              <label htmlFor={test}>{test}</label>
+            </div>
+          ))}
         </div>
 
         <div className="filter-group">
           <h3>Test Section</h3>
           <p>Please select one</p>
-          <div className="checkbox-group">
-            <input
-              type="radio"
-              id="math"
-              name="test-section"
-              onChange={() => handleTestSectionChange('Math')}
-            />
-            <label htmlFor="math">Math</label>
-          </div>
-          <div className="checkbox-group">
-            <input
-              type="radio"
-              id="english"
-              name="test-section"
-              onChange={() => handleTestSectionChange('English')}
-            />
-            <label htmlFor="english">Reading and Writing</label>
-          </div>
+          {['Math', 'English'].map((section) => (
+            <div key={section} className="checkbox-group">
+              <input
+                type="radio"
+                id={section.toLowerCase()}
+                name="test-section"
+                onChange={() => handleTestSectionChange(section)}
+                checked={selectedTestSection === section}
+              />
+              <label htmlFor={section.toLowerCase()}>
+                {section === 'English' ? 'Reading and Writing' : section}
+              </label>
+            </div>
+          ))}
         </div>
 
-        <div className="filter-group">
-          <h3>Subdomain</h3>
-          <p>Select all that apply</p>
-
-          {selectedTestSection && renderSubdomains()}
-        </div>
+        {selectedTestSection && (
+          <div className="filter-group">
+            <h3>Subdomain</h3>
+            <p>Select all that apply</p>
+            {renderSubdomainInputs()}
+          </div>
+        )}
 
         <div className="filter-group">
           <h3>Difficulty</h3>
           <p>Select all that apply</p>
-          <div className="checkbox-group">
-            <input
-              type="radio"
-              id="easy"
-              name="difficulty"
-              onChange={() => handleDifficultyChange('Easy')}
-            />
-            <label htmlFor="easy">Easy</label>
-          </div>
-          <div className="checkbox-group">
-            <input
-              type="radio"
-              id="medium"
-              name="difficulty"
-              onChange={() => handleDifficultyChange('Medium')}
-            />
-            <label htmlFor="medium">Medium</label>
-          </div>
-          <div className="checkbox-group">
-            <input
-              type="radio"
-              id="hard"
-              name="difficulty"
-              onChange={() => handleDifficultyChange('Hard')}
-            />
-            <label htmlFor="hard">Hard</label>
-          </div>
+          {['Easy', 'Medium', 'Hard'].map((difficulty) => (
+            <div key={difficulty} className="checkbox-group">
+              <input
+                type="checkbox"
+                id={difficulty.toLowerCase()}
+                checked={selectedDifficulties[difficulty]}
+                onChange={() => handleDifficultyChange(difficulty)}
+              />
+              <label htmlFor={difficulty.toLowerCase()}>{difficulty}</label>
+            </div>
+          ))}
         </div>
 
         <div className="button-group">
           <button 
             className="search-button" 
+            onClick={handleSearch}
+            disabled={isLoading}
           >
-            Search Questions
+            {isLoading ? 'Searching...' : 'Search Questions'}
           </button>
         </div>
       </div>
