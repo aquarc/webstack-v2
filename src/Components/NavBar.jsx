@@ -43,7 +43,7 @@ const Navbar = () => {
         
         <div className="nav-links">
           <Link to="/sat" className="link">SAT</Link>
-          <Link to="/EC" className="link">Extracurriculars</Link>
+          <Link to="/extracurricular" className="link">Extracurriculars</Link>
           <a href="https://aquarc.beehiiv.com" className="link">Newsletter</a>
           <Link to="/feedback" className="link">Feedback</Link>
         </div>
@@ -67,7 +67,7 @@ const Navbar = () => {
           <Link to="/" className="mobile-link">Home</Link>
           <Link to="/sat" className="mobile-link">SAT</Link>
           <Link to="/static/ec/ec.html" className="mobile-link">Extracurriculars</Link>
-          <a href="https://aquarc.beehiiv.com" className="mobile-link">Nwsletter</a>
+          <a href="https://aquarc.beehiiv.com" className="mobile-link">Newsletter</a>
           <Link to="/feedback" className="mobile-link">Feedback</Link>
           <Link to="/sat" className="button">
             Get Started →

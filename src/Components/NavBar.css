@@ -73,6 +73,7 @@
   }
   
   .mobile-drawer {
+    
     position: fixed;
     top: 72px;
     left: 0;
@@ -134,5 +135,9 @@
     
     .menu-toggle {
       display: flex;
+    }
+    .button {
+      width: fit-content;
+      border-radius: 15px;
     }
   }
