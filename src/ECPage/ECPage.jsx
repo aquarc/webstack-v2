@@ -1,11 +1,10 @@
-import React from 'react';
-
-function ECPage () {
-    return (
-        <div>
-            
-        </div>
-    )
+import React, { useState } from 'react';
+const ECPage = () => {
+  return (
+    <div>
+      
+    </div>
+  );
 }
-
 export default ECPage;
+

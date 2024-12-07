@@ -1,0 +1,89 @@
+body {
+    margin: 0;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(180deg, rgba(244, 90, 254, 0.33), rgba(85, 222, 255, 0.11));
+    box-sizing: border-box;
+  }
+  
+  
+  .subject {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+  }
+  
+  .primary {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 10px;
+    font-weight: 600;
+    font-size: 40px;
+    color: #000000;
+  }
+  
+  .secondary {
+    font-size: 12px;
+    font-family: 'DM Sans', sans-serif;
+    margin-bottom: 20px;
+  }
+  
+  .frame-parent2 {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+    max-width: 250px;
+  }
+  
+  .group-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    max-width: 300px;
+    border: none;
+    border-radius: 24px;
+    padding: 12px 24px;
+    background-color: white;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    font-family: 'Exo', sans-serif;
+    color: #000000;
+    text-align: left;
+    z-index: 1;
+    text-decoration: none;
+  }
+  
+  .group-button:hover {
+    background-color: #e0e0e0;
+  }
+  
+  .item-icon {
+    width: 24px;
+    height: 24px;
+    object-fit: cover;
+  }
+  
+  /* Social Media Icons at bottom right corner */
+  .frame-parent3 {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    gap: 10px;
+  }
+  
+  .social-icon {
+    width: 24px;
+    height: 24px;
+    object-fit: cover;
+  }
+  
