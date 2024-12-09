@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import './SatPage.css';
-import { 
-  getSearchPayload, 
-  fetchQuestions, 
-  prepareSubdomains, 
-  renderQuestionDisplay 
+import {
+  getSearchPayload,
+  fetchQuestions,
+  prepareSubdomains,
+  renderQuestionDisplay
 } from './SatPageFunctions';
 
 function SATPage() {
@@ -29,7 +29,7 @@ function SATPage() {
     setSelectedTestSection(section);
     setSelectedSubdomains({});
   };
-  
+
   const handleSubdomainChange = (subdomain) => {
     setSelectedSubdomains((prev) => ({
       ...prev,
@@ -64,35 +64,35 @@ function SATPage() {
       setError('Please select a test type.');
       return;
     }
-  
+
     // Validate test section selection
     if (!selectedTestSection) {
       setError('Please select a test section.');
       return;
     }
-  
+
     // Prepare difficulties
     const difficulty = Object.entries(selectedDifficulties)
       .filter(([_, isSelected]) => isSelected)
       .map(([difficulty]) => difficulty);
-  
+
     // Prepare subdomains based on selected test section
     const subdomain = Object.entries(selectedSubdomains)
       .filter(([_, isSelected]) => isSelected)
       .map(([subdomain]) => subdomain);
-  
+
     // Construct search payload
     const searchPayload = {
       test: selectedTest,
       difficulty: difficulty.length > 0 ? difficulty : [""],
       subdomain: subdomain.length > 0 ? subdomain : [""]
     };
-  
+
     console.log('Sending search request with payload:', searchPayload);
-  
+
     setIsLoading(true);
     setError(null);
-  
+
     try {
       const response = await fetch('/sat/find-questions-v2', {
         method: 'POST',
@@ -101,14 +101,14 @@ function SATPage() {
         },
         body: JSON.stringify(searchPayload)
       });
-  
+
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
       }
-  
+
       const questions = await response.json();
-  
+
       if (questions.length > 0) {
         setCurrentQuestions(questions);
         setCurrentQuestionIndex(0);
@@ -126,16 +126,16 @@ function SATPage() {
     }
   };
 
-  const subdomainData = selectedTestSection 
-    ? prepareSubdomains(selectedTestSection, selectedSubdomains, handleSubdomainChange) 
+  const subdomainData = selectedTestSection
+    ? prepareSubdomains(selectedTestSection, selectedSubdomains, handleSubdomainChange)
     : [];
 
   const questionDisplay = renderQuestionDisplay(
-    isLoading, 
-    error, 
-    currentQuestions, 
-    currentQuestionIndex, 
-    handleNavigatePrevious, 
+    isLoading,
+    error,
+    currentQuestions,
+    currentQuestionIndex,
+    handleNavigatePrevious,
     handleNavigateNext
   );
 
@@ -169,8 +169,8 @@ function SATPage() {
           <div>
             <div>{questionDisplay.content.text}</div>
             <div className="navigation-buttons">
-              <button 
-                onClick={handleNavigatePrevious} 
+              <button
+                onClick={handleNavigatePrevious}
                 disabled={!questionDisplay.content.navigation.hasPrevious}
               >
                 Previous
@@ -178,8 +178,8 @@ function SATPage() {
               <span>
                 {`${questionDisplay.content.navigation.currentIndex} / ${questionDisplay.content.navigation.totalQuestions}`}
               </span>
-              <button 
-                onClick={handleNavigateNext} 
+              <button
+                onClick={handleNavigateNext}
                 disabled={!questionDisplay.content.navigation.hasNext}
               >
                 Next
@@ -261,8 +261,8 @@ function SATPage() {
         </div>
 
         <div className="button-group">
-          <button 
-            className="search-button" 
+          <button
+            className="search-button"
             onClick={handleSearch}
             disabled={isLoading}
           >

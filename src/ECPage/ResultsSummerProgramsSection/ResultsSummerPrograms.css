@@ -5,7 +5,7 @@
     color: var(--color-black);
     font-family: var(--font-plus-jakarta-sans);
   }
-  
+
   .searchbar-icon {
     width: 24px;
     height: 24px;
@@ -45,8 +45,8 @@
     color: var(--color-black);
     font-family: var(--font-plus-jakarta-sans);
   }
-  
-    
+
+
   .program-cards-child1 {
     position: absolute;
     bottom: 10px;
@@ -57,8 +57,8 @@
     height: 4px;
     z-index: 1;
   }
-  
-  
+
+
   /* Style the button to look like a div */
   .program-cards2 {
     position: relative;
@@ -72,7 +72,7 @@
     align-items: center; /* Center items vertically */
     justify-content: space-between; /* Distribute space between items */
   }
-  
+
   .need-feedback-on {
     position: relative;
     display: inline-block;
@@ -84,14 +84,14 @@
     box-sizing: border-box;
     padding: var(--padding-2xs) var(--padding-mini);
   }
-  
+
   .program-grid,
   .results-page-summer-programs {
     display: flex;
     flex-direction: column;
     justify-content: center;
   }
-  
+
   .program-grid {
     align-self: center;
     gap: 38.6px;
@@ -111,8 +111,8 @@
     gap: 85px;
     min-height: 100vh;
   }
-  
-  
+
+
   .value-input {
     font-family: var(--font-dm-sans);
     font-size: var(--font-size-xs);
@@ -122,11 +122,11 @@
     padding: var(--padding-5xs-5) var(--padding-mini) var(--padding-5xs-5)
       var(--space-400);
   }
-  
+
   .value-input::placeholder {
     color: var(--color-gray-500); /* Placeholder color */
   }
-  
+
   /* Add the following CSS to style the buttons properly */
   .icon-btn {
     background: none;
@@ -135,7 +135,7 @@
     margin: 0;
     cursor: pointer;
   }
-  
+
   /* Overlay */
   .modal-overlay {
     position: fixed;
@@ -149,7 +149,7 @@
     align-items: center;
     z-index: 1000;
   }
-  
+
   /* Modal */
   .modal {
     width: 326px;
@@ -161,7 +161,7 @@
     flex-direction: column;
     align-items: center;
   }
-  
+
   /* Header */
   .modal-header {
     font-family: 'Plus Jakarta Sans', sans-serif;
@@ -171,7 +171,7 @@
     color: #000000;
     margin-bottom: 20px;
   }
-  
+
   /* Button Container */
   .modal-button-container {
     display: flex;
@@ -180,7 +180,7 @@
     width: 100%;
     margin-bottom: 20px;
   }
-  
+
   /* Button */
   .modal-button {
     min-width: 60px;
@@ -202,7 +202,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  
+
   /* Apply Button */
   .modal-apply {
     min-width: 80px;
@@ -224,8 +224,8 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  
-  
+
+
   /* Social Media Icons at bottom right corner */
   .frame-parent3 {
     position: fixed;
@@ -234,10 +234,9 @@
     display: flex;
     gap: 10px;
   }
-  
+
   .social-icon {
     width: 24px;
     height: 24px;
     object-fit: cover;
   }
-  

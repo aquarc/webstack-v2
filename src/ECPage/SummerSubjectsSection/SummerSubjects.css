@@ -9,13 +9,13 @@ body {
     box-sizing: border-box;
     background-repeat: no-repeat;
   }
-  
+
   .container {
       width: 90%;
       position: relative;
       overflow-y: scroll;
   }
-  
+
   .title {
       font-family: 'Plus Jakarta Sans', sans-serif;
       font-weight: 600;
@@ -24,7 +24,7 @@ body {
       margin-bottom: 16px;
       text-align: center;
   }
-  
+
   .subtitle {
       font-weight: 400;
       font-size: 12px;
@@ -32,7 +32,7 @@ body {
       margin-bottom: 40px;
       text-align: center;
   }
-  
+
   .checkbox-button {
       display: flex;
       align-items: center;
@@ -47,24 +47,24 @@ body {
       transition: background-color 0.3s;
       margin: 10px;
   }
-  
+
   .checkbox-button img {
       position: relative;
       padding: 10px;
   }
-  
+
   .checkbox-button label {
       padding-right: 10px;
-  } 
-  
+  }
+
   .checkbox-button:hover {
       background-color: #f0f0f0;
   }
-  
+
   .checkbox-button input[type="checkbox"] {
       display: none;
   }
-  
+
   .checkbox-button label {
       display: flex;
       align-items: center;
@@ -74,19 +74,19 @@ body {
       cursor: pointer;
       margin: 0;
   }
-  
+
   .checkbox-button input[type="checkbox"]:checked + label {
       background-color: #dcdcdc;
       border: 2px solid #000000;
       border-radius: 24px;
   }
-  
+
   .submit-buttons {
       display: flex;
       justify-content: space-around;
       margin: 40px auto 0;
   }
-  
+
   .submit-button {
       display: flex;
       align-items: center;
@@ -103,11 +103,11 @@ body {
       border: none;
       color: black;
   }
-  
+
   .submit-button:hover {
       background-color: #f0f0f0;
   }
-  
+
   .options {
       justify-content: center;
       align-items: center;
@@ -115,15 +115,15 @@ body {
       font-family: 'Exo', sans-serif;
       font-size: 14px;
       font-weight: 500;
-  } 
-  
+  }
+
   #subjectsForm {
       max-width: 600px;
       margin: 0 auto;
-  } 
-  
+  }
+
   /* social icons */
-  
+
   .frame-parent3 {
     position: fixed;
     bottom: 20px;
@@ -131,10 +131,9 @@ body {
     display: flex;
     gap: 10px;
   }
-  
+
   .social-icon {
     width: 24px;
     height: 24px;
     object-fit: cover;
   }
-  

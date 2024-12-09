@@ -71,7 +71,7 @@
     .newsletter-title {
         font-size: 3rem;
     }
-    
+
     .newsletter-container {
         gap: 3rem;
     }
@@ -84,18 +84,18 @@
         gap: 2rem;
         padding: 0 1rem; /* Add padding for better mobile spacing */
     }
-    
+
     .newsletter-content {
         align-items: center;
         padding-left: 0; /* Remove the left padding on mobile */
     }
-    
+
     .newsletter-description {
         margin-left: auto;
         margin-right: auto;
         padding: 0 1rem; /* Add some padding to prevent text from touching edges */
     }
-    
+
     .newsletter-image-container {
         height: 300px;
         order: -1;
@@ -110,7 +110,7 @@
     .newsletter-section {
         padding: 4rem 1rem;
     }
-    
+
     .newsletter-title {
         font-size: 2rem;
     }

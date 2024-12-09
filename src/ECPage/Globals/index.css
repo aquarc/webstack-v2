@@ -8,8 +8,8 @@ body {
     background: linear-gradient(180deg, rgba(244, 90, 254, 0.33), rgba(85, 222, 255, 0.11));
     box-sizing: border-box;
   }
-  
-  
+
+
   .subject {
     width: 100%;
     display: flex;
@@ -17,7 +17,7 @@ body {
     align-items: center;
     margin-top: 20px;
   }
-  
+
   .primary {
     display: flex;
     justify-content: center;
@@ -26,13 +26,13 @@ body {
     font-size: 40px;
     color: #000000;
   }
-  
+
   .secondary {
     font-size: 12px;
     font-family: 'DM Sans', sans-serif;
     margin-bottom: 20px;
   }
-  
+
   .frame-parent2 {
     display: flex;
     flex-direction: column;
@@ -41,7 +41,7 @@ body {
     width: 100%;
     max-width: 250px;
   }
-  
+
   .group-button {
     display: flex;
     align-items: center;
@@ -61,17 +61,17 @@ body {
     z-index: 1;
     text-decoration: none;
   }
-  
+
   .group-button:hover {
     background-color: #e0e0e0;
   }
-  
+
   .item-icon {
     width: 24px;
     height: 24px;
     object-fit: cover;
   }
-  
+
   /* Social Media Icons at bottom right corner */
   .frame-parent3 {
     position: fixed;
@@ -80,10 +80,9 @@ body {
     display: flex;
     gap: 10px;
   }
-  
+
   .social-icon {
     width: 24px;
     height: 24px;
     object-fit: cover;
   }
-  

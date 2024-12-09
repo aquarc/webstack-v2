@@ -117,7 +117,7 @@ func resultsScholarship(w http.ResponseWriter, r *http.Request) {
 		var startGrade int
 		var endGrade int
 		var amount string
-		var deadline sql.NullString 
+		var deadline sql.NullString
 		var link string
 		var notes string
 		var category string
@@ -309,7 +309,7 @@ func resultsSummerProg(w http.ResponseWriter, r *http.Request) {
 
 		htmlToInsert += `
             <button onclick="launchModal('` + name + `')" class="program-cards2">
-              <div class="nyu-applied-research" 
+              <div class="nyu-applied-research"
                 data-link="` + link + `"
                 data-cost="` + fmt.Sprint(cost) + `"
                 data-subject="` + category + `"`
@@ -440,7 +440,7 @@ func resultsCompetitions(w http.ResponseWriter, r *http.Request) {
 		// update htmlToInsert
 		htmlToInsert += `
             <button onclick="launchModal('` + name + `')" class="program-cards2">
-              <div class="nyu-applied-research" 
+              <div class="nyu-applied-research"
                 data-link="` + link + `"
                 data-category="` + category + `"
                 data-notes="` + notesString + `"

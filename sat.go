@@ -1,14 +1,23 @@
 package main
 
 import (
+	"bytes"
+	"crypto/rand"
+	"crypto/sha512"
+	"crypto/tls"
 	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/big"
 	"net/http"
+	"os"
 	"strings"
+	"time"
 
+	_ "github.com/joho/godotenv/autoload"
 	_ "github.com/mattn/go-sqlite3"
+	"gopkg.in/gomail.v2"
 )
 
 // JSON struct to hold question details
@@ -33,10 +42,18 @@ type SATQuestion struct {
     Subdomain []string `json:"subdomain"`
 }
 
-type Register struct {
+type Credentials struct {
     Email string `json:"email"`
+    Username string `json:"username"`
     Password string `json:"password"`
 }
+
+type Verification struct {
+    Email string `json:"email"`
+    Code string `json:"code"`
+}
+
+var email gomail.Dialer
 
 func indexSat(w http.ResponseWriter, r *http.Request) {
 	// load index.html from static/
@@ -48,12 +65,12 @@ func findQuestions(w http.ResponseWriter, r *http.Request, test, category, domai
 
 	// Build the query with filters
 	query := `
-        SELECT questionId 
-        FROM sat_questions 
-        WHERE test = ? 
-        AND category = ? 
-        AND domain = ? 
-        AND skill = ? 
+        SELECT questionId
+        FROM sat_questions
+        WHERE test = ?
+        AND category = ?
+        AND domain = ?
+        AND skill = ?
         AND difficulty = ?`
 
 	// Execute the query with user inputs as filters
@@ -93,11 +110,11 @@ func viewQuestionDetails(w http.ResponseWriter, matchingQuestions []string) {
 	var questions []QuestionDetails
 
 	for _, questionId := range matchingQuestions {
-		
+
 		queryDetails := `
-			SELECT questionId, id, test, category, domain, skill, difficulty, details, 
-				question, answer_choices, answer, rationale 
-			FROM sat_questions 
+			SELECT questionId, id, test, category, domain, skill, difficulty, details,
+				question, answer_choices, answer, rationale
+			FROM sat_questions
 			WHERE questionId = ?`
 
 		// Stores question details
@@ -133,7 +150,7 @@ func viewQuestionDetails(w http.ResponseWriter, matchingQuestions []string) {
 		return
 	}
 
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(jsonData)
 }
@@ -198,8 +215,8 @@ func FindQuestionsHandlerv2(w http.ResponseWriter, r *http.Request) {
     }
 
     query := `
-		SELECT questionId, id, test, category, domain, skill, difficulty, details, 
-			question, answer_choices, answer, rationale 
+		SELECT questionId, id, test, category, domain, skill, difficulty, details,
+			question, answer_choices, answer, rationale
         FROM sat_questions
         WHERE test = ?
         `
@@ -222,10 +239,10 @@ func FindQuestionsHandlerv2(w http.ResponseWriter, r *http.Request) {
     for _, item := range data.Subdomain {
         subdomainPlaceholders = append(subdomainPlaceholders, "?")
         args = append(args, item)
-    } 
+    }
 
     query += strings.Join(subdomainPlaceholders, ",") + ")"
-    
+
     // query the db
     rows, err := db.Query(query, args...)
     if err != nil {
@@ -238,10 +255,10 @@ func FindQuestionsHandlerv2(w http.ResponseWriter, r *http.Request) {
 
     // iterate oer the rows
     for rows.Next() {
-        var question QuestionDetails 
-        err = rows.Scan(&question.QuestionID, &question.ID, &question.Test, 
-            &question.Category, &question.Domain, &question.Skill, 
-            &question.Difficulty, &question.Details, &question.Question, 
+        var question QuestionDetails
+        err = rows.Scan(&question.QuestionID, &question.ID, &question.Test,
+            &question.Category, &question.Domain, &question.Skill,
+            &question.Difficulty, &question.Details, &question.Question,
             &question.AnswerChoices, &question.Answer, &question.Rationale,
         )
         if err != nil {
@@ -255,7 +272,7 @@ func FindQuestionsHandlerv2(w http.ResponseWriter, r *http.Request) {
         // convert to json
         // append the json
         questions = append(questions, question)
-    } 
+    }
 
     // return the json
     jsonData, err := json.Marshal(questions)
@@ -269,31 +286,136 @@ func FindQuestionsHandlerv2(w http.ResponseWriter, r *http.Request) {
 
     w.Header().Set("Content-Type", "application/json")
     w.Write(jsonData)
-} 
+}
 
 func register(w http.ResponseWriter, r *http.Request) {
-    var data Register
+    var data Credentials
     err := json.NewDecoder(r.Body).Decode(&data)
     if err != nil {
-        http.Error(w, "Invalid request body", http.StatusBadRequest)
+        http.Error(w, "Invalid request body ", http.StatusBadRequest)
         return
     }
 
-    // TODO: hash password
-    
+    generatedSalt := make([]byte, 16)
+    _, err = rand.Read(generatedSalt)
+    if err != nil {
+        http.Error(w, "Internal Error", http.StatusInternalServerError)
+        return
+    }
+
+    saltedPassword := append(generatedSalt, []byte(data.Password)...)
+
+    hashedPassword := sha512.Sum512([]byte(saltedPassword))
+
     // insert into database
-    _, err = db.Exec("INSERT INTO sat_users (username, password) VALUES (?, ?)", data.Email, data.Password)
+    fmt.Printf("%x", hashedPassword)
+    _, err = db.Exec("INSERT INTO users (email, username, password, salt) VALUES (?, ?, ?, ?)", data.Email, data.Username, hashedPassword[:], generatedSalt)
     if err != nil {
         http.Error(w, "Error inserting into database: " + err.Error(), http.StatusInternalServerError)
         return
     }
 
+    emailMessage := gomail.NewMessage()
+    emailMessage.SetHeader("From", "contact@aquarc.org")
+    emailMessage.SetHeader("To", data.Email)
+
+    randomCode, err := rand.Int(rand.Reader, big.NewInt(1e7))
+    if err != nil {
+        http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+    }
+
+    randomCodeString := fmt.Sprintf("%07d", randomCode.Int64())
+
+    emailMessage.SetHeader("Subject", "Your code is: " + randomCodeString)
+    emailMessage.SetBody("text/plain",
+        fmt.Sprintf(`Hi %s,
+Thank you so much for supporting aquarc! Your code is: %s
+
+Feel free to reach out to this email if you need help in your high school journey.
+
+Best,
+Om
+CEO of Aquarc`, data.Username, randomCodeString))
+
+    err = email.DialAndSend(emailMessage)
+    if err != nil {
+        fmt.Println(err)
+    }
+
+    db.Exec("INSERT INTO verification_codes (email, code, timestamp) VALUES (?, ?, unixepoch())", data.Email, randomCodeString)
+
     w.WriteHeader(http.StatusOK)
     w.Write([]byte("User registered successfully"))
 }
 
+func registerVerificationCode(w http.ResponseWriter, r *http.Request) {
+    var data Verification
+    err := json.NewDecoder(r.Body).Decode(&data)
+    if err != nil {
+        http.Error(w, "Invalid request body ", http.StatusBadRequest)
+        return
+    }
+
+    var code string; var timestamp int64
+    // get the most recent verification code for the email
+    err = db.QueryRow("SELECT code, timestamp FROM verification_codes WHERE email = ? ORDER BY timestamp DESC LIMIT 1", data.Email).Scan(&code, &timestamp)
+    if err != nil {
+        http.Error(w, "Email not currently registering", http.StatusBadRequest)
+        return
+    }
+
+    if code != data.Code {
+        http.Error(w, "Verification Code does not match", http.StatusForbidden)
+        return
+    }
+
+    // a code greater than 10 minutes old
+    if time.Now().Unix() - timestamp > 10*60 {
+        http.Error(w, "Verification Code has Expired", http.StatusNotFound)
+        return
+    }
+
+    db.Exec("UPDATE users SET verified = 1 WHERE email = ?", data.Email)
+
+    w.WriteHeader(http.StatusOK)
+    w.Write([]byte("User verified successfully"))
+}
+
+func login(w http.ResponseWriter, r *http.Request) {
+    var data Credentials
+    err := json.NewDecoder(r.Body).Decode(&data)
+    if err != nil {
+        http.Error(w, "Invalid request body ", http.StatusBadRequest)
+        return
+    }
+    var userSalt string
+    var storedPassword []byte
+    var verified int
+    err = db.QueryRow("SELECT password, salt, verified FROM users WHERE email = ?", data.Email).Scan(&storedPassword, &userSalt, &verified)
+    hashedPassword := sha512.Sum512([]byte(userSalt + data.Password))
+
+    if err != nil {
+        http.Error(w, "User Does Not Exist: " + err.Error(), http.StatusBadRequest)
+        return
+    }
+    if verified == 0 {
+        http.Error(w, "User Not Verified", http.StatusForbidden)
+        return
+    }
+    if !bytes.Equal(hashedPassword[:], storedPassword) {
+        http.Error(w, "Password does not match", http.StatusForbidden)
+        return
+    }
+
+    // TODO: Add cookies to client's browser (following OAuth2 specification https://github.com/go-oauth2/oauth2)
+    w.WriteHeader(http.StatusOK)
+    w.Write([]byte("User logged in successfully"))
+}
 
 func initializeSat(db *sql.DB) {
+	email = *gomail.NewDialer("mail.privateemail.com", 587, "contact@aquarc.org", os.Getenv("PASSWORD"))
+    email.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
     // create table if not exists
     _, err := db.Exec(`CREATE TABLE IF NOT EXISTS sat_questions (
         questionId TEXT PRIMARY KEY,
@@ -310,17 +432,28 @@ func initializeSat(db *sql.DB) {
         rationale TEXT
     )`)
 
-    _, err = db.Exec(`CREATE TABLE IF NOT EXISTS sat_users (
-        username TEXT PRIMARY KEY,
-        password TEXT
+    _, err = db.Exec(`CREATE TABLE IF NOT EXISTS users (
+        email TEXT PRIMARY KEY,
+        username TEXT,
+        password BLOB,
+        salt TEXT,
+        verified INTEGER DEFAULT 0
     )`)
     if err != nil {
         log.Fatal(err)
     }
+
+    _, err = db.Exec(`CREATE TABLE IF NOT EXISTS verification_codes (
+        code TEXT PRIMARY KEY,
+        email TEXT,
+        timestamp INTEGER
+    )`)
 
     http.HandleFunc("/sat", indexSat)
 	http.HandleFunc("/sat/test", ServeForm)
 	http.HandleFunc("/sat/find-questions", FindQuestionsHandler)
     http.HandleFunc("/sat/find-questions-v2", FindQuestionsHandlerv2)
     http.HandleFunc("/sat/register", register)
+    http.HandleFunc("/sat/verifyRegistration", registerVerificationCode)
+    http.HandleFunc("/sat/login", login)
 }

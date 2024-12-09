@@ -38,7 +38,7 @@ const LandingPage = () => {
   const [currentHeadline, setCurrentHeadline] = useState(0);
   const [fadeOut, setFadeOut] = useState(false);
   const navigate = useNavigate();
-  
+
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -69,7 +69,7 @@ const LandingPage = () => {
         </div>
       );
     }
-    
+
     if (headline.specialLayout) {
       return (
         <div className="headline">
@@ -119,7 +119,7 @@ const LandingPage = () => {
             your 1600 starts here →
           </button>
         </div>
-        
+
         <div className="stats">
           <div className="stat-item">
             <div className="stat-number">5000+</div>
@@ -149,7 +149,7 @@ const LandingPage = () => {
         <ExtracurricularSection/>
 
     </div>
-    
+
   );
 };
 

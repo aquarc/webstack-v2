@@ -12,7 +12,7 @@ function App() {
       <BrowserRouter>
         <NavBar/>
         <Routes>
-          {/* Add other routes as needed */} 
+          {/* Add other routes as needed */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/feedback" element={<FeedBackPage />} />
           <Route path="/sat" element={<SatPage />} />

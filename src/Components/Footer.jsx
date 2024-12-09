@@ -26,7 +26,7 @@ const Footer = () => {
             <a href="mailto:contact@aquarc.org" className="contact-link">contact@aquarc.org</a>
           </p>
         </div>
-        
+
         {/* Right section */}
         <div className="footer-right">
           <div className="social-icons">

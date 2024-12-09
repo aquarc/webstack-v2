@@ -8,9 +8,9 @@ const ExtracurricularSection = () => {
     <section className="extracurricular-section">
       <div className="extracurricular-container">
         <div className="extracurricular-image-container">
-          <img 
+          <img
             src={ECImage}
-            alt="Student working on laptop" 
+            alt="Student working on laptop"
             className="extracurricular-image"
           />
         </div>
@@ -20,7 +20,7 @@ const ExtracurricularSection = () => {
           <p className="extracurricular-description">
             Discover and track the perfect extracurricular activities that align with your interests and college goals. From sports to clubs, we've got you covered.
           </p>
-          
+
           <div className="activities-list">
             <div className="activity-item">
               <Sun className="activity-icon" />

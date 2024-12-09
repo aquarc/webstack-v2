@@ -6,7 +6,7 @@
 }
 
 .extracurricular-container {
-    display: grid; 
+    display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 4rem;
     align-items: center;
@@ -89,27 +89,27 @@
         padding-left: 0; /* Remove the left padding on mobile */
         text-align: center;
     }
-    
+
     .extracurricular-content {
         padding: 1rem; /* Reduce padding on mobile */
     }
-    
+
     .extracurricular-description {
         padding-right: 0; /* Remove right padding on mobile */
         margin-left: auto;
         margin-right: auto;
     }
-    
+
     .extracurricular-image {
         width: 100%; /* Make image full width */
         height: 300px;
         margin: 0 auto; /* Center the image */
     }
-    
+
     .activity-item {
         justify-content: center; /* Center activity items */
     }
-    
+
     .extracurricular-cta {
         margin: 0 auto; /* Center the CTA button */
     }

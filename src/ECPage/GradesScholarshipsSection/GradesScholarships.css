@@ -13,21 +13,21 @@ body {
     margin: 0;
     overflow: auto;
   }
-  
+
   table {
       display: flex;
       justify-content: center;
   }
-  
+
   .container {
       width: 90%;
-  } 
-  
+  }
+
   #gradesForm {
   max-width: 600px;
     margin: 0 auto;
   }
-  
+
   .title {
     font-family: 'Plus Jakarta Sans', sans-serif;
     font-weight: 600;
@@ -36,7 +36,7 @@ body {
     margin-top: 61px;
     margin-bottom: 16px;
   }
-  
+
   .subtitle {
     font-family: 'Plus Jakarta Sans', sans-serif;
     font-weight: 400;
@@ -44,7 +44,7 @@ body {
     line-height: 15.62px;
     margin-bottom: 40px;
   }
-  
+
   .checkbox-button {
     display: flex;
     align-items: center;
@@ -58,20 +58,20 @@ body {
     position: relative;
     transition: background-color 0.3s;
   }
-  
+
   .checkbox-button img {
     position: absolute;
     left: 10px;
   }
-  
+
   .checkbox-button:hover {
     background-color: #f0f0f0;
   }
-  
+
   .checkbox-button input[type="checkbox"] {
     display: none;
   }
-  
+
   .checkbox-button label {
     display: flex;
     align-items: center;
@@ -81,24 +81,24 @@ body {
     margin: 0;
     border-radius: 24px;
   }
-  
+
   .checkbox-button input[type="checkbox"]:checked + label {
     background-color: #dcdcdc;
     border: 2px solid #000000;
   }
-  
+
   /* Styles specifically for grade-related checkboxes */
   .grade-checkbox {
     width: 150px;
     position: relative; /* Needed for absolute positioning of the image */
     margin: 10px auto;
   }
-  
+
   .grade-checkbox img {
     position: absolute;
     left: 15px; /* Adjust this value for better spacing between the icon and text */
   }
-  
+
   .grade-checkbox label {
     display: flex;
     align-items: center;
@@ -109,16 +109,16 @@ body {
     cursor: pointer;
     margin: 0;
   }
-  
+
   .grade-checkbox input[type="checkbox"] {
     display: none;
   }
-  
+
   .grade-checkbox input[type="checkbox"]:checked + label {
     background-color: #dcdcdc;
     border: 2px solid #000000;
   }
-  
+
   .cost-section {
     display: flex;
     justify-content: center;
@@ -126,12 +126,12 @@ body {
     margin-top: 20px;
     align-items: center;
   }
-  
+
   .checkbox-button.small {
     width: 100px;
   }
-  
-  
+
+
   .options {
       justify-content: center;
       align-items: center;
@@ -139,14 +139,14 @@ body {
       font-family: 'Exo', sans-serif;
       font-size: 14px;
       font-weight: 500;
-  } 
-  
+  }
+
   .submit-buttons {
     display: flex;
     justify-content: space-around;
     margin: 40px auto 0;
   }
-  
+
   .submit-button {
       display: flex;
       align-items: center;
@@ -163,11 +163,11 @@ body {
       border: none;
       color: black;
   }
-  
+
   .submit-button:hover {
     background-color: #f0f0f0;
   }
-  
+
   /* Social Media Icons at bottom right corner */
   .frame-parent3 {
     position: fixed;
@@ -176,10 +176,9 @@ body {
     display: flex;
     gap: 10px;
   }
-  
+
   .social-icon {
     width: 24px;
     height: 24px;
     object-fit: cover;
   }
-  

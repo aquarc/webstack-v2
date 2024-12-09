@@ -40,19 +40,19 @@ const Navbar = () => {
           <img src="/aquLogo.png" alt="Aquarc Logo" className="logo-image" />
           <span>Aquarc</span>
         </div>
-        
+
         <div className="nav-links">
           <Link to="/sat" className="link">SAT</Link>
           <Link to="/extracurricular" className="link">Extracurriculars</Link>
           <a href="https://aquarc.beehiiv.com" className="link">Newsletter</a>
           <Link to="/feedback" className="link">Feedback</Link>
         </div>
-        
+
         <Link to="/sat" className="button">
           Get Started →
         </Link>
 
-        <button 
+        <button
           className="menu-toggle"
           onClick={toggleMenu}
         >
