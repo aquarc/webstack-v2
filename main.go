@@ -4,14 +4,31 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
-    "log"
-    _ "github.com/mattn/go-sqlite3"
+	"log"
+	"os"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 var db *sql.DB
 
+// Serve index.html at the root path ("/") and static files in the build directory
 func index(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "./frontend/build/index.html")
+	// If the request path is "/", serve index.html
+	if r.URL.Path == "/" {
+		http.ServeFile(w, r, "./frontend/build/index.html")
+		return
+	}
+
+	// Check if the file exists in the build directory (other static assets)
+	filePath := "./frontend/build" + r.URL.Path
+	if _, err := os.Stat(filePath); err == nil {
+		// File exists, serve it
+		http.ServeFile(w, r, filePath)
+		return
+	}
+
+	// If the file doesn't exist, return a 404 Not Found
+	http.NotFound(w, r)
 }
 
 func main() {
@@ -23,14 +40,10 @@ func main() {
 	defer db.Close()
 
 	initializeEc(db)
-    initializeSat(db)
+	initializeSat(db)
 
-    // Serve static files
-    fs := http.FileServer(http.Dir("static"))
-    http.Handle("/static/", http.StripPrefix("/static/public", fs))
-    
-    // Handle root path
-    http.HandleFunc("/", index)
+	// Serve the index handler and other static files
+	http.HandleFunc("/", index)
 
 	fmt.Println("Server is running on http://localhost:8080")
 	http.ListenAndServe(":8080", nil)
