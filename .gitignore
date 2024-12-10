@@ -1,15 +1,13 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
-/.pnp
-.pnp.js
+frontend/node_modules
 
 # testing
 /coverage
 
 # production
-/build
+frontend/build
 
 # misc
 .DS_Store
@@ -24,3 +22,6 @@ yarn-error.log*
 main.db
 .env
 main.db
+
+serve
+serve.exe

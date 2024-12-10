@@ -11,7 +11,7 @@ import (
 var db *sql.DB
 
 func index(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "./static/landing/index.html")
+	http.ServeFile(w, r, "./frontend/build/index.html")
 }
 
 func main() {
@@ -27,7 +27,7 @@ func main() {
 
     // Serve static files
     fs := http.FileServer(http.Dir("static"))
-    http.Handle("/static/", http.StripPrefix("/static/", fs))
+    http.Handle("/static/", http.StripPrefix("/static/public", fs))
     
     // Handle root path
     http.HandleFunc("/", index)

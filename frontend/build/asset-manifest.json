@@ -1,0 +1,16 @@
+{
+  "files": {
+    "main.css": "/static/css/main.137fd985.css",
+    "main.js": "/static/js/main.0780f4c3.js",
+    "static/media/news.jpg": "/static/media/news.be8d1a6eef9a3a9bb97e.jpg",
+    "static/media/students.jpg": "/static/media/students.868c8daed3d5b2d00ef1.jpg",
+    "static/media/ec.jpg": "/static/media/ec.520059ea012d921ed65d.jpg",
+    "index.html": "/index.html",
+    "main.137fd985.css.map": "/static/css/main.137fd985.css.map",
+    "main.0780f4c3.js.map": "/static/js/main.0780f4c3.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.137fd985.css",
+    "static/js/main.0780f4c3.js"
+  ]
+}
