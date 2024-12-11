@@ -449,7 +449,6 @@ func initializeSat(db *sql.DB) {
         timestamp INTEGER
     )`)
 
-    http.HandleFunc("/sat", indexSat)
 	http.HandleFunc("/sat/test", ServeForm)
 	http.HandleFunc("/sat/find-questions", FindQuestionsHandler)
     http.HandleFunc("/sat/find-questions-v2", FindQuestionsHandlerv2)
