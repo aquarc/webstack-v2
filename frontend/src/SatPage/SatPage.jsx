@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import './SatPage.css';
 import {
   getSearchPayload,
@@ -6,6 +6,8 @@ import {
   prepareSubdomains,
   renderQuestionDisplay
 } from './SatPageFunctions';
+import Desmos from 'desmos'
+
 
 function SATPage() {
   const [selectedTest, setSelectedTest] = useState('');
@@ -20,7 +22,56 @@ function SATPage() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [showCalculator, setShowCalculator] = useState(false);
+  const calculatorRef = useRef(null);
+  const calculatorInstanceRef = useRef(null);
+  const calculatorInitializedRef = useRef(false);
 
+  useEffect(() => {
+    // Only initialize calculator once
+    if (!calculatorInitializedRef.current) {
+      const container = document.createElement('div');
+      container.id = 'desmos-calculator';
+      container.style.width = '600px';
+      container.style.height = '400px';
+      container.style.position = 'absolute';
+      container.style.bottom = '80px';
+      container.style.left = '20px';
+      container.style.display = 'none';
+      container.style.zIndex = '1000';
+      container.style.backgroundColor = 'white';
+      container.style.border = '1px solid #ccc';
+      container.style.borderRadius = '8px';
+      container.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+
+      const mainContent = document.querySelector('.sat-main-content');
+      if (mainContent) {
+        mainContent.appendChild(container);
+        calculatorRef.current = container;
+        calculatorInstanceRef.current = Desmos.GraphingCalculator(container);
+        calculatorInstanceRef.current.setExpression({ id: 'graph1', latex: 'y=x^2' });
+        calculatorInitializedRef.current = true;
+      }
+    }
+
+    return () => {
+      if (calculatorRef.current && calculatorInitializedRef.current) {
+        calculatorRef.current.remove();
+        calculatorInitializedRef.current = false;
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (calculatorRef.current) {
+      calculatorRef.current.style.display = showCalculator ? 'block' : 'none';
+    }
+  }, [showCalculator]);
+
+  const toggleCalculator = () => {
+    setShowCalculator(!showCalculator);
+  };
+  
   const handleTestChange = (test) => {
     setSelectedTest(test);
   };
@@ -185,6 +236,23 @@ function SATPage() {
                 Next
               </button>
             </div>
+            <button 
+              onClick={toggleCalculator}
+              className="calculator-toggle"
+              style={{
+                position: 'absolute',
+                bottom: '20px',
+                left: '20px',
+                padding: '8px 16px',
+                backgroundColor: showCalculator ? '#e0e0e0' : '#007bff',
+                color: showCalculator ? '#333' : 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+            >
+              {showCalculator ? 'Hide Calculator' : 'Show Calculator'}
+            </button>
           </div>
         );
       default:
@@ -197,6 +265,23 @@ function SATPage() {
       <div className="sat-main-content">
         <h1>SAT Questions</h1>
         {renderQuestionView()}
+        <button 
+          onClick={toggleCalculator}
+          className="calculator-toggle"
+          style={{
+            position: 'absolute',
+            bottom: '0px',
+            left: '20px',
+            padding: '8px 16px',
+            backgroundColor: showCalculator ? '#e0e0e0' : '#007bff',
+            color: showCalculator ? '#333' : 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          {showCalculator ? 'Hide Calculator' : 'Show Calculator'}
+        </button>
       </div>
 
       <div className="checkbox-column">

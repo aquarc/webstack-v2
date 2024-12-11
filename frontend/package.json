@@ -8,6 +8,7 @@
     "@testing-library/user-event": "^14.5.2",
     "axios": "^1.7.8",
     "better-react-mathjax": "^2.0.4-beta1",
+    "desmos": "^1.5.4",
     "lucide-react": "^0.462.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
