@@ -31,6 +31,11 @@ func index(w http.ResponseWriter, r *http.Request) {
 	http.NotFound(w, r)
 }
 
+func indexThing(w http.ResponseWriter, r *http.Request) {
+    // load index.html from static/
+    http.ServeFile(w, r, "./frontend/build/index.html")
+}
+
 func main() {
 	var err error
 	db, err = sql.Open("sqlite3", "./main.db")
@@ -43,6 +48,9 @@ func main() {
 	initializeSat(db)
 
 	// Serve the index handler and other static files
+    http.HandleFunc("/sat", indexThing)
+    http.HandleFunc("/extracurricular", indexThing)
+    http.HandleFunc("/feedback", indexThing)
 	http.HandleFunc("/", index)
 
 	fmt.Println("Server is running on http://localhost:8080")
