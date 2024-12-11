@@ -7,7 +7,7 @@ import {
   renderQuestionDisplay
 } from './SatPageFunctions';
 import Desmos from 'desmos'
-
+import { Calculator } from 'lucide-react';
 
 function SATPage() {
   const [selectedTest, setSelectedTest] = useState('');
@@ -49,7 +49,7 @@ function SATPage() {
         mainContent.appendChild(container);
         calculatorRef.current = container;
         calculatorInstanceRef.current = Desmos.GraphingCalculator(container);
-        calculatorInstanceRef.current.setExpression({ id: 'graph1', latex: 'y=x^2' });
+        calculatorInstanceRef.current.setExpression({ id: 'graph1', latex: '' });
         calculatorInitializedRef.current = true;
       }
     }
@@ -241,14 +241,6 @@ function SATPage() {
               className="calculator-toggle"
               style={{
                 position: 'absolute',
-                bottom: '20px',
-                left: '20px',
-                padding: '8px 16px',
-                backgroundColor: showCalculator ? '#e0e0e0' : '#007bff',
-                color: showCalculator ? '#333' : 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer'
               }}
             >
               {showCalculator ? 'Hide Calculator' : 'Show Calculator'}
@@ -263,25 +255,17 @@ function SATPage() {
   return (
     <div className="sat-page">
       <div className="sat-main-content">
-        <h1>SAT Questions</h1>
+        <div className="header-container">
+          <h1>SAT Questions</h1>
+          <button 
+            onClick={toggleCalculator}
+            className={`calculator-icon-button ${showCalculator ? 'active' : ''}`}
+            aria-label={showCalculator ? 'Hide Calculator' : 'Show Calculator'}
+          >
+            <Calculator size={24} />
+          </button>
+        </div>
         {renderQuestionView()}
-        <button 
-          onClick={toggleCalculator}
-          className="calculator-toggle"
-          style={{
-            position: 'absolute',
-            bottom: '0px',
-            left: '20px',
-            padding: '8px 16px',
-            backgroundColor: showCalculator ? '#e0e0e0' : '#007bff',
-            color: showCalculator ? '#333' : 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer'
-          }}
-        >
-          {showCalculator ? 'Hide Calculator' : 'Show Calculator'}
-        </button>
       </div>
 
       <div className="checkbox-column">
@@ -355,8 +339,11 @@ function SATPage() {
           </button>
         </div>
       </div>
+      
     </div>
+    
   );
+
 }
 
 export default SATPage;

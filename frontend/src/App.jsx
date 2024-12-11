@@ -6,6 +6,7 @@ import LPFooter from './Components/Footer';
 import FeedBackPage from './LandingPage/FeedBackPage/FeedBack'
 import SatPage from './SatPage/SatPage'
 import ECPage from './ECPage/ECPage'
+
 function App() {
   return (
     <div className="App">
