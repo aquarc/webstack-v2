@@ -27,8 +27,8 @@ function SATPage() {
   const calculatorInstanceRef = useRef(null);
   const calculatorInitializedRef = useRef(false);
 
+  // Calculator initialization effect
   useEffect(() => {
-    // Only initialize calculator once
     if (!calculatorInitializedRef.current) {
       const container = document.createElement('div');
       container.id = 'desmos-calculator';
@@ -62,18 +62,25 @@ function SATPage() {
     };
   }, []);
 
+  // Calculator visibility effect
   useEffect(() => {
     if (calculatorRef.current) {
       calculatorRef.current.style.display = showCalculator ? 'block' : 'none';
     }
   }, [showCalculator]);
 
+  // Toggle calculator visibility
   const toggleCalculator = () => {
     setShowCalculator(!showCalculator);
   };
   
+  // Event handlers for selection changes
   const handleTestChange = (test) => {
     setSelectedTest(test);
+    // Reset other selections when test changes
+    setSelectedTestSection('');
+    setSelectedSubdomains({});
+    setSelectedDifficulties({ Easy: false, Medium: false, Hard: false });
   };
 
   const handleTestSectionChange = (section) => {
@@ -95,6 +102,7 @@ function SATPage() {
     }));
   };
 
+  // Navigation handlers
   const handleNavigateNext = () => {
     if (currentQuestionIndex < currentQuestions.length - 1) {
       const nextIndex = currentQuestionIndex + 1;
@@ -109,6 +117,7 @@ function SATPage() {
     }
   };
 
+  // Search handler
   const handleSearch = async () => {
     // Validate test selection
     if (!selectedTest) {
@@ -122,22 +131,12 @@ function SATPage() {
       return;
     }
 
-    // Prepare difficulties
-    const difficulty = Object.entries(selectedDifficulties)
-      .filter(([_, isSelected]) => isSelected)
-      .map(([difficulty]) => difficulty);
-
-    // Prepare subdomains based on selected test section
-    const subdomain = Object.entries(selectedSubdomains)
-      .filter(([_, isSelected]) => isSelected)
-      .map(([subdomain]) => subdomain);
-
-    // Construct search payload
-    const searchPayload = {
-      test: selectedTest,
-      difficulty: difficulty.length > 0 ? difficulty : [""],
-      subdomain: subdomain.length > 0 ? subdomain : [""]
-    };
+    // Prepare search payload
+    const searchPayload = getSearchPayload({
+      selectedTest,
+      selectedSubdomains,
+      selectedDifficulties
+    });
 
     console.log('Sending search request with payload:', searchPayload);
 
@@ -145,20 +144,7 @@ function SATPage() {
     setError(null);
 
     try {
-      const response = await fetch('/sat/find-questions-v2', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(searchPayload)
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
-      }
-
-      const questions = await response.json();
+      const questions = await fetchQuestions(searchPayload);
 
       if (questions.length > 0) {
         setCurrentQuestions(questions);
@@ -177,10 +163,12 @@ function SATPage() {
     }
   };
 
+  // Prepare subdomain data for rendering
   const subdomainData = selectedTestSection
     ? prepareSubdomains(selectedTestSection, selectedSubdomains, handleSubdomainChange)
     : [];
 
+  // Render question display based on current state
   const questionDisplay = renderQuestionDisplay(
     isLoading,
     error,
@@ -190,6 +178,7 @@ function SATPage() {
     handleNavigateNext
   );
 
+  // Render subdomain checkboxes
   const renderSubdomainInputs = () => {
     return subdomainData.map(({ category, subdomains }) => (
       <React.Fragment key={category}>
@@ -209,6 +198,40 @@ function SATPage() {
     ));
   };
 
+  // Render answer choices
+  const renderAnswerChoices = (choices) => {
+    if (!choices) return null;
+    
+    // Try to parse the answer choices, handling both JSON string and direct array
+    let parsedChoices = choices;
+    try {
+      // If it's a JSON string, parse it
+      if (typeof choices === 'string' && (choices.startsWith('[') || choices.startsWith('{'))) {
+        parsedChoices = JSON.parse(choices);
+      }
+    } catch (error) {
+      console.error('Error parsing answer choices:', error);
+      return null;
+    }
+
+    // Handle different possible formats of choices
+    if (Array.isArray(parsedChoices)) {
+      return parsedChoices.map((choice, index) => (
+        <div key={index} className="answer-choice">
+          <input 
+            type="radio" 
+            id={`choice-${index}`} 
+            name="answer-choices" 
+            value={choice}
+          />
+          <label htmlFor={`choice-${index}`}>{choice}</label>
+        </div>
+      ));
+    }
+    return null;
+  };
+
+  // Render question view based on display type
   const renderQuestionView = () => {
     switch (questionDisplay.type) {
       case 'loading':
@@ -216,42 +239,64 @@ function SATPage() {
       case 'error':
         return <div className="error">{questionDisplay.content}</div>;
       case 'question':
+        const { questionDetails, navigation } = questionDisplay.content;
         return (
-          <div>
-            <div>{questionDisplay.content.text}</div>
-            <div className="navigation-buttons">
-              <button
-                onClick={handleNavigatePrevious}
-                disabled={!questionDisplay.content.navigation.hasPrevious}
-              >
-                Previous
-              </button>
-              <span>
-                {`${questionDisplay.content.navigation.currentIndex} / ${questionDisplay.content.navigation.totalQuestions}`}
-              </span>
-              <button
-                onClick={handleNavigateNext}
-                disabled={!questionDisplay.content.navigation.hasNext}
-              >
-                Next
-              </button>
+          <div className="question-container">
+            <div className="question-details">
+              <div className="question-metadata">
+                <span className="question-difficulty">
+                  Difficulty: {questionDetails.difficulty}
+                </span>
+                <span className="question-domain">
+                  Domain: {questionDetails.domain}
+                </span>
+              </div>
+              
+              {/* Question text */}
+              <div className="question-text">
+                <h3>Question</h3>
+                <p>{questionDetails.question}</p>
+              </div>
+
+              {/* Additional details (if available) */}
+              {questionDetails.details && (
+                <div className="question-additional-details">
+                  <h4>Additional Information</h4>
+                  <p>{questionDetails.details}</p>
+                </div>
+              )}
+
+              {/* Answer Choices */}
+              <div className="answer-choices">
+                <h3>Choose an Answer</h3>
+                {renderAnswerChoices(questionDetails.answer_choices)}
+              </div>
+
+              {/* Navigation */}
+              <div className="navigation-buttons">
+                <button
+                  onClick={handleNavigatePrevious}
+                  disabled={!navigation.hasPrevious}
+                >
+                  Previous
+                </button>
+                <span>
+                  {`${navigation.currentIndex} / ${navigation.totalQuestions}`}
+                </span>
+                <button
+                  onClick={handleNavigateNext}
+                  disabled={!navigation.hasNext}
+                >
+                  Next
+                </button>
+              </div>
             </div>
-            <button 
-              onClick={toggleCalculator}
-              className="calculator-toggle"
-              style={{
-                position: 'absolute',
-              }}
-            >
-              {showCalculator ? 'Hide Calculator' : 'Show Calculator'}
-            </button>
           </div>
         );
       default:
         return null;
     }
   };
-
   return (
     <div className="sat-page">
       <div className="sat-main-content">
@@ -260,7 +305,6 @@ function SATPage() {
           <button 
             onClick={toggleCalculator}
             className={`calculator-icon-button ${showCalculator ? 'active' : ''}`}
-            aria-label={showCalculator ? 'Hide Calculator' : 'Show Calculator'}
           >
             <Calculator size={24} />
           </button>
@@ -316,7 +360,7 @@ function SATPage() {
         <div className="filter-group">
           <h3>Difficulty</h3>
           <p>Select all that apply</p>
-          {['Easy', 'Medium', 'Hard'].map((difficulty) => (
+          {['Easy', 'Medium', 'Hard'].map((difficulty) => ( 
             <div key={difficulty} className="checkbox-group">
               <input
                 type="checkbox"
@@ -339,11 +383,8 @@ function SATPage() {
           </button>
         </div>
       </div>
-      
     </div>
-    
   );
-
 }
 
 export default SATPage;

@@ -211,3 +211,31 @@
   color: #721c24;
 }
 
+.answer-choice {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  margin: 4px 0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.answer-choice:hover {
+  background-color: #f0f0f0;
+}
+
+.answer-choice.selected {
+  background-color: #e6f3ff;
+  border-color: #4a90e2;
+}
+
+.answer-choice input[type="radio"] {
+  margin-right: 8px;
+}
+
+.choice-letter {
+  font-weight: bold;
+  margin-right: 8px;
+}

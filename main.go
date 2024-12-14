@@ -36,6 +36,7 @@ func indexThing(w http.ResponseWriter, r *http.Request) {
     http.ServeFile(w, r, "./frontend/build/index.html")
 }
 
+
 func main() {
 	var err error
 	db, err = sql.Open("sqlite3", "./main.db")

@@ -57,7 +57,7 @@ var email gomail.Dialer
 
 func indexSat(w http.ResponseWriter, r *http.Request) {
 	// load index.html from static/
-	http.ServeFile(w, r, "./static/sat/pages/practice.html")
+	http.ServeFile(w, r, "./frontend/sat/pages/practice.html")
 }
 
 func findQuestions(w http.ResponseWriter, r *http.Request, test, category, domain, skill, difficulty string) {
@@ -244,6 +244,8 @@ func FindQuestionsHandlerv2(w http.ResponseWriter, r *http.Request) {
     query += strings.Join(subdomainPlaceholders, ",") + ")"
 
     // query the db
+    fmt.Println(query)
+    fmt.Println(args)
     rows, err := db.Query(query, args...)
     if err != nil {
         // return http internal error
