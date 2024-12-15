@@ -19,7 +19,6 @@ function SATPage() {
     Hard: false
   });
   const [selectedAnswer, setSelectedAnswer] = useState(null);
-  
   const [currentQuestions, setCurrentQuestions] = useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -203,63 +202,153 @@ function SATPage() {
   };
 
   // Render answer choices
-  const renderAnswerChoices = (choices, correctAnswer) => {
+  const renderAnswerChoices = (choices, correctAnswer, rationale, questionType, externalId) => {
     if (!choices) return null;
     
+    // Parse choices if it's a string
     let parsedChoices = choices;
     try {
-      // Parse the choices if it's a string
       if (typeof choices === 'string') {
         parsedChoices = JSON.parse(choices);
       }
   
-      // Check if parsedChoices is an array of objects with 'content' property
-      if (Array.isArray(parsedChoices)) {
-        return parsedChoices.map((choice, index) => {  // Added index parameter here
-          // Extract the content, handling both string and object formats
-          const content = typeof choice === 'object' 
-            ? choice.content || choice 
-            : choice;
-  
-          // Convert index to letter (0 = A, 1 = B, etc.)
-          const letterChoice = String.fromCharCode(65 + index); // 65 is ASCII for 'A'
-  
-          // Create a unique key for each choice
-          const choiceKey = choice.id || `choice-${index}`;
-  
-          // Determine if this choice is the selected one
-          const isSelected = selectedAnswer === letterChoice;
-          
-          // Compare the selected letter directly with the correct answer letter
-          const isCorrect = isSelected && letterChoice === correctAnswer;
-  
-          // Build the CSS class
-          let answerClass = 'answer-choice';
-          if (isSelected) {
-            answerClass += isCorrect ? ' correct-answer' : ' incorrect-answer';
-          }
-  
-          return (
-            <div 
-              key={choiceKey} 
-              className={answerClass}
-              onClick={() => setSelectedAnswer(letterChoice)}
-            >
-              <input 
-                type="radio" 
-                id={choiceKey} 
-                name="answer-choices" 
-                value={letterChoice}
-                checked={isSelected}
-                onChange={() => setSelectedAnswer(letterChoice)}
-              />
-              <label 
-                htmlFor={choiceKey}
-                dangerouslySetInnerHTML={{ __html: content }}
-              />
+      // Handle free response questions (empty array case)
+      if (Array.isArray(parsedChoices) && parsedChoices.length === 0) {
+        return (
+          <>
+            <div className="answer-choice free-response-container">
+              <div className="input-container">
+                <input 
+                  type="text"
+                  id="free-response-input"
+                  value={selectedAnswer || ''}
+                  onChange={(e) => setSelectedAnswer(e.target.value)}
+                  className={
+                    selectedAnswer 
+                      ? (selectedAnswer === correctAnswer ? 'correct-answer' : 'incorrect-answer')
+                      : ''
+                  }
+                  placeholder="Enter your answer..."
+                />
+                <label htmlFor="free-response-input">Your Answer</label>
+              </div>
             </div>
-          );
-        });
+            {selectedAnswer && (
+              <div className={`rationale-container ${selectedAnswer === correctAnswer ? 'correct' : 'incorrect'}`}>
+                <h4 className="rationale-header">
+                  {selectedAnswer === correctAnswer ? 'Correct!' : 'Incorrect'}
+                </h4>
+                <div className="rationale-content" dangerouslySetInnerHTML={{ __html: rationale }} />
+              </div>
+            )}
+          </>
+        );
+      }
+  
+      // Handle special Collegeboard format (dictionary format)
+      if (externalId?.startsWith('DC-') || (!Array.isArray(parsedChoices) && typeof parsedChoices === 'object')) {
+        return (
+          <>
+            <div className="multiple-choice-container">
+              {['a', 'b', 'c', 'd'].map((letter) => {
+                if (!parsedChoices[letter]) return null;
+  
+                const content = parsedChoices[letter].body || parsedChoices[letter];
+                const choiceKey = `choice-${letter}`;
+                const isSelected = selectedAnswer === letter;
+                const isCorrect = isSelected && letter.toLowerCase() === correctAnswer.toLowerCase();
+  
+                let answerClass = 'answer-choice';
+                if (isSelected) {
+                  answerClass += isCorrect ? ' correct-answer' : ' incorrect-answer';
+                }
+  
+                return (
+                  <div 
+                    key={choiceKey} 
+                    className={answerClass}
+                    onClick={() => setSelectedAnswer(letter)}
+                  >
+                    <input 
+                      type="radio" 
+                      id={choiceKey} 
+                      name="answer-choices" 
+                      value={letter}
+                      checked={isSelected}
+                      onChange={() => setSelectedAnswer(letter)}
+                    />
+                    <label 
+                      htmlFor={choiceKey}
+                      dangerouslySetInnerHTML={{ __html: content }}
+                    />
+                  </div>
+                );
+              }).filter(Boolean)}
+            </div>
+            {selectedAnswer && (
+              <div className={`rationale-container ${selectedAnswer.toLowerCase() === correctAnswer.toLowerCase() ? 'correct' : 'incorrect'}`}>
+                <h4 className="rationale-header">
+                  {selectedAnswer.toLowerCase() === correctAnswer.toLowerCase() ? 'Correct!' : 'Incorrect'}
+                </h4>
+                <div className="rationale-content" dangerouslySetInnerHTML={{ __html: rationale }} />
+              </div>
+            )}
+          </>
+        );
+      }
+  
+      // Handle regular array format
+      if (Array.isArray(parsedChoices)) {
+        return (
+          <>
+            <div className="multiple-choice-container">
+              {parsedChoices.map((choice, index) => {
+                const content = typeof choice === 'object' 
+                  ? choice.content || choice.body || choice 
+                  : choice;
+  
+                const letterChoice = String.fromCharCode(65 + index).toLowerCase();
+                const choiceKey = choice.id || `choice-${index}`;
+                const isSelected = selectedAnswer === letterChoice;
+                const isCorrect = isSelected && letterChoice === correctAnswer.toLowerCase();
+  
+                let answerClass = 'answer-choice';
+                if (isSelected) {
+                  answerClass += isCorrect ? ' correct-answer' : ' incorrect-answer';
+                }
+  
+                return (
+                  <div 
+                    key={choiceKey} 
+                    className={answerClass}
+                    onClick={() => setSelectedAnswer(letterChoice)}
+                  >
+                    <input 
+                      type="radio" 
+                      id={choiceKey} 
+                      name="answer-choices" 
+                      value={letterChoice}
+                      checked={isSelected}
+                      onChange={() => setSelectedAnswer(letterChoice)}
+                    />
+                    <label 
+                      htmlFor={choiceKey}
+                      dangerouslySetInnerHTML={{ __html: content }}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+            {selectedAnswer && (
+              <div className={`rationale-container ${selectedAnswer === correctAnswer.toLowerCase() ? 'correct' : 'incorrect'}`}>
+                <h4 className="rationale-header">
+                  {selectedAnswer === correctAnswer.toLowerCase() ? 'Correct!' : 'Incorrect'}
+                </h4>
+                <div className="rationale-content" dangerouslySetInnerHTML={{ __html: rationale }} />
+              </div>
+            )}
+          </>
+        );
       }
     } catch (error) {
       console.error('Error parsing answer choices:', error);
@@ -306,7 +395,7 @@ function SATPage() {
               {/* Answer Choices */}
               <div className="answer-choices">
                 <h3>Choose an Answer</h3>
-                {renderAnswerChoices(questionDetails.answerChoices, questionDetails.answer)}
+                {renderAnswerChoices(questionDetails.answerChoices, questionDetails.answer, questionDetails.rationale)}
               </div>
 
               {/* Navigation */}
