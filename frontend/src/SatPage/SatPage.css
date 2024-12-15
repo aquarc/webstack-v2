@@ -10,11 +10,57 @@
   background-color: #f4f4f4;
 }
 
+/* Header */
 .header-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 30px;
+}
+
+.header-container h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #333;
+}
+
+/* Question details */
+.question-details {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+  margin-bottom: 30px;
+}
+
+.question-text h2 {
+  font-size: 22px;
+  font-weight: 600;
+  color: #333;
   margin-bottom: 20px;
+}
+
+.question-text p {
+  font-size: 16px;
+  color: #555;
+  line-height: 1.5;
+}
+
+.question-additional-details {
+  margin-top: 20px;
+}
+
+.question-additional-details h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.question-additional-details p {
+  font-size: 16px;
+  color: #555;
+  line-height: 1.5;
 }
 
 .checkbox-column {

@@ -370,27 +370,21 @@ function SATPage() {
           <div className="question-container">
             <div className="question-details">
               <div className="question-metadata">
-                <span className="question-difficulty">
-                  Difficulty: {questionDetails.difficulty}
-                </span>
-                <span className="question-domain">
-                  Domain: {questionDetails.domain}
-                </span>
               </div>
               
-              {/* Question text */}
-              <div className="question-text">
-                <h3>Question</h3>
-                <p>{questionDetails.question}</p>
-              </div>
-
-              {/* Additional details (if available) */}
+              {/* Additional details (if available) - NOW MOVED ABOVE THE QUESTION */}
               {questionDetails.details && (
                 <div className="question-additional-details">
                   <h4>Additional Information</h4>
                   <p>{questionDetails.details}</p>
                 </div>
               )}
+
+              {/* Question text */}
+              <div className="question-text">
+                <h3>Question</h3>
+                <p>{questionDetails.question}</p>
+              </div>
 
               {/* Answer Choices */}
               <div className="answer-choices">
@@ -423,6 +417,7 @@ function SATPage() {
         return null;
     }
   };
+  
   return (
     <div className="sat-page">
       <div className="sat-main-content">

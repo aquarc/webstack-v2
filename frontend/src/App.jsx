@@ -13,13 +13,18 @@ function App() {
       <BrowserRouter>
         <NavBar/>
         <Routes>
-          {/* Add other routes as needed */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/feedback" element={<FeedBackPage />} />
           <Route path="/sat" element={<SatPage />} />
-          <Route path = "/extracurricular" element = {<ECPage/>} />
+          <Route path="/extracurricular" element={<ECPage/>} />
         </Routes>
-        <LPFooter/>
+        {/* Use location to conditionally render footer */}
+        <Routes>
+          {/* Only render footer for these routes */}
+          <Route path="/" element={<LPFooter />} />
+          <Route path="/feedback" element={<LPFooter />} />
+          <Route path="/extracurricular" element={<LPFooter />} />
+        </Routes>
       </BrowserRouter>
     </div>
   );

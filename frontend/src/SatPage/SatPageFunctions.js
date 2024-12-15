@@ -80,7 +80,12 @@ function decodeText(text) {
   tempElement.innerHTML = text;
 
   // Get the decoded text from the temporary element
-  const decodedText = tempElement.textContent || tempElement.innerText || '';
+  let decodedText = tempElement.textContent || tempElement.innerText || '';
+
+  // Replace the word "comma" with an actual comma
+  decodedText = decodedText.replace(/\bcomma\b/gi, ',');
+  decodedText = decodedText.replace(/\bnegative\b/gi, '-');
+  decodedText = decodedText.replace(/\*\{stroke-linecap:butt;stroke-linejoin:round;\}/g, '');
 
   return decodedText;
 }
