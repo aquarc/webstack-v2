@@ -18,6 +18,8 @@ function SATPage() {
     Medium: false,
     Hard: false
   });
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  
   const [currentQuestions, setCurrentQuestions] = useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -107,13 +109,15 @@ function SATPage() {
     if (currentQuestionIndex < currentQuestions.length - 1) {
       const nextIndex = currentQuestionIndex + 1;
       setCurrentQuestionIndex(nextIndex);
+      setSelectedAnswer(null); // Reset selected answer
     }
   };
-
+  
   const handleNavigatePrevious = () => {
     if (currentQuestionIndex > 0) {
       const prevIndex = currentQuestionIndex - 1;
       setCurrentQuestionIndex(prevIndex);
+      setSelectedAnswer(null); // Reset selected answer
     }
   };
 
@@ -199,34 +203,67 @@ function SATPage() {
   };
 
   // Render answer choices
-  const renderAnswerChoices = (choices) => {
+  const renderAnswerChoices = (choices, correctAnswer) => {
     if (!choices) return null;
     
-    // Try to parse the answer choices, handling both JSON string and direct array
     let parsedChoices = choices;
     try {
-      // If it's a JSON string, parse it
-      if (typeof choices === 'string' && (choices.startsWith('[') || choices.startsWith('{'))) {
+      // Parse the choices if it's a string
+      if (typeof choices === 'string') {
         parsedChoices = JSON.parse(choices);
+      }
+  
+      // Check if parsedChoices is an array of objects with 'content' property
+      if (Array.isArray(parsedChoices)) {
+        return parsedChoices.map((choice, index) => {  // Added index parameter here
+          // Extract the content, handling both string and object formats
+          const content = typeof choice === 'object' 
+            ? choice.content || choice 
+            : choice;
+  
+          // Convert index to letter (0 = A, 1 = B, etc.)
+          const letterChoice = String.fromCharCode(65 + index); // 65 is ASCII for 'A'
+  
+          // Create a unique key for each choice
+          const choiceKey = choice.id || `choice-${index}`;
+  
+          // Determine if this choice is the selected one
+          const isSelected = selectedAnswer === letterChoice;
+          
+          // Compare the selected letter directly with the correct answer letter
+          const isCorrect = isSelected && letterChoice === correctAnswer;
+  
+          // Build the CSS class
+          let answerClass = 'answer-choice';
+          if (isSelected) {
+            answerClass += isCorrect ? ' correct-answer' : ' incorrect-answer';
+          }
+  
+          return (
+            <div 
+              key={choiceKey} 
+              className={answerClass}
+              onClick={() => setSelectedAnswer(letterChoice)}
+            >
+              <input 
+                type="radio" 
+                id={choiceKey} 
+                name="answer-choices" 
+                value={letterChoice}
+                checked={isSelected}
+                onChange={() => setSelectedAnswer(letterChoice)}
+              />
+              <label 
+                htmlFor={choiceKey}
+                dangerouslySetInnerHTML={{ __html: content }}
+              />
+            </div>
+          );
+        });
       }
     } catch (error) {
       console.error('Error parsing answer choices:', error);
       return null;
-    }
-
-    // Handle different possible formats of choices
-    if (Array.isArray(parsedChoices)) {
-      return parsedChoices.map((choice, index) => (
-        <div key={index} className="answer-choice">
-          <input 
-            type="radio" 
-            id={`choice-${index}`} 
-            name="answer-choices" 
-            value={choice}
-          />
-          <label htmlFor={`choice-${index}`}>{choice}</label>
-        </div>
-      ));
     }
     return null;
   };
@@ -269,7 +306,7 @@ function SATPage() {
               {/* Answer Choices */}
               <div className="answer-choices">
                 <h3>Choose an Answer</h3>
-                {renderAnswerChoices(questionDetails.answer_choices)}
+                {renderAnswerChoices(questionDetails.answerChoices, questionDetails.answer)}
               </div>
 
               {/* Navigation */}
