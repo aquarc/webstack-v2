@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './SatPage.css';
+import './CSS/Filter.css'
+import './CSS/QuestionStyles.css'
 import {
   getSearchPayload,
   fetchQuestions,
