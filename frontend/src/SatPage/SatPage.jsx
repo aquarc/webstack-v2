@@ -230,7 +230,6 @@ function SATPage() {
                   }
                   placeholder="Enter your answer..."
                 />
-                <label htmlFor="free-response-input">Your Answer</label>
               </div>
             </div>
             {selectedAnswer && (
@@ -417,7 +416,7 @@ function SATPage() {
         return null;
     }
   };
-  
+
   return (
     <div className="sat-page">
       <div className="sat-main-content">
