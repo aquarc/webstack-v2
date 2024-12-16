@@ -38,3 +38,44 @@
 .next-button:hover {
   background-color: #0033aa;
 }
+@media (max-width: 768px) {
+  .sat-page {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sat-main-content {
+    flex: 1;
+    padding: 20px;
+  }
+
+  .header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .header-container h1 {
+    font-size: 24px;
+  }
+
+  .question-container {
+    margin-bottom: 30px;
+  }
+
+  .checkbox-column {
+    width: 100%;
+    padding: 20px;
+    background-color: #f4f4f4;
+    order: 1;
+  }
+
+  .filter-group {
+    margin-bottom: 20px;
+  }
+
+  .search-button {
+    width: 100%;
+  }
+}
