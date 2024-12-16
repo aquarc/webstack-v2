@@ -12,6 +12,8 @@ import Desmos from 'desmos'
 import { Calculator } from 'lucide-react';
 
 function SATPage() {
+  // State variables for managing the SAT question interface
+  // Tracks selected test, section, subdomains, difficulties, and current question state
   const [selectedTest, setSelectedTest] = useState('');
   const [selectedTestSection, setSelectedTestSection] = useState('');
   const [selectedSubdomains, setSelectedSubdomains] = useState({});
@@ -20,21 +22,28 @@ function SATPage() {
     Medium: false,
     Hard: false
   });
+    // State for managing current question interactions
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [currentQuestions, setCurrentQuestions] = useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+
+  // State for managing loading and error states
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  // State and refs for managing the integrated Desmos calculator
   const [showCalculator, setShowCalculator] = useState(false);
   const calculatorRef = useRef(null);
   const calculatorInstanceRef = useRef(null);
   const calculatorInitializedRef = useRef(false);
 
-  // Calculator initialization effect
+  // Effect hook to initialize the Desmos graphing calculator
+  // Creates a div container for the calculator and sets it up when the component mounts
   useEffect(() => {
     if (!calculatorInitializedRef.current) {
       const container = document.createElement('div');
       container.id = 'desmos-calculator';
+      // styling configuration for calculator container
       container.style.width = '600px';
       container.style.height = '400px';
       container.style.position = 'absolute';
@@ -47,16 +56,18 @@ function SATPage() {
       container.style.borderRadius = '8px';
       container.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
 
+      // Append calculator to the main content area
       const mainContent = document.querySelector('.sat-main-content');
       if (mainContent) {
         mainContent.appendChild(container);
         calculatorRef.current = container;
+        // Initialize Desmos calculator instance
         calculatorInstanceRef.current = Desmos.GraphingCalculator(container);
         calculatorInstanceRef.current.setExpression({ id: 'graph1', latex: '' });
         calculatorInitializedRef.current = true;
       }
     }
-
+    // Cleanup function to remove calculator when component unmounts
     return () => {
       if (calculatorRef.current && calculatorInitializedRef.current) {
         calculatorRef.current.remove();
@@ -80,7 +91,7 @@ function SATPage() {
   // Event handlers for selection changes
   const handleTestChange = (test) => {
     setSelectedTest(test);
-    // Reset other selections when test changes
+    // Reset related states when a different test or section is selected
     setSelectedTestSection('');
     setSelectedSubdomains({});
     setSelectedDifficulties({ Easy: false, Medium: false, Hard: false });
@@ -105,15 +116,15 @@ function SATPage() {
     }));
   };
 
-  // Navigation handlers
+  // Navigation handlers for moving between questions
+  // Reset selected answer when navigating  
   const handleNavigateNext = () => {
     if (currentQuestionIndex < currentQuestions.length - 1) {
       const nextIndex = currentQuestionIndex + 1;
       setCurrentQuestionIndex(nextIndex);
       setSelectedAnswer(null); // Reset selected answer
     }
-  };
-  
+  }
   const handleNavigatePrevious = () => {
     if (currentQuestionIndex > 0) {
       const prevIndex = currentQuestionIndex - 1;
@@ -122,7 +133,7 @@ function SATPage() {
     }
   };
 
-  // Search handler
+  // Main search handler to fetch questions based on selected criteria
   const handleSearch = async () => {
     // Validate test selection
     if (!selectedTest) {
@@ -130,7 +141,7 @@ function SATPage() {
       return;
     }
 
-    // Validate test section selection
+    // Validate section selection
     if (!selectedTestSection) {
       setError('Please select a test section.');
       return;
@@ -145,10 +156,12 @@ function SATPage() {
 
     console.log('Sending search request with payload:', searchPayload);
 
+    // Set loading state and reset previous errors
     setIsLoading(true);
     setError(null);
 
     try {
+      // Fetch questions based on search payload
       const questions = await fetchQuestions(searchPayload);
 
       if (questions.length > 0) {
@@ -168,7 +181,7 @@ function SATPage() {
     }
   };
 
-  // Prepare subdomain data for rendering
+  // Prepare subdomain data for rendering based on selected test section
   const subdomainData = selectedTestSection
     ? prepareSubdomains(selectedTestSection, selectedSubdomains, handleSubdomainChange)
     : [];
@@ -188,6 +201,7 @@ function SATPage() {
     return subdomainData.map(({ category, subdomains }) => (
       <React.Fragment key={category}>
         <h4>{category}</h4>
+        {/* Create checkbox inputs for each subdomain */}
         {subdomains.map((subdomain) => (
           <div key={subdomain.id} className="checkbox-group">
             <input
@@ -203,7 +217,9 @@ function SATPage() {
     ));
   };
 
-  // Render answer choices
+  // Extensive logic to parse and render different answer choice formats
+  // Supports multiple-choice, free response, and specific JSON formats
+  // Handles answer selection, correctness, and rationale display
   const renderAnswerChoices = (choices, correctAnswer, rationale, questionType, externalId) => {
     if (!choices) return null;
     
@@ -246,7 +262,7 @@ function SATPage() {
         );
       }
   
-      // Handle special Collegeboard format (dictionary format)
+      // Handle special Collegeboard format (MCQ)
       if (externalId?.startsWith('DC-') || (!Array.isArray(parsedChoices) && typeof parsedChoices === 'object')) {
         return (
           <>
@@ -298,7 +314,7 @@ function SATPage() {
         );
       }
   
-      // Handle regular array format
+      // Handle regular array format (MCQ)
       if (Array.isArray(parsedChoices)) {
         return (
           <>
@@ -358,8 +374,9 @@ function SATPage() {
     return null;
   };
 
-  // Render question view based on display type
+  // Render the main question view with different states (loading, error, question)
   const renderQuestionView = () => {
+    // Switch between different view states based on current question display
     switch (questionDisplay.type) {
       case 'loading':
         return <div>{questionDisplay.content}</div>;
@@ -417,7 +434,7 @@ function SATPage() {
       default:
         return null;
     }
-  };
+  }
 
   return (
     <div className="sat-page">
