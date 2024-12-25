@@ -2,9 +2,9 @@ name: Build
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "prod" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "prod" ]
 
 jobs:
 
@@ -18,19 +18,15 @@ jobs:
       with:
         node-version: '23'
 
-    - name: Install frontend dependencies
+    - name: Install and Build Frontend Dependencies
       run: |
         cd frontend
         npm install
-
-    - name: Build frontend
-      run: |
-        cd frontend
         npm run build
       env:
         CI: false
 
-    - name: Return to root directory 
+    - name: Return to root directory
       run: cd ..
 
     - name: Setup Go
@@ -44,7 +40,7 @@ jobs:
     - name: Build backend
       run: go build -v >> logs
 
-    - name: Upload Go Build Result
+    - name: Upload Go Build Logs
       uses: actions/upload-artifact@v4
       with:
         name: 'logs'
