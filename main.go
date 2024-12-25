@@ -53,6 +53,7 @@ func main() {
     http.HandleFunc("/extracurricular", indexThing)
     http.HandleFunc("/feedback", indexThing)
 	http.HandleFunc("/", index)
+	http.HandleFunc("/signup", indexThing)
 
 	fmt.Println("Server is running on http://localhost:8080")
 	http.ListenAndServe(":8080", nil)

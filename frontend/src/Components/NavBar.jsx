@@ -48,7 +48,7 @@ const Navbar = () => {
           <Link to="/feedback" className="link">Feedback</Link>
         </div>
 
-        <Link to="/sat" className="button">
+        <Link to="/signup" className="button">
           Get Started →
         </Link>
 

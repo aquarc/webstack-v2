@@ -6,6 +6,7 @@ import LPFooter from './Components/Footer';
 import FeedBackPage from './LandingPage/FeedBackPage/FeedBack'
 import SatPage from './SatPage/SatPage'
 import ECPage from './ECPage/ECPage'
+import SignUpPage from './Authentication/SignUp/SignUp'
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
           <Route path="/feedback" element={<FeedBackPage />} />
           <Route path="/sat" element={<SatPage />} />
           <Route path="/extracurricular" element={<ECPage/>} />
+          <Route path="/signup" element={<SignUpPage/>} />
         </Routes>
         {/* Use location to conditionally render footer */}
         <Routes>

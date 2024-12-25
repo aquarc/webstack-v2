@@ -7,4 +7,3 @@ const ECPage = () => {
   );
 }
 export default ECPage;
-

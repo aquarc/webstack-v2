@@ -15,14 +15,14 @@ function SATPage() {
   // State variables for managing the SAT question interface
   // Tracks selected test, section, subdomains, difficulties, and current question state
   const [selectedTest, setSelectedTest] = useState('');
-  const [selectedTestSection, setSelectedTestSection] = useState('');
+  const [selectedTestSections, setSelectedTestSections] = useState([]);
   const [selectedSubdomains, setSelectedSubdomains] = useState({});
   const [selectedDifficulties, setSelectedDifficulties] = useState({
     Easy: false,
     Medium: false,
     Hard: false
   });
-    // State for managing current question interactions
+  // State for managing current question interactions
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [currentQuestions, setCurrentQuestions] = useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -91,15 +91,34 @@ function SATPage() {
   // Event handlers for selection changes
   const handleTestChange = (test) => {
     setSelectedTest(test);
-    // Reset related states when a different test or section is selected
-    setSelectedTestSection('');
+    // Reset related states when a different test is selected
+    setSelectedTestSections([]);
     setSelectedSubdomains({});
     setSelectedDifficulties({ Easy: false, Medium: false, Hard: false });
   };
 
   const handleTestSectionChange = (section) => {
-    setSelectedTestSection(section);
-    setSelectedSubdomains({});
+    setSelectedTestSections(prev => {
+      // If section is already selected, remove it, otherwise add it
+      if (prev.includes(section)) {
+        return prev.filter(s => s !== section);
+      } else {
+        return [...prev, section];
+      }
+    });
+    // Only reset subdomains if the section is being removed
+    if (selectedTestSections.includes(section)) {
+      setSelectedSubdomains(prev => {
+        const newSubdomains = { ...prev };
+        // Remove subdomains associated with the deselected section
+        Object.keys(newSubdomains).forEach(key => {
+          if (key.startsWith(section)) {
+            delete newSubdomains[key];
+          }
+        });
+        return newSubdomains;
+      });
+    }
   };
 
   const handleSubdomainChange = (subdomain) => {
@@ -142,7 +161,7 @@ function SATPage() {
     }
 
     // Validate section selection
-    if (!selectedTestSection) {
+    if (!selectedTestSections) {
       setError('Please select a test section.');
       return;
     }
@@ -182,9 +201,9 @@ function SATPage() {
   };
 
   // Prepare subdomain data for rendering based on selected test section
-  const subdomainData = selectedTestSection
-    ? prepareSubdomains(selectedTestSection, selectedSubdomains, handleSubdomainChange)
-    : [];
+  const subdomainData = selectedTestSections.length > 0
+  ? selectedTestSections.map(section => prepareSubdomains(section, selectedSubdomains, handleSubdomainChange)).flat()
+  : [];
 
   // Render question display based on current state
   const questionDisplay = renderQuestionDisplay(
@@ -435,7 +454,8 @@ function SATPage() {
         return null;
     }
   }
-
+  
+  // Renders everything for the UI
   return (
     <div className="sat-page">
       <div className="sat-main-content">
@@ -471,15 +491,15 @@ function SATPage() {
 
         <div className="filter-group">
           <h3>Test Section</h3>
-          <p>Please select one</p>
+          <p>Please select all that apply</p>
           {['Math', 'English'].map((section) => (
             <div key={section} className="checkbox-group">
               <input
-                type="radio"
+                type="checkbox"
                 id={section.toLowerCase()}
                 name="test-section"
                 onChange={() => handleTestSectionChange(section)}
-                checked={selectedTestSection === section}
+                checked={selectedTestSections.includes(section)}
               />
               <label htmlFor={section.toLowerCase()}>
                 {section === 'English' ? 'Reading and Writing' : section}
@@ -488,7 +508,7 @@ function SATPage() {
           ))}
         </div>
 
-        {selectedTestSection && (
+        {selectedTestSections && (
           <div className="filter-group">
             <h3>Subdomain</h3>
             <p>Select all that apply</p>
