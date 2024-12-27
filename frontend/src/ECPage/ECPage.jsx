@@ -21,29 +21,17 @@ const FilterComponent = () => {
 
   return (
     <div className="container">
-      <nav className="navbar">
-        <span className="logo">Aquarc</span>
-        <ul className="nav-links">
-          <li>SAT</li>
-          <li>Extracurriculars</li>
-          <li>Newsletter</li>
-          <li>Feedback</li>
-        </ul>
-        <button className="get-started">Get Started</button>
-      </nav>
-
       <div className="content">
         <div className="left-panel">
           <h1>Select question type on the right.</h1>
         </div>
         <div className="right-panel">
-          <h2>Assessment</h2>
+          <h2>Choose your extracurricular</h2>
           <form>
             <div className="form-group">
-              <label><input type="radio" name="assessment" onChange={() => setAssessment('SAT')} /> SAT</label>
-              <label><input type="radio" name="assessment" onChange={() => setAssessment('ACT')} /> ACT</label>
-              <label><input type="radio" name="assessment" onChange={() => setAssessment('PSAT 10/11')} /> PSAT 10/11</label>
-              <label><input type="radio" name="assessment" onChange={() => setAssessment('PSAT 8/9')} /> PSAT 8/9</label>
+              <label><input type="radio" name="assessment" onChange={() => setAssessment('Summer Programs')} /> Summer Programs</label>
+              <label><input type="radio" name="assessment" onChange={() => setAssessment('Scholarships')} /> Scholarships</label>
+              <label><input type="radio" name="assessment" onChange={() => setAssessment('Competitions')} /> Competitions</label>
             </div>
 
             <h3>Test Section</h3>
