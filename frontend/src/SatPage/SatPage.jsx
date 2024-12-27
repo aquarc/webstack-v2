@@ -76,7 +76,7 @@ function SATPage() {
     };
   }, []);
 
-  // Calculator visibility effect
+  // Calculator visibility 
   useEffect(() => {
     if (calculatorRef.current) {
       calculatorRef.current.style.display = showCalculator ? 'block' : 'none';
@@ -460,7 +460,7 @@ function SATPage() {
     <div className="sat-page">
       <div className="sat-main-content">
         <div className="header-container">
-          <h1>SAT Questions</h1>
+        <h1>Select question type on the right.</h1>
           <button 
             onClick={toggleCalculator}
             className={`calculator-icon-button ${showCalculator ? 'active' : ''}`}
