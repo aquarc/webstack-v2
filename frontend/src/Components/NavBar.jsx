@@ -46,6 +46,7 @@ const Navbar = () => {
           <Link to="/extracurricular" className="link">Extracurriculars</Link>
           <a href="https://aquarc.beehiiv.com" className="link">Newsletter</a>
           <Link to="/feedback" className="link">Feedback</Link>
+          <Link to="/dashboard" className="link">Dashboard</Link>
         </div>
 
         <Link to="/signup" className="button">

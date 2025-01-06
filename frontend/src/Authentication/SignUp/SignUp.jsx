@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './SignUp.css';
 
-function SignUpPage() {
+const SignUpPage = () => {
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
         username: '',
         email: '',
         password: '',
         confirmPassword: ''
     });
-
     const [errors, setErrors] = useState({});
     const [verificationStep, setVerificationStep] = useState(false);
     const [verificationCode, setVerificationCode] = useState('');
@@ -20,7 +21,6 @@ function SignUpPage() {
             ...prevState,
             [name]: value
         }));
-        // Clear any previous API errors when user starts typing
         setApiError('');
     };
 
@@ -44,16 +44,12 @@ function SignUpPage() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
-        // Reset any previous errors
         setErrors({});
         setApiError('');
 
-        // Validate form
         if (!validateForm()) return;
 
         try {
-            // Send registration request
             const response = await fetch('/sat/register', {
                 method: 'POST',
                 headers: {
@@ -67,13 +63,11 @@ function SignUpPage() {
             });
 
             if (!response.ok) {
-                // Handle error response
                 const errorText = await response.text();
                 setApiError(errorText || 'Registration failed');
                 return;
             }
 
-            // Move to verification step
             setVerificationStep(true);
         } catch (error) {
             console.error('Registration error:', error);
@@ -102,29 +96,22 @@ function SignUpPage() {
                 return;
             }
 
-            // Verification successful
-            alert('Registration complete! You can now log in.');
-            // Optional: Redirect to login page or reset form
-            setVerificationStep(false);
-            setFormData({
-                username: '',
-                email: '',
-                password: '',
-                confirmPassword: ''
-            });
+            // After successful verification, navigate to dashboard
+            navigate('/dashboard', { state: { username: formData.username } });
+            
         } catch (error) {
             console.error('Verification error:', error);
             setApiError('Network error. Please try again.');
         }
     };
 
-    // Render registration form
     if (!verificationStep) {
         return (
             <div className="signup-container">
                 <form onSubmit={handleSubmit} className="signup-form">
                     <h2>Sign Up</h2>
-                    {apiError && <p className="error global-error">{apiError}</p>}
+                    {apiError && <p className="error api-error">{apiError}</p>}
+                    
                     <div className="form-group">
                         <label htmlFor="username">Username</label>
                         <input 
@@ -136,6 +123,7 @@ function SignUpPage() {
                         />
                         {errors.username && <p className="error">{errors.username}</p>}
                     </div>
+
                     <div className="form-group">
                         <label htmlFor="email">Email</label>
                         <input 
@@ -147,6 +135,7 @@ function SignUpPage() {
                         />
                         {errors.email && <p className="error">{errors.email}</p>}
                     </div>
+
                     <div className="form-group">
                         <label htmlFor="password">Password</label>
                         <input 
@@ -158,6 +147,7 @@ function SignUpPage() {
                         />
                         {errors.password && <p className="error">{errors.password}</p>}
                     </div>
+
                     <div className="form-group">
                         <label htmlFor="confirmPassword">Confirm Password</label>
                         <input 
@@ -169,19 +159,20 @@ function SignUpPage() {
                         />
                         {errors.confirmPassword && <p className="error">{errors.confirmPassword}</p>}
                     </div>
+
                     <button type="submit" className="signup-button">Sign Up</button>
                 </form>
             </div>
         );
     }
 
-    // Render verification form
     return (
         <div className="signup-container">
             <form onSubmit={handleVerification} className="signup-form">
                 <h2>Verify Your Email</h2>
-                <p>A verification code has been sent to {formData.email}</p>
-                {apiError && <p className="error global-error">{apiError}</p>}
+                <p className="verification-text">A verification code has been sent to {formData.email}</p>
+                {apiError && <p className="error api-error">{apiError}</p>}
+                
                 <div className="form-group">
                     <label htmlFor="verificationCode">Verification Code</label>
                     <input 
@@ -193,10 +184,11 @@ function SignUpPage() {
                         placeholder="Enter 7-digit code"
                     />
                 </div>
+
                 <button type="submit" className="signup-button">Verify</button>
             </form>
         </div>
     );
-}
+};
 
 export default SignUpPage;

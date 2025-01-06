@@ -294,44 +294,53 @@ func register(w http.ResponseWriter, r *http.Request) {
     var data Credentials
     err := json.NewDecoder(r.Body).Decode(&data)
     if err != nil {
+        log.Printf("Error decoding request body: %v", err)
         http.Error(w, "Invalid request body ", http.StatusBadRequest)
         return
     }
 
+    // Log the received data (remove in production)
+    log.Printf("Received registration request for email: %s", data.Email)
+
     generatedSalt := make([]byte, 16)
     _, err = rand.Read(generatedSalt)
     if err != nil {
+        log.Printf("Error generating salt: %v", err)
         http.Error(w, "Internal Error", http.StatusInternalServerError)
         return
     }
 
     saltedPassword := append(generatedSalt, []byte(data.Password)...)
-
     hashedPassword := sha512.Sum512([]byte(saltedPassword))
 
-    // insert into database
-    fmt.Printf("%x", hashedPassword)
-    _, err = db.Exec("INSERT INTO users (email, username, password, salt) VALUES (?, ?, ?, ?)", data.Email, data.Username, hashedPassword[:], generatedSalt)
+    // Insert into database
+    _, err = db.Exec("INSERT INTO users (email, username, password, salt) VALUES (?, ?, ?, ?)", 
+        data.Email, data.Username, hashedPassword[:], generatedSalt)
     if err != nil {
+        log.Printf("Database error: %v", err)
         http.Error(w, "Error inserting into database: " + err.Error(), http.StatusInternalServerError)
         return
     }
 
-    emailMessage := gomail.NewMessage()
-    emailMessage.SetHeader("From", "contact@aquarc.org")
-    emailMessage.SetHeader("To", data.Email)
-
+    // Generate verification code
     randomCode, err := rand.Int(rand.Reader, big.NewInt(1e7))
     if err != nil {
+        log.Printf("Error generating verification code: %v", err)
         http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+        return
     }
 
     randomCodeString := fmt.Sprintf("%07d", randomCode.Int64())
+    log.Printf("Generated verification code for %s", data.Email)
 
-    emailMessage.SetHeader("Subject", "Your code is: " + randomCodeString)
+    // Create email message
+    emailMessage := gomail.NewMessage()
+    emailMessage.SetHeader("From", "contact@aquarc.org")
+    emailMessage.SetHeader("To", data.Email)
+    emailMessage.SetHeader("Subject", "Your verification code is: " + randomCodeString)
     emailMessage.SetBody("text/plain",
         fmt.Sprintf(`Hi %s,
-Thank you so much for supporting aquarc! Your code is: %s
+Thank you so much for supporting aquarc! Your verification code is: %s
 
 Feel free to reach out to this email if you need help in your high school journey.
 
@@ -339,13 +348,23 @@ Best,
 Om
 CEO of Aquarc`, data.Username, randomCodeString))
 
+    // Try to send email
     err = email.DialAndSend(emailMessage)
     if err != nil {
-        fmt.Println(err)
+        log.Printf("Error sending email: %v", err)
+        // Don't return here - still insert the code into database
     }
 
-    db.Exec("INSERT INTO verification_codes (email, code, timestamp) VALUES (?, ?, unixepoch())", data.Email, randomCodeString)
+    // Insert verification code into database
+    _, err = db.Exec("INSERT INTO verification_codes (email, code, timestamp) VALUES (?, ?, unixepoch())", 
+        data.Email, randomCodeString)
+    if err != nil {
+        log.Printf("Error storing verification code: %v", err)
+        http.Error(w, "Error storing verification code", http.StatusInternalServerError)
+        return
+    }
 
+    log.Printf("Successfully registered user and stored verification code")
     w.WriteHeader(http.StatusOK)
     w.Write([]byte("User registered successfully"))
 }
