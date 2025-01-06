@@ -1,0 +1,12 @@
+{
+  "name": "webstack-v2",
+  "version": "1.0.0",
+  "description": "This project contains the backend and the frontend for aquarc!",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
