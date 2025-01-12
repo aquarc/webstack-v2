@@ -8,6 +8,7 @@ import SatPage from './SatPage/SatPage'
 import ECPage from './ECPage/ECPage'
 import SignUpPage from './Authentication/SignUp/SignUp'
 import Dashboard from './Dashboard/Dashboard'
+import AboutUsPage from './AboutPage/AboutPage';
 
 // Wrapper component to handle conditional NavBar rendering
 const AppContent = () => {
@@ -24,6 +25,8 @@ const AppContent = () => {
         <Route path="/extracurricular" element={<ECPage/>} />
         <Route path="/signup" element={<SignUpPage/>} />
         <Route path="/dashboard" element={<Dashboard/>} />
+        <Route path="/aboutPage" element={<AboutUsPage/>} />
+
       </Routes>
       {/* Use location to conditionally render footer */}
       <Routes>
@@ -31,6 +34,7 @@ const AppContent = () => {
         <Route path="/" element={<LPFooter />} />
         <Route path="/feedback" element={<LPFooter />} />
         <Route path="/extracurricular" element={<LPFooter />} />
+        <Route path="/aboutPage" element={<LPFooter />} />
       </Routes>
     </>
   );
