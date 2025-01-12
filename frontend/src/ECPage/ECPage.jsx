@@ -34,10 +34,12 @@ const FilterComponent = () => {
               <label><input type="radio" name="assessment" onChange={() => setAssessment('Competitions')} /> Competitions</label>
             </div>
 
-            <h3>Test Section</h3>
+            <h3>Grade Level</h3>
             <div className="form-group">
-              <label><input type="checkbox" onChange={() => handleCheckboxChange('Math', 'sections')} /> Math</label>
-              <label><input type="checkbox" onChange={() => handleCheckboxChange('Reading and Writing', 'sections')} /> Reading and Writing</label>
+              <label><input type="radio" name="assessment" onChange={() => setAssessment('Summer Programs')} /> Freshman </label>
+              <label><input type="radio" name="assessment" onChange={() => setAssessment('Scholarships')} /> Sophmore </label>
+              <label><input type="radio" name="assessment" onChange={() => setAssessment('Competitions')} /> Junior </label>
+              <label><input type="radio" name="assessment" onChange={() => setAssessment('Competitions')} /> Senior </label>
             </div>
 
             <h3>Difficulty</h3>
