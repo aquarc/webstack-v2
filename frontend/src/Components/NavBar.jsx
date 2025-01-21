@@ -43,14 +43,14 @@ const Navbar = () => {
 
         <div className="nav-links">
           <Link to="/sat" className="link">SAT</Link>
-          <Link to="/extracurricular" className="link">Extracurriculars</Link>
+          {/*<Link to="/extracurricular" className="link">Extracurriculars</Link> */}
           <a href="https://aquarc.beehiiv.com" className="link">Newsletter</a>
           <Link to="/feedback" className="link">Feedback</Link>
           {/*<Link to="/dashboard" className="link">Dashboard</Link>*/}
-          <Link to="/aboutPage" className="link">About Us</Link>
+          {/*<Link to="/aboutPage" className="link">About Us</Link>*/}
         </div>
 
-        <Link to="/signup" className="button">
+        <Link to="/sat" className="button">
           Get Started →
         </Link>
 
