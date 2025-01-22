@@ -8,6 +8,8 @@ jobs:
       - run: |
           cd frontend && npm i && npm run build
           cd .. && go build
+        env:
+          CI: false
       - uses: amondnet/vercel-action@v25 #deploy
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }} # Required
