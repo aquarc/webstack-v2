@@ -22,7 +22,7 @@ const Feedback = () => {
     e.preventDefault();
 
     try {
-      const response = await fetch('https://submit-form.com/VaXdTtgHh', {
+      const response = await fetch('https://formsubmit.co/12bf187c2eee0543c3eedbad9fb31422', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
