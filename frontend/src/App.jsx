@@ -9,6 +9,7 @@ import ECPage from './ECPage/ECPage'
 import SignUpPage from './Authentication/SignUp/SignUp'
 import Dashboard from './Dashboard/Dashboard'
 import AboutUsPage from './AboutPage/AboutPage';
+import LoginPage from './Authentication/Login/Login';
 
 // Wrapper component to handle conditional NavBar rendering
 const AppContent = () => {
@@ -26,6 +27,7 @@ const AppContent = () => {
         <Route path="/signup" element={<SignUpPage/>} />
         <Route path="/dashboard" element={<Dashboard/>} />
         <Route path="/aboutPage" element={<AboutUsPage/>} />
+        <Route path="/login" element={<LoginPage />} />
 
       </Routes>
       {/* Use location to conditionally render footer */}
