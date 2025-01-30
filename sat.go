@@ -275,6 +275,19 @@ func register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var existingEmail string
+    err = db.QueryRow("SELECT email FROM users WHERE email = ?", data.Email).Scan(&existingEmail)
+    if err != sql.ErrNoRows {
+        // If error is not "no rows", either the email exists or there was a database error
+        if err == nil {
+            http.Error(w, "Email already registered", http.StatusConflict)
+        } else {
+            log.Printf("Database error checking email: %v", err)
+            http.Error(w, "Internal server error", http.StatusInternalServerError)
+        }
+        return
+    }
+
 	// Add debug logging for email setup
 	log.Printf("Setting up email for: %s", data.Email)
 
@@ -446,6 +459,7 @@ func initializeSat(db *sql.DB) {
 	}
 
 	// Test the email connection immediately
+	// TODO: This will be useful when we automatically login to dashboard
 	if err := email.DialAndSend(gomail.NewMessage()); err != nil {
 		log.Printf("❌ Initial email connection test failed: %v", err)
 	} else {

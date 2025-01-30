@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import './SignUp.css';
 
 const SignUpPage = () => {
@@ -26,14 +26,14 @@ const SignUpPage = () => {
 
     const validateForm = () => {
         let formErrors = {};
-
+        
         if (!formData.username) formErrors.username = 'Username is required';
         if (!formData.email) formErrors.email = 'Email is required';
         else if (!/\S+@\S+\.\S+/.test(formData.email)) formErrors.email = 'Email is invalid';
-
+        
         if (!formData.password) formErrors.password = 'Password is required';
         else if (formData.password.length < 6) formErrors.password = 'Password must be at least 6 characters';
-
+        
         if (formData.password !== formData.confirmPassword) {
             formErrors.confirmPassword = 'Passwords do not match';
         }
@@ -98,7 +98,7 @@ const SignUpPage = () => {
 
             // After successful verification, navigate to dashboard
             navigate('/dashboard', { state: { username: formData.username } });
-
+            
         } catch (error) {
             console.error('Verification error:', error);
             setApiError('Network error. Please try again.');
@@ -111,11 +111,11 @@ const SignUpPage = () => {
                 <form onSubmit={handleSubmit} className="signup-form">
                     <h2>Sign Up</h2>
                     {apiError && <p className="error api-error">{apiError}</p>}
-
+                    
                     <div className="form-group">
                         <label htmlFor="username">Username</label>
-                        <input
-                            type="text"
+                        <input 
+                            type="text" 
                             id="username"
                             name="username"
                             value={formData.username}
@@ -126,8 +126,8 @@ const SignUpPage = () => {
 
                     <div className="form-group">
                         <label htmlFor="email">Email</label>
-                        <input
-                            type="email"
+                        <input 
+                            type="email" 
                             id="email"
                             name="email"
                             value={formData.email}
@@ -138,8 +138,8 @@ const SignUpPage = () => {
 
                     <div className="form-group">
                         <label htmlFor="password">Password</label>
-                        <input
-                            type="password"
+                        <input 
+                            type="password" 
                             id="password"
                             name="password"
                             value={formData.password}
@@ -150,8 +150,8 @@ const SignUpPage = () => {
 
                     <div className="form-group">
                         <label htmlFor="confirmPassword">Confirm Password</label>
-                        <input
-                            type="password"
+                        <input 
+                            type="password" 
                             id="confirmPassword"
                             name="confirmPassword"
                             value={formData.confirmPassword}
@@ -161,6 +161,9 @@ const SignUpPage = () => {
                     </div>
 
                     <button type="submit" className="signup-button">Sign Up</button>
+                    <p className="login-link">
+                        Already have an account? <Link to="/login">Login</Link>
+                    </p>
                 </form>
             </div>
         );
@@ -172,11 +175,11 @@ const SignUpPage = () => {
                 <h2>Verify Your Email</h2>
                 <p className="verification-text">A verification code has been sent to {formData.email}</p>
                 {apiError && <p className="error api-error">{apiError}</p>}
-
+                
                 <div className="form-group">
                     <label htmlFor="verificationCode">Verification Code</label>
-                    <input
-                        type="text"
+                    <input 
+                        type="text" 
                         id="verificationCode"
                         name="verificationCode"
                         value={verificationCode}

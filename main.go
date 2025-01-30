@@ -62,6 +62,8 @@ func main() {
 	http.HandleFunc("/", index)
 	http.HandleFunc("/signup", indexThing)
 	http.HandleFunc("/dashboard", indexThing)
+	http.HandleFunc("/login", indexThing)
+
 
 	fmt.Println("Server is running on http://localhost:8080")
 	http.ListenAndServe(":8080", nil)

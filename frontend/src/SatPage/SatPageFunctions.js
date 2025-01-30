@@ -143,8 +143,8 @@ export function renderQuestionDisplay(
 }
 
 export function renderAnswerChoices(
-  answerChoices,
-  selectedAnswer,
+  answerChoices, 
+  selectedAnswer, 
   onAnswerSelect
 ) {
   // If no answer choices are available, return null
@@ -156,7 +156,7 @@ export function renderAnswerChoices(
   // Generate answer choice elements with selection handling
   return choices.map((choice, index) => {
     const choiceLetter = String.fromCharCode(65 + index); // A, B, C, D, etc.
-
+    
     return {
       letter: choiceLetter,
       text: choice,

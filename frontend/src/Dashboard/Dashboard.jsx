@@ -93,10 +93,10 @@ function Dashboard() {
 
                     <div className="search-container">
                         <span className="search-icon">🔍</span>
-                        <input
-                            type="text"
+                        <input 
+                            type="text" 
                             className="search-input"
-                            placeholder="Search lessons and practice tests"
+                            placeholder="Search lessons and practice tests" 
                         />
                     </div>
 

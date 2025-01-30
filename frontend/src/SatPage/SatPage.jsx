@@ -76,7 +76,7 @@ function SATPage() {
     };
   }, []);
 
-  // Calculator visibility
+  // Calculator visibility 
   useEffect(() => {
     if (calculatorRef.current) {
       calculatorRef.current.style.display = showCalculator ? 'block' : 'none';
@@ -87,7 +87,7 @@ function SATPage() {
   const toggleCalculator = () => {
     setShowCalculator(!showCalculator);
   };
-
+  
   // Event handlers for selection changes
   const handleTestChange = (test) => {
     setSelectedTest(test);
@@ -136,7 +136,7 @@ function SATPage() {
   };
 
   // Navigation handlers for moving between questions
-  // Reset selected answer when navigating
+  // Reset selected answer when navigating  
   const handleNavigateNext = () => {
     if (currentQuestionIndex < currentQuestions.length - 1) {
       const nextIndex = currentQuestionIndex + 1;
@@ -241,27 +241,27 @@ function SATPage() {
   // Handles answer selection, correctness, and rationale display
   const renderAnswerChoices = (choices, correctAnswer, rationale, questionType, externalId) => {
     if (!choices) return null;
-
+    
     // Parse choices if it's a string
     let parsedChoices = choices;
     try {
       if (typeof choices === 'string') {
         parsedChoices = JSON.parse(choices);
       }
-
+  
       // Handle free response questions (empty array case)
       if (Array.isArray(parsedChoices) && parsedChoices.length === 0) {
         return (
           <>
             <div className="answer-choice free-response-container">
               <div className="input-container">
-                <input
+                <input 
                   type="text"
                   id="free-response-input"
                   value={selectedAnswer || ''}
                   onChange={(e) => setSelectedAnswer(e.target.value)}
                   className={
-                    selectedAnswer
+                    selectedAnswer 
                       ? (selectedAnswer === correctAnswer ? 'correct-answer' : 'incorrect-answer')
                       : ''
                   }
@@ -280,7 +280,7 @@ function SATPage() {
           </>
         );
       }
-
+  
       // Handle special Collegeboard format (MCQ)
       if (externalId?.startsWith('DC-') || (!Array.isArray(parsedChoices) && typeof parsedChoices === 'object')) {
         return (
@@ -288,32 +288,32 @@ function SATPage() {
             <div className="multiple-choice-container">
               {['a', 'b', 'c', 'd'].map((letter) => {
                 if (!parsedChoices[letter]) return null;
-
+  
                 const content = parsedChoices[letter].body || parsedChoices[letter];
                 const choiceKey = `choice-${letter}`;
                 const isSelected = selectedAnswer === letter;
                 const isCorrect = isSelected && letter.toLowerCase() === correctAnswer.toLowerCase();
-
+  
                 let answerClass = 'answer-choice';
                 if (isSelected) {
                   answerClass += isCorrect ? ' correct-answer' : ' incorrect-answer';
                 }
-
+  
                 return (
-                  <div
-                    key={choiceKey}
+                  <div 
+                    key={choiceKey} 
                     className={answerClass}
                     onClick={() => setSelectedAnswer(letter)}
                   >
-                    <input
-                      type="radio"
-                      id={choiceKey}
-                      name="answer-choices"
+                    <input 
+                      type="radio" 
+                      id={choiceKey} 
+                      name="answer-choices" 
                       value={letter}
                       checked={isSelected}
                       onChange={() => setSelectedAnswer(letter)}
                     />
-                    <label
+                    <label 
                       htmlFor={choiceKey}
                       dangerouslySetInnerHTML={{ __html: content }}
                     />
@@ -332,42 +332,42 @@ function SATPage() {
           </>
         );
       }
-
+  
       // Handle regular array format (MCQ)
       if (Array.isArray(parsedChoices)) {
         return (
           <>
             <div className="multiple-choice-container">
               {parsedChoices.map((choice, index) => {
-                const content = typeof choice === 'object'
-                  ? choice.content || choice.body || choice
+                const content = typeof choice === 'object' 
+                  ? choice.content || choice.body || choice 
                   : choice;
-
+  
                 const letterChoice = String.fromCharCode(65 + index).toLowerCase();
                 const choiceKey = choice.id || `choice-${index}`;
                 const isSelected = selectedAnswer === letterChoice;
                 const isCorrect = isSelected && letterChoice === correctAnswer.toLowerCase();
-
+  
                 let answerClass = 'answer-choice';
                 if (isSelected) {
                   answerClass += isCorrect ? ' correct-answer' : ' incorrect-answer';
                 }
-
+  
                 return (
-                  <div
-                    key={choiceKey}
+                  <div 
+                    key={choiceKey} 
                     className={answerClass}
                     onClick={() => setSelectedAnswer(letterChoice)}
                   >
-                    <input
-                      type="radio"
-                      id={choiceKey}
-                      name="answer-choices"
+                    <input 
+                      type="radio" 
+                      id={choiceKey} 
+                      name="answer-choices" 
                       value={letterChoice}
                       checked={isSelected}
                       onChange={() => setSelectedAnswer(letterChoice)}
                     />
-                    <label
+                    <label 
                       htmlFor={choiceKey}
                       dangerouslySetInnerHTML={{ __html: content }}
                     />
@@ -408,7 +408,7 @@ function SATPage() {
             <div className="question-details">
               <div className="question-metadata">
               </div>
-
+              
               {/* Additional details (if available) - NOW MOVED ABOVE THE QUESTION */}
               {questionDetails.details && (
                 <div className="question-additional-details">
@@ -454,14 +454,14 @@ function SATPage() {
         return null;
     }
   }
-
+  
   // Renders everything for the UI
   return (
     <div className="sat-page">
       <div className="sat-main-content">
         <div className="header-container">
         <h1>Select question type on the right.</h1>
-          <button
+          <button 
             onClick={toggleCalculator}
             className={`calculator-icon-button ${showCalculator ? 'active' : ''}`}
           >
@@ -519,7 +519,7 @@ function SATPage() {
         <div className="filter-group">
           <h3>Difficulty</h3>
           <p>Select all that apply</p>
-          {['Easy', 'Medium', 'Hard'].map((difficulty) => (
+          {['Easy', 'Medium', 'Hard'].map((difficulty) => ( 
             <div key={difficulty} className="checkbox-group">
               <input
                 type="checkbox"
