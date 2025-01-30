@@ -3,10 +3,11 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"net/http"
+	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
 	"log"
+	"net/http"
 	"os"
-	_ "github.com/mattn/go-sqlite3"
 )
 
 var db *sql.DB
@@ -32,14 +33,20 @@ func index(w http.ResponseWriter, r *http.Request) {
 }
 
 func indexThing(w http.ResponseWriter, r *http.Request) {
-    // load index.html from static/
-    http.ServeFile(w, r, "./frontend/build/index.html")
+	// load index.html from static/
+	http.ServeFile(w, r, "./frontend/build/index.html")
 }
-
 
 func main() {
 	var err error
-	db, err = sql.Open("sqlite3", "./main.db")
+	err = godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+	connectionString := fmt.Sprintf("user=%s password=%s host=%s port=%s dbname=%s sslmode=%s",
+		os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_HOST"), os.Getenv("DB_PORT"), os.Getenv("DB_NAME"), os.Getenv("DB_SSLMODE"))
+	log.Println(connectionString)
+	db, err = sql.Open("postgres", connectionString)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -49,13 +56,12 @@ func main() {
 	initializeSat(db)
 
 	// Serve the index handler and other static files
-    http.HandleFunc("/sat", indexThing)
-    http.HandleFunc("/extracurricular", indexThing)
-    http.HandleFunc("/feedback", indexThing)
+	http.HandleFunc("/sat", indexThing)
+	http.HandleFunc("/extracurricular", indexThing)
+	http.HandleFunc("/feedback", indexThing)
 	http.HandleFunc("/", index)
 	http.HandleFunc("/signup", indexThing)
 	http.HandleFunc("/dashboard", indexThing)
-
 
 	fmt.Println("Server is running on http://localhost:8080")
 	http.ListenAndServe(":8080", nil)

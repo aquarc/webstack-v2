@@ -10,7 +10,7 @@ import (
 	"net/url"
 	"strings"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/lib/pq"
 )
 
 func indexEc(w http.ResponseWriter, r *http.Request) {
@@ -135,11 +135,11 @@ func resultsScholarship(w http.ResponseWriter, r *http.Request) {
                 data-amount="` + amount + `"
                 data-grades="` + fmt.Sprintf("%d-%d", startGrade, endGrade) + `"`
 
-        if deadline.Valid {
-            htmlToInsert += `data-deadline="` + deadline.String + `"`
-        }
+		if deadline.Valid {
+			htmlToInsert += `data-deadline="` + deadline.String + `"`
+		}
 
-        htmlToInsert += `
+		htmlToInsert += `
                 data-category="` + category + `"
                 data-notes="` + notes + `">
                 <div class="program-name">` + name + `</div>
@@ -474,9 +474,9 @@ func initializeEc(db *sql.DB) {
             startGrade INTEGER DEFAULT 9,
             endGrade INTEGER DEFAULT 12,
             amount TEXT NOT NULL,
-            deadline TEXT DEFAULT "",
+            deadline TEXT DEFAULT '',
             link TEXT NOT NULL,
-            notes TEXT DEFAULT "",
+            notes TEXT DEFAULT '',
             category TEXT DEFAULT "misc"
         );`,
 	)
@@ -504,10 +504,10 @@ func initializeEc(db *sql.DB) {
 	_, err = db.Exec(
 		`CREATE TABLE IF NOT EXISTS competitions (
             name TEXT PRIMARY KEY NOT NULL,
-            date TEXT DEFAULT "Unavailable",
+            date TEXT DEFAULT 'Unavailable',
             link TEXT NOT NULL,
             category TEXT NOT NULL,
-            notes TEXT DEFAULT ""
+            notes TEXT DEFAULT ''
         );`,
 	)
 	if err != nil {
@@ -523,7 +523,6 @@ func initializeEc(db *sql.DB) {
 	http.HandleFunc("/static/ec/results-competitions.html", resultsCompetitions)
 
 	// add HandleFuncs for sat /sat...
-
 
 	if err != nil {
 		log.Fatal(err)

@@ -12,11 +12,11 @@ import (
 	"math/big"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	_ "github.com/joho/godotenv/autoload"
-	_ "github.com/mattn/go-sqlite3"
+	"github.com/lib/pq"
+	_ "github.com/lib/pq"
 	"gopkg.in/gomail.v2"
 )
 
@@ -215,35 +215,14 @@ func FindQuestionsHandlerv2(w http.ResponseWriter, r *http.Request) {
 		SELECT questionId, id, test, category, domain, skill, difficulty, details,
 			question, answer_choices, answer, rationale
         FROM sat_questions
-        WHERE test = ?
+        WHERE test = $1
+        AND difficulty = ANY($2)
+        AND skill = ANY($3);
         `
-	args := []interface{}{}
-
-	args = append(args, data.Test)
-
-	query += " AND difficulty IN ("
-
-	difficultyPlaceholders := []string{}
-	for _, item := range data.Difficulty {
-		difficultyPlaceholders = append(difficultyPlaceholders, "?")
-		args = append(args, item)
-
-	}
-
-	query += strings.Join(difficultyPlaceholders, ",") + ") AND skill IN ("
-
-	subdomainPlaceholders := []string{}
-	for _, item := range data.Subdomain {
-		subdomainPlaceholders = append(subdomainPlaceholders, "?")
-		args = append(args, item)
-	}
-
-	query += strings.Join(subdomainPlaceholders, ",") + ")"
-
 	// query the db
-	fmt.Println(query)
-	fmt.Println(args)
-	rows, err := db.Query(query, args...)
+	difficulty := pq.Array(data.Difficulty)
+	subdomain := pq.Array(data.Subdomain)
+	rows, err := db.Query(query, data.Test, difficulty, subdomain)
 	if err != nil {
 		// return http internal error
 		http.Error(w, "Error querying: "+err.Error(), http.StatusInternalServerError)
