@@ -6,6 +6,7 @@ import (
 	"crypto/sha512"
 	"crypto/tls"
 	"database/sql"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -267,47 +268,93 @@ func FindQuestionsHandlerv2(w http.ResponseWriter, r *http.Request) {
 }
 
 func register(w http.ResponseWriter, r *http.Request) {
-	var data Credentials
-	err := json.NewDecoder(r.Body).Decode(&data)
-	if err != nil {
-		log.Printf("Error decoding request body: %v", err)
-		http.Error(w, "Invalid request body ", http.StatusBadRequest)
-		return
-	}
+    var data Credentials
+    err := json.NewDecoder(r.Body).Decode(&data)
+    if err != nil {
+        log.Printf("Error decoding request body: %v", err)
+        http.Error(w, "Invalid request body ", http.StatusBadRequest)
+        return
+    }
 
-	var existingEmail string
-	err = db.QueryRow("SELECT email FROM users WHERE email = $1", data.Email).Scan(&existingEmail)
-	if err != sql.ErrNoRows {
-		// If error is not "no rows", either the email exists or there was a database error
-		if err == nil {
-			http.Error(w, "Email already registered", http.StatusConflict)
-		} else {
-			log.Printf("Database error checking email: %v", err)
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-		}
-		return
-	}
+    var existingEmail string
+    err = db.QueryRow("SELECT email FROM users WHERE email = $1", data.Email).Scan(&existingEmail)
+    if err != sql.ErrNoRows {
+        if err == nil {
+            http.Error(w, "Email already registered", http.StatusConflict)
+        } else {
+            log.Printf("Database error checking email: %v", err)
+            http.Error(w, "Internal server error", http.StatusInternalServerError)
+        }
+        return
+    }
 
-	// Add debug logging for email setup
-	log.Printf("Setting up email for: %s", data.Email)
+    // Generate salt
+    generatedSalt := make([]byte, 16)
+    _, err = rand.Read(generatedSalt)
+    if err != nil {
+        log.Printf("Error generating salt: %v", err)
+        http.Error(w, "Internal Error", http.StatusInternalServerError)
+        return
+    }
+    
+    // Create new salt + password bytes
+    saltedPassword := make([]byte, len(generatedSalt)+len(data.Password))
+    copy(saltedPassword, generatedSalt)
+    copy(saltedPassword[len(generatedSalt):], []byte(data.Password))
+    
+    // Hash the password
+    hashedPassword := sha512.Sum512(saltedPassword)
+    
+    // Convert binary data to hex strings for storage
+    hashedPasswordHex := fmt.Sprintf("%x", hashedPassword[:])
+    saltHex := fmt.Sprintf("%x", generatedSalt)
 
-	// Create email message first to validate setup
-	emailMessage := gomail.NewMessage()
-	emailMessage.SetHeader("From", "contact@aquarc.org")
-	emailMessage.SetHeader("To", data.Email)
+    // Insert into database using hex strings
+    _, err = db.Exec(`
+        INSERT INTO users (email, username, password, salt, verified) 
+        VALUES ($1, $2, $3, $4, $5)`,
+        data.Email, 
+        data.Username, 
+        hashedPasswordHex,  // Store as hex string
+        saltHex,           // Store as hex string
+        0,
+    )
 
-	// Generate verification code
-	randomCode, err := rand.Int(rand.Reader, big.NewInt(1e7))
-	if err != nil {
-		log.Printf("Error generating verification code: %v", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
-	}
-	randomCodeString := fmt.Sprintf("%07d", randomCode.Int64())
+    if err != nil {
+        log.Printf("Database error during insert: %v", err)
+        http.Error(w, "Error creating user: "+err.Error(), http.StatusInternalServerError)
+        return
+    }
 
-	emailMessage.SetHeader("Subject", "Aquarc Verification Code")
-	emailMessage.SetBody("text/plain",
-		fmt.Sprintf(`Hi %s,
+    // Now handle email verification
+    randomCode, err := rand.Int(rand.Reader, big.NewInt(1e7))
+    if err != nil {
+        log.Printf("Error generating verification code: %v", err)
+        http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+        return
+    }
+    randomCodeString := fmt.Sprintf("%07d", randomCode.Int64())
+
+    // Store verification code
+    _, err = db.Exec(`
+        INSERT INTO verification_codes (email, code, timestamp) 
+        VALUES ($1, $2, EXTRACT(EPOCH FROM NOW())::bigint)`,
+        data.Email, 
+        randomCodeString,
+    )
+    if err != nil {
+        log.Printf("Error storing verification code: %v", err)
+        http.Error(w, "Error storing verification code", http.StatusInternalServerError)
+        return
+    }
+
+    // Send verification email
+    emailMessage := gomail.NewMessage()
+    emailMessage.SetHeader("From", "contact@aquarc.org")
+    emailMessage.SetHeader("To", data.Email)
+    emailMessage.SetHeader("Subject", "Aquarc Verification Code")
+    emailMessage.SetBody("text/plain",
+        fmt.Sprintf(`Hi %s,
 Thank you so much for supporting aquarc! Your verification code is: %s
 
 Feel free to reach out to this email if you need help in your high school journey.
@@ -316,65 +363,18 @@ Best,
 Om
 CEO of Aquarc`, data.Username, randomCodeString))
 
-	// Move email sending before database operations to ensure it works
-	log.Printf("Attempting to send email to: %s", data.Email)
+    dialer := gomail.NewDialer("mail.privateemail.com", 587, "contact@aquarc.org", os.Getenv("PASSWORD"))
+    dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 
-	// Create new dialer for each send
-	dialer := gomail.NewDialer("mail.privateemail.com", 587, "contact@aquarc.org", os.Getenv("PASSWORD"))
-	dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
-
-	// Try to send email with detailed error logging
-	if err := dialer.DialAndSend(emailMessage); err != nil {
-		log.Printf("❌ Error sending email: %v", err)
-		// Check if password is set (without printing it)
-		if os.Getenv("PASSWORD") == "" {
-			log.Printf("❌ EMAIL PASSWORD environment variable is not set")
-		}
-		http.Error(w, "Failed to send verification email", http.StatusInternalServerError)
-		return
-	}
-
-	log.Printf("✅ Successfully sent verification email to: %s", data.Email)
-
-	// Continue with database operations only if email sent successfully
-	generatedSalt := make([]byte, 16)
-	_, err = rand.Read(generatedSalt)
-	if err != nil {
-		log.Printf("Error generating salt: %v", err)
-		http.Error(w, "Internal Error", http.StatusInternalServerError)
-		return
-	}
-
-	saltedPassword := append(generatedSalt, []byte(data.Password)...)
-	hashedPassword := sha512.Sum512([]byte(saltedPassword))
-
-	// Convert binary data to hex string for storage
-    saltHex := fmt.Sprintf("%x", generatedSalt)
-    passwordHex := fmt.Sprintf("%x", hashedPassword[:])
-
-	// Insert into database
-    _, err = db.Exec(`
-        INSERT INTO users (email, username, password, salt) 
-        VALUES ($1, $2, decode($3, 'hex'), decode($4, 'hex'))`,
-        data.Email, data.Username, passwordHex, saltHex)
-    if err != nil {
-        log.Printf("Database error: %v", err)
-        http.Error(w, "Error inserting into database: "+err.Error(), http.StatusInternalServerError)
+    if err := dialer.DialAndSend(emailMessage); err != nil {
+        log.Printf("Error sending email: %v", err)
+        http.Error(w, "Failed to send verification email", http.StatusInternalServerError)
         return
     }
 
-	// Insert verification code into database
-	_, err = db.Exec("INSERT INTO verification_codes (email, code, timestamp) VALUES ($1, $2, EXTRACT(EPOCH FROM NOW())::bigint)",
-		data.Email, randomCodeString)
-	if err != nil {
-		log.Printf("Error storing verification code: %v", err)
-		http.Error(w, "Error storing verification code", http.StatusInternalServerError)
-		return
-	}
-
-	log.Printf("✅ Successfully registered user and stored verification code for: %s", data.Email)
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("User registered successfully. Please check your email for verification code."))
+    log.Printf("✅ Successfully registered user and sent verification code to: %s", data.Email)
+    w.WriteHeader(http.StatusOK)
+    w.Write([]byte("User registered successfully. Please check your email for verification code."))
 }
 func registerVerificationCode(w http.ResponseWriter, r *http.Request) {
 	var data Verification
@@ -419,16 +419,14 @@ func login(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    var storedPasswordBytes []byte
-    var storedSaltBytes []byte
+    var storedPasswordHex string
+    var storedSaltHex string
     var verified int
 
     err = db.QueryRow(`
-        SELECT decode(encode(password, 'hex'), 'hex'), 
-               decode(encode(salt, 'hex'), 'hex'), 
-               verified 
+        SELECT password, salt, verified 
         FROM users 
-        WHERE email = $1`, data.Email).Scan(&storedPasswordBytes, &storedSaltBytes, &verified)
+        WHERE email = $1`, data.Email).Scan(&storedPasswordHex, &storedSaltHex, &verified)
 
     if err != nil {
         if err == sql.ErrNoRows {
@@ -440,16 +438,31 @@ func login(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    if verified == 0 {
-        http.Error(w, "User Not Verified", http.StatusForbidden)
+    // Convert hex strings back to bytes
+    storedPasswordBytes, err := hex.DecodeString(storedPasswordHex)
+    if err != nil {
+        log.Printf("Error decoding stored password: %v", err)
+        http.Error(w, "Internal server error", http.StatusInternalServerError)
         return
     }
 
-    // Hash the provided password with the stored salt
-    saltedPassword := append(storedSaltBytes, []byte(data.Password)...)
+    storedSaltBytes, err := hex.DecodeString(storedSaltHex)
+    if err != nil {
+        log.Printf("Error decoding stored salt: %v", err)
+        http.Error(w, "Internal server error", http.StatusInternalServerError)
+        return
+    }
+
+    // Create new salt + password bytes
+    saltedPassword := make([]byte, len(storedSaltBytes)+len(data.Password))
+    copy(saltedPassword, storedSaltBytes)
+    copy(saltedPassword[len(storedSaltBytes):], []byte(data.Password))
+    
+    // Hash the password
     hashedPassword := sha512.Sum512(saltedPassword)
 
-    if !bytes.Equal(hashedPassword[:], storedPasswordBytes) {
+    // Compare using a constant-time comparison
+    if !bytes.Equal(storedPasswordBytes, hashedPassword[:]) {
         http.Error(w, "Password does not match", http.StatusForbidden)
         return
     }
@@ -508,7 +521,7 @@ func initializeSat(db *sql.DB) {
 		email TEXT PRIMARY KEY,
 		username TEXT,
 		password BYTEA,
-		salt TEXT,
+		salt BYTEA,
 		verified INTEGER DEFAULT 0
 	)`)
 	if err != nil {
