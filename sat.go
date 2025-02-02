@@ -276,17 +276,17 @@ func register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var existingEmail string
-    err = db.QueryRow("SELECT email FROM users WHERE email = ?", data.Email).Scan(&existingEmail)
-    if err != sql.ErrNoRows {
-        // If error is not "no rows", either the email exists or there was a database error
-        if err == nil {
-            http.Error(w, "Email already registered", http.StatusConflict)
-        } else {
-            log.Printf("Database error checking email: %v", err)
-            http.Error(w, "Internal server error", http.StatusInternalServerError)
-        }
-        return
-    }
+	err = db.QueryRow("SELECT email FROM users WHERE email = $1", data.Email).Scan(&existingEmail)
+	if err != sql.ErrNoRows {
+		// If error is not "no rows", either the email exists or there was a database error
+		if err == nil {
+			http.Error(w, "Email already registered", http.StatusConflict)
+		} else {
+			log.Printf("Database error checking email: %v", err)
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+		}
+		return
+	}
 
 	// Add debug logging for email setup
 	log.Printf("Setting up email for: %s", data.Email)
@@ -348,17 +348,23 @@ CEO of Aquarc`, data.Username, randomCodeString))
 	saltedPassword := append(generatedSalt, []byte(data.Password)...)
 	hashedPassword := sha512.Sum512([]byte(saltedPassword))
 
+	// Convert binary data to hex string for storage
+    saltHex := fmt.Sprintf("%x", generatedSalt)
+    passwordHex := fmt.Sprintf("%x", hashedPassword[:])
+
 	// Insert into database
-	_, err = db.Exec("INSERT INTO users (email, username, password, salt) VALUES (?, ?, ?, ?)",
-		data.Email, data.Username, hashedPassword[:], generatedSalt)
-	if err != nil {
-		log.Printf("Database error: %v", err)
-		http.Error(w, "Error inserting into database: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
+    _, err = db.Exec(`
+        INSERT INTO users (email, username, password, salt) 
+        VALUES ($1, $2, decode($3, 'hex'), decode($4, 'hex'))`,
+        data.Email, data.Username, passwordHex, saltHex)
+    if err != nil {
+        log.Printf("Database error: %v", err)
+        http.Error(w, "Error inserting into database: "+err.Error(), http.StatusInternalServerError)
+        return
+    }
 
 	// Insert verification code into database
-	_, err = db.Exec("INSERT INTO verification_codes (email, code, timestamp) VALUES (?, ?, unixepoch())",
+	_, err = db.Exec("INSERT INTO verification_codes (email, code, timestamp) VALUES ($1, $2, EXTRACT(EPOCH FROM NOW())::bigint)",
 		data.Email, randomCodeString)
 	if err != nil {
 		log.Printf("Error storing verification code: %v", err)
@@ -381,7 +387,8 @@ func registerVerificationCode(w http.ResponseWriter, r *http.Request) {
 	var code string
 	var timestamp int64
 	// get the most recent verification code for the email
-	err = db.QueryRow("SELECT code, timestamp FROM verification_codes WHERE email = ? ORDER BY timestamp DESC LIMIT 1", data.Email).Scan(&code, &timestamp)
+	err = db.QueryRow("SELECT code, timestamp FROM verification_codes WHERE email = $1 ORDER BY timestamp DESC LIMIT 1",
+		data.Email).Scan(&code, &timestamp)
 	if err != nil {
 		http.Error(w, "Email not currently registering", http.StatusBadRequest)
 		return
@@ -398,41 +405,57 @@ func registerVerificationCode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db.Exec("UPDATE users SET verified = 1 WHERE email = ?", data.Email)
+	_, err = db.Exec("UPDATE users SET verified = 1 WHERE email = $1", data.Email)
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("User verified successfully"))
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
-	var data Credentials
-	err := json.NewDecoder(r.Body).Decode(&data)
-	if err != nil {
-		http.Error(w, "Invalid request body ", http.StatusBadRequest)
-		return
-	}
-	var userSalt string
-	var storedPassword []byte
-	var verified int
-	err = db.QueryRow("SELECT password, salt, verified FROM users WHERE email = ?", data.Email).Scan(&storedPassword, &userSalt, &verified)
-	hashedPassword := sha512.Sum512([]byte(userSalt + data.Password))
+    var data Credentials
+    err := json.NewDecoder(r.Body).Decode(&data)
+    if err != nil {
+        http.Error(w, "Invalid request body ", http.StatusBadRequest)
+        return
+    }
 
-	if err != nil {
-		http.Error(w, "User Does Not Exist: "+err.Error(), http.StatusBadRequest)
-		return
-	}
-	if verified == 0 {
-		http.Error(w, "User Not Verified", http.StatusForbidden)
-		return
-	}
-	if !bytes.Equal(hashedPassword[:], storedPassword) {
-		http.Error(w, "Password does not match", http.StatusForbidden)
-		return
-	}
+    var storedPasswordBytes []byte
+    var storedSaltBytes []byte
+    var verified int
 
-	// TODO: Add cookies to client's browser (following OAuth2 specification https://github.com/go-oauth2/oauth2)
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("User logged in successfully"))
+    err = db.QueryRow(`
+        SELECT decode(encode(password, 'hex'), 'hex'), 
+               decode(encode(salt, 'hex'), 'hex'), 
+               verified 
+        FROM users 
+        WHERE email = $1`, data.Email).Scan(&storedPasswordBytes, &storedSaltBytes, &verified)
+
+    if err != nil {
+        if err == sql.ErrNoRows {
+            http.Error(w, "User Does Not Exist", http.StatusBadRequest)
+        } else {
+            log.Printf("Database error: %v", err)
+            http.Error(w, "Internal server error", http.StatusInternalServerError)
+        }
+        return
+    }
+
+    if verified == 0 {
+        http.Error(w, "User Not Verified", http.StatusForbidden)
+        return
+    }
+
+    // Hash the provided password with the stored salt
+    saltedPassword := append(storedSaltBytes, []byte(data.Password)...)
+    hashedPassword := sha512.Sum512(saltedPassword)
+
+    if !bytes.Equal(hashedPassword[:], storedPasswordBytes) {
+        http.Error(w, "Password does not match", http.StatusForbidden)
+        return
+    }
+
+    w.WriteHeader(http.StatusOK)
+    w.Write([]byte("User logged in successfully"))
 }
 
 func initializeSat(db *sql.DB) {
@@ -467,36 +490,36 @@ func initializeSat(db *sql.DB) {
 	}
 	// create table if not exists
 	_, err := db.Exec(`CREATE TABLE IF NOT EXISTS sat_questions (
-        questionId TEXT PRIMARY KEY,
-        id TEXT,
-        test TEXT,
-        category TEXT,
-        domain TEXT,
-        skill TEXT,
-        difficulty TEXT,
-        details TEXT,
-        question TEXT,
-        answer_choices TEXT,
-        answer TEXT,
-        rationale TEXT
-    )`)
+		questionId TEXT PRIMARY KEY,
+		id TEXT,
+		test TEXT,
+		category TEXT,
+		domain TEXT,
+		skill TEXT,
+		difficulty TEXT,
+		details TEXT,
+		question TEXT,
+		answer_choices TEXT,
+		answer TEXT,
+		rationale TEXT
+	)`)
 
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS users (
-        email TEXT PRIMARY KEY,
-        username TEXT,
-        password BLOB,
-        salt TEXT,
-        verified INTEGER DEFAULT 0
-    )`)
+		email TEXT PRIMARY KEY,
+		username TEXT,
+		password BYTEA,
+		salt TEXT,
+		verified INTEGER DEFAULT 0
+	)`)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS verification_codes (
-        code TEXT PRIMARY KEY,
-        email TEXT,
-        timestamp INTEGER
-    )`)
+		code TEXT PRIMARY KEY,
+		email TEXT,
+		timestamp BIGINT
+	)`)
 
 	http.HandleFunc("/sat/test", ServeForm)
 	http.HandleFunc("/sat/find-questions", FindQuestionsHandler)
