@@ -17,13 +17,31 @@ npm run build
 cd ..
 ```
 
+## Install PostgreSQL
+### Windows
+1. Download PostgreSQL from the official website: https://www.postgresql.org/download/windows/
+2. Run the installer and follow the setup wizard
+3. Add PostgreSQL to your system PATH if not done automatically
+
+### macOS
+Using HomeBrew:
+```bash
+brew install postgresql
+```
+
+### Linux(Ubuntu/Debian)
+```bash
+sudo apt update
+sudo apt install postgresql postgresql-contrib
+```
+
 ## build the backend
 
 ```bash
 go build
 ```
 
-You will have to install go_sqlite3 properly
+You will have to install postgreSQL properly for the project to build correctly
 
 ## run the code
 
