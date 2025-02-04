@@ -1,4 +1,4 @@
-import React from 'react'
+import { React, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import NavBar from './Components/NavBar'
 import LandingPage from './LandingPage/LandingPage';
@@ -42,7 +42,21 @@ const AppContent = () => {
   );
 };
 
+const useAnalytics = () => {
+  const location = useLocation();
+  
+  useEffect(() => {
+    if (window.gtag) {
+      window.gtag('config', 'G-8C7GL4G017', {
+        page_path: location.pathname,
+      });
+    }
+  }, [location]);
+};
+
 function App() {
+  useAnalytics();
+
   return (
     <div className="App">
       <BrowserRouter>
