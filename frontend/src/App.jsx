@@ -16,6 +16,14 @@ const AppContent = () => {
   const location = useLocation();
   const isDashboard = location.pathname === '/dashboard';
 
+  useEffect(() => {
+    if (process.env.NODE_ENV !== 'production' && window.gtag) {
+      window.gtag('config', process.env.REACT_APP_GTAG, {
+        page_path: location.pathname,
+      });
+    }
+  }, [location]);
+
   return (
     <>
       {!isDashboard && <NavBar />}
@@ -42,21 +50,7 @@ const AppContent = () => {
   );
 };
 
-const useAnalytics = () => {
-  const location = useLocation();
-  
-  useEffect(() => {
-    if (window.gtag) {
-      window.gtag('config', 'G-8C7GL4G017', {
-        page_path: location.pathname,
-      });
-    }
-  }, [location]);
-};
-
 function App() {
-  useAnalytics();
-
   return (
     <div className="App">
       <BrowserRouter>
