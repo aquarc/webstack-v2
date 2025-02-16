@@ -3,13 +3,14 @@ import './AboutPage.css';
 
 function AboutUsPage() {
     return (
+        
         <div className="about-container">
             {/* Hero Section */}
             <section className="about-hero">
                 <div className="hero-content">
                     <h1 className="hero-title">Our Mission</h1>
                     <p className="hero-subtitle">
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam 
+                        ipsum dolor sit amet, consectetur adipiscing elit. Nullam 
                         scelerisque felis nec felis pellentesque pulvinar. Vivamus sit 
                         amet diam ut enim efficitur bibendum vitae sed lectus. Sed vitae 
                         lacus vel nunc volutpat tincidunt at non dolor.
