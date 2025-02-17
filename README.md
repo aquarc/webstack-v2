@@ -16,6 +16,11 @@ cd frontend
 npm run build
 cd ..
 ```
+You may have to run 
+```bash
+npm install
+```
+if it does not recognize react-scripts.
 
 ## Install PostgreSQL
 ### Windows
