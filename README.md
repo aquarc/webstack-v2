@@ -13,6 +13,7 @@ cd webstack-v2
 
 ```bash
 cd frontend
+npm install 
 npm run build
 cd ..
 ```
@@ -61,3 +62,17 @@ On everything else:
 ```bash
 ./serve
 ```
+
+## set up ENV
+
+Your .env file should look like:
+```sh
+DB_USER=...
+DB_PASSWORD=...
+DB_HOST=...
+DB_PORT=5432
+DB_NAME=...
+DB_SSLMODE=enable
+PASSWORD=...
+```
+
