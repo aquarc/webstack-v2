@@ -161,8 +161,13 @@ function SATPage() {
     }
 
     // Validate section selection
-    if (!selectedTestSections) {
+    if (selectedTestSections.length === 0) {
       setError('Please select a test section.');
+      return;
+    }
+
+    if (!selectedDifficulties.Easy && !selectedDifficulties.Medium && !selectedDifficulties.Hard) {
+      setError('Please select a question difficulty.')
       return;
     }
 

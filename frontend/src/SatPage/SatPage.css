@@ -134,8 +134,7 @@
 .checkbox-group input[type="checkbox"]:checked::after {
   content: '';
   position: absolute;
-  top: 2px;
-  left: 5px;
+  left: 4px;
   width: 5px;
   height: 10px;
   border: solid white;
