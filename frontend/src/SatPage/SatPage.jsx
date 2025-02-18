@@ -40,11 +40,22 @@ function SATPage() {
 
   // Effect hook to initialize the Desmos graphing calculator
   // Creates a div container for the calculator and sets it up when the component mounts
-  useEffect(() => {
-    if (!calculatorInitializedRef.current) {
+   // Only initialize calculator when Math section is selected
+   useEffect(() => {
+    const isMathSelected = selectedTestSections.includes('Math');
+    
+    // Clean up existing calculator if Math is deselected
+    if (!isMathSelected && calculatorRef.current && calculatorInitializedRef.current) {
+      calculatorRef.current.remove();
+      calculatorInitializedRef.current = false;
+      setShowCalculator(false);
+      return;
+    }
+
+    // Initialize calculator only if Math is selected and calculator isn't already initialized
+    if (isMathSelected && !calculatorInitializedRef.current) {
       const container = document.createElement('div');
       container.id = 'desmos-calculator';
-      // styling configuration for calculator container
       container.style.width = '600px';
       container.style.height = '400px';
       container.style.position = 'absolute';
@@ -57,34 +68,24 @@ function SATPage() {
       container.style.borderRadius = '8px';
       container.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
 
-      // Append calculator to the main content area
       const mainContent = document.querySelector('.sat-main-content');
       if (mainContent) {
         mainContent.appendChild(container);
         calculatorRef.current = container;
-        // Initialize Desmos calculator instance
         calculatorInstanceRef.current = Desmos.GraphingCalculator(container);
         calculatorInstanceRef.current.setExpression({ id: 'graph1', latex: '' });
         calculatorInitializedRef.current = true;
       }
     }
-    // Cleanup function to remove calculator when component unmounts
-    return () => {
-      if (calculatorRef.current && calculatorInitializedRef.current) {
-        calculatorRef.current.remove();
-        calculatorInitializedRef.current = false;
-      }
-    };
-  }, []);
+  }, [selectedTestSections]);
 
-  // Calculator visibility 
+  // Control calculator visibility
   useEffect(() => {
     if (calculatorRef.current) {
       calculatorRef.current.style.display = showCalculator ? 'block' : 'none';
     }
   }, [showCalculator]);
 
-  // Toggle calculator visibility
   const toggleCalculator = () => {
     setShowCalculator(!showCalculator);
   };
@@ -494,13 +495,15 @@ function SATPage() {
     <div className="sat-page">
       <div className="sat-main-content">
         <div className="header-container">
-        <h1>Select question type on the right.</h1>
-          <button 
-            onClick={toggleCalculator}
-            className={`calculator-icon-button ${showCalculator ? 'active' : ''}`}
-          >
-            <Calculator size={24} />
-          </button>
+          <h1>Select question type on the right.</h1>
+          {selectedTestSections.includes('Math') && (
+            <button 
+              onClick={toggleCalculator}
+              className={`calculator-icon-button ${showCalculator ? 'active' : ''}`}
+            >
+              <Calculator size={24} />
+            </button>
+          )}
         </div>
         {renderQuestionView()}
       </div>
