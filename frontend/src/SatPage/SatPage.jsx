@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { MathSubdomains, EnglishSubdomains } from './SatSubdomains';
 import './SatPage.css';
 import './CSS/Filter.css'
 import './CSS/QuestionStyles.css'
@@ -166,6 +167,33 @@ function SATPage() {
       return;
     }
 
+    // select all the subdomains if no subdomains are selected
+    if (Object.keys(selectedSubdomains).length === 0) {
+        if (selectedTestSections.includes('Math')) {
+            // add all MathSubdomains
+
+            for (const key in MathSubdomains) {
+                const skills = MathSubdomains[key];
+                for (let i = 0; i < skills.length; i++) {
+                    console.log(skills[i]['value']);
+                    selectedSubdomains[skills[i]['value']]= true;
+                }
+            }
+        }
+
+        if (selectedTestSections.includes('English')) {
+            // add all EnglishSubdomains
+            for (const key in EnglishSubdomains) {
+                const skills = EnglishSubdomains[key];
+                for (let i = 0; i < skills.length; i++) {
+                    console.log(skills[i]['value']);
+                    selectedSubdomains[skills[i]['value']]= true;
+                }
+            }
+        } 
+
+    }
+
     if (!selectedDifficulties.Easy && !selectedDifficulties.Medium && !selectedDifficulties.Hard) {
       setError('Please select a question difficulty.')
       return;
@@ -191,6 +219,7 @@ function SATPage() {
       if (questions.length > 0) {
         setCurrentQuestions(questions);
         setCurrentQuestionIndex(0);
+        window.scrollTo(0, 0);
         setError(null);
       } else {
         setCurrentQuestions([]);
