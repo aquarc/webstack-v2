@@ -49,12 +49,22 @@ go build
 
 You will have to install postgreSQL properly for the project to build correctly
 
+If "go build" has run properly, it should not have produced any output, 
+rather it would have generated a "serve.exe" file which can be found with the command:
+```bash
+ls
+```
+
 ## run the code
 
 On windows:
 
 ```bash
 serve.exe
+```
+or
+```bash
+.\serve.exe
 ```
 
 On everything else:
