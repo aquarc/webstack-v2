@@ -13,6 +13,7 @@ cd webstack-v2
 
 ```bash
 cd frontend
+npm install 
 npm run build
 cd ..
 ```
@@ -48,6 +49,12 @@ go build
 
 You will have to install postgreSQL properly for the project to build correctly
 
+If "go build" has run properly, it should not have produced any output, 
+rather it would have generated a "serve.exe" file which can be found with the command:
+```bash
+ls
+```
+
 ## run the code
 
 On windows:
@@ -55,9 +62,27 @@ On windows:
 ```bash
 serve.exe
 ```
+or
+```bash
+.\serve.exe
+```
 
 On everything else:
 
 ```bash
 ./serve
 ```
+
+## set up ENV
+
+Your .env file should look like:
+```sh
+DB_USER=...
+DB_PASSWORD=...
+DB_HOST=...
+DB_PORT=5432
+DB_NAME=...
+DB_SSLMODE=enable
+PASSWORD=...
+```
+
