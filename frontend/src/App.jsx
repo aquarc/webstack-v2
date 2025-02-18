@@ -1,4 +1,4 @@
-import React from 'react'
+import { React, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import NavBar from './Components/NavBar'
 import LandingPage from './LandingPage/LandingPage';
@@ -15,6 +15,14 @@ import LoginPage from './Authentication/Login/Login';
 const AppContent = () => {
   const location = useLocation();
   const isDashboard = location.pathname === '/dashboard';
+
+  useEffect(() => {
+    if (process.env.NODE_ENV !== 'production' && window.gtag) {
+      window.gtag('config', process.env.REACT_APP_GTAG, {
+        page_path: location.pathname,
+      });
+    }
+  }, [location]);
 
   return (
     <>
