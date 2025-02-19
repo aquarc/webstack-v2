@@ -27,6 +27,13 @@ function SATPage() {
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [currentQuestions, setCurrentQuestions] = useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [tempAnswer, setTempAnswer] = useState('');
+
+  const handleSubmitAnswer = () => {
+    if (tempAnswer.trim()) {
+      setSelectedAnswer(tempAnswer);
+    }
+  };
 
   // State for managing loading and error states
   const [isLoading, setIsLoading] = useState(false);
@@ -277,7 +284,6 @@ function SATPage() {
   const renderAnswerChoices = (choices, correctAnswer, rationale, questionType, externalId) => {
     if (!choices) return null;
     
-    // Parse choices if it's a string
     let parsedChoices = choices;
     try {
       if (typeof choices === 'string') {
@@ -286,22 +292,36 @@ function SATPage() {
   
       // Handle free response questions (empty array case)
       if (Array.isArray(parsedChoices) && parsedChoices.length === 0) {
+        const handleKeyPress = (e) => {
+          if (e.key === 'Enter') {
+            handleSubmitAnswer();
+          }
+        };
+
         return (
           <>
             <div className="answer-choice free-response-container">
-              <div className="input-container">
+              <div className="flex gap-2 items-center w-full max-w-xl">
                 <input 
                   type="text"
                   id="free-response-input"
-                  value={selectedAnswer || ''}
-                  onChange={(e) => setSelectedAnswer(e.target.value)}
-                  className={
+                  value={tempAnswer}
+                  onChange={(e) => setTempAnswer(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  className={`flex-1 p-2 border rounded-md ${
                     selectedAnswer 
                       ? (selectedAnswer === correctAnswer ? 'correct-answer' : 'incorrect-answer')
                       : ''
-                  }
+                  }`}
                   placeholder="Enter your answer..."
                 />
+                <button
+                  onClick={handleSubmitAnswer}
+                  className="bg-[#6366F1] hover:bg-[#4F46E5] text-white px-4 py-2 rounded-md transition-colors duration-200"
+                  disabled={!tempAnswer.trim()}
+                >
+                  Submit
+                </button>
               </div>
             </div>
             {selectedAnswer && (
