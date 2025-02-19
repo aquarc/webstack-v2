@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './NavBar.css';
+import AboutUsPage from '../AboutPage/AboutPage';
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -47,7 +48,7 @@ const Navbar = () => {
           <a href="https://aquarc.beehiiv.com" className="link">Newsletter</a>
           <Link to="/feedback" className="link">Feedback</Link>
           {/*<Link to="/dashboard" className="link">Dashboard</Link>*/}
-          {/*<Link to="/aboutPage" className="link">About Us</Link>*/}
+          <Link to="/aboutPage" className="link">About Us</Link>
         </div>
 
         <Link to="/signup" className="button">
