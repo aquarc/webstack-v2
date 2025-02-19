@@ -73,6 +73,16 @@ On everything else:
 ./serve
 ```
 
+## run everything together (convenience)
+```bash
+cd frontend
+npm install 
+npm run build
+cd ..
+go build
+./serve.exe
+```
+
 ## set up ENV
 
 Your .env file should look like:
