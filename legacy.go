@@ -10,6 +10,7 @@ import (
     "unicode"
 
 	_ "github.com/joho/godotenv/autoload"
+    "github.com/k3a/html2text"
     "github.com/lib/pq"
 	_ "github.com/lib/pq"
 )
@@ -21,9 +22,14 @@ type LegacyQuestionDetails struct {
 	Difficulty    string `json:"difficulty"`
 	Details       string `json:"details"`
 	Question      string `json:"question"`
-	AnswerChoices string `json:"answerChoices"`
+	AnswerChoices []string `json:"answerChoices"`
 	Answer        string `json:"answer"`
 	Rationale     string `json:"rationale"`
+}
+
+type LegacyAnswerChoice struct {
+    QuestionId string `json:"id"`
+    Answer     string `json:"content"`
 }
 
 const (
@@ -186,10 +192,11 @@ func LegacyFindQuestionsHandler(w http.ResponseWriter, r *http.Request) {
 	// iterate oer the rows
 	for rows.Next() {
 		var question LegacyQuestionDetails
+        var unparsedAnswerChoices string
 		err = rows.Scan(
 			&question.Domain, &question.Skill,
 			&question.Difficulty, &question.Details, &question.Question,
-			&question.AnswerChoices, &question.Answer, &question.Rationale,
+			&unparsedAnswerChoices, &question.Answer, &question.Rationale,
 		)
 		if err != nil {
 			// return http  400
@@ -201,6 +208,18 @@ func LegacyFindQuestionsHandler(w http.ResponseWriter, r *http.Request) {
 
 		// convert to json
 		// append the json
+        question.Question = html2text.HTML2Text(question.Question)
+        question.Rationale = html2text.HTML2Text(question.Rationale)
+        question.Details = html2text.HTML2Text(question.Details)
+
+
+        // parse the answer choice JSON into LegacyAnswerChoice
+        answerChoices := []LegacyAnswerChoice{}
+        json.Unmarshal([]byte(unparsedAnswerChoices), &answerChoices)
+        for _, choice := range answerChoices {
+            question.AnswerChoices = append(question.AnswerChoices, html2text.HTML2Text(choice.Answer))
+        }
+
 		questions = append(questions, question)
 	}
 
