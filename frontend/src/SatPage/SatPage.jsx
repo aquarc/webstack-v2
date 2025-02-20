@@ -11,6 +11,7 @@ import {
 } from './SatPageFunctions';
 import Desmos from 'desmos'
 import { Calculator } from 'lucide-react';
+import PomodoroTimer from './PomodoroTimer';
 
 function SATPage() {
   // State variables for managing the SAT question interface
@@ -514,17 +515,22 @@ function SATPage() {
   return (
     <div className="sat-page">
       <div className="sat-main-content">
-        <div className="header-container">
-          <h1>Select question type on the right.</h1>
-          {selectedTestSections.includes('Math') && (
-            <button 
-              onClick={toggleCalculator}
-              className={`calculator-icon-button ${showCalculator ? 'active' : ''}`}
-            >
-              <Calculator size={24} />
-            </button>
-          )}
-        </div>
+      <div className="top-section">
+  <div className="header-container">
+    <h1>Select question type on the right.</h1>
+  </div>
+  <div className="tools-timer-container">
+    {selectedTestSections.includes('Math') && (
+      <button 
+        onClick={toggleCalculator}
+        className={`calculator-icon-button ${showCalculator ? 'active' : ''}`}
+      >
+        <Calculator size={24} />
+      </button>
+    )}
+    <PomodoroTimer />
+  </div>
+</div>
         {renderQuestionView()}
       </div>
 
@@ -598,6 +604,8 @@ function SATPage() {
             {isLoading ? 'Searching...' : 'Search Questions'}
           </button>
         </div>
+        
+      
       </div>
     </div>
   );
