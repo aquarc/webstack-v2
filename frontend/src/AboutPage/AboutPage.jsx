@@ -20,7 +20,7 @@ function AboutUsPage() {
             {/* Mission Section */}
             <section className="about-section mission-section">
                 <div className="section-content">
-                    <h1 className="section-title">Our Mission Statement</h1>
+                    <h1 className="section-title">Our Mission</h1>
                     <div className="mission-content">
                         <p>
                             "Our mission is to provide free accessible materials and guidance for students from all backgrounds to utilize."
