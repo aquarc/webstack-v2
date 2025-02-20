@@ -30,12 +30,6 @@ function SATPage() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [tempAnswer, setTempAnswer] = useState('');
 
-  const handleSubmitAnswer = () => {
-    if (tempAnswer.trim()) {
-      setSelectedAnswer(tempAnswer);
-    }
-  };
-
   // State for managing loading and error states
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -45,6 +39,12 @@ function SATPage() {
   const calculatorRef = useRef(null);
   const calculatorInstanceRef = useRef(null);
   const calculatorInitializedRef = useRef(false);
+
+  const handleSubmitAnswer = () => {
+    if (tempAnswer.trim()) {
+      setSelectedAnswer(tempAnswer);
+    }
+  };
 
   // Effect hook to initialize the Desmos graphing calculator
   // Creates a div container for the calculator and sets it up when the component mounts
@@ -97,6 +97,19 @@ function SATPage() {
   const toggleCalculator = () => {
     setShowCalculator(!showCalculator);
   };
+
+  // In your useEffect that handles question loading
+  useEffect(() => {
+    if (currentQuestions.length > 0) {
+      const timer = setTimeout(() => {
+        // Create a deep copy to ensure React sees this as a state change
+        const questionsWithForceRender = currentQuestions.map(q => ({...q}));
+        setCurrentQuestions(questionsWithForceRender);
+      }, 200); // Give a little more time for DOM to settle
+      
+      return () => clearTimeout(timer); // Cleanup
+    }
+  }, [currentQuestions.length]); // This will run whenever questions load
   
   // Event handlers for selection changes
   const handleTestChange = (test) => {
@@ -450,66 +463,75 @@ function SATPage() {
   };
 
   // Render the main question view with different states (loading, error, question)
-  const renderQuestionView = () => {
-    // Switch between different view states based on current question display
-    switch (questionDisplay.type) {
-      case 'loading':
-        return <div>{questionDisplay.content}</div>;
-      case 'error':
-        return <div className="error">{questionDisplay.content}</div>;
-      case 'question':
-        const { questionDetails, navigation } = questionDisplay.content;
-        return (
-          <div className="question-container">
-            <div className="question-details">
-              <div className="question-metadata">
+  // In SATPage.jsx - Updated renderQuestionView function
+const renderQuestionView = () => {
+  // Switch between different view states based on current question display
+  switch (questionDisplay.type) {
+    case 'loading':
+      return <div>{questionDisplay.content}</div>;
+    case 'error':
+      return <div className="error">{questionDisplay.content}</div>;
+    case 'question':
+      const { questionDetails, navigation } = questionDisplay.content;
+      return (
+        <div className="question-container">
+          <div className="question-details">
+            <div className="question-metadata">
+            </div>
+            
+            {/* Additional details (if available) */}
+            {questionDetails.details && (
+              <div className="question-additional-details">
+                <h4>Additional Information</h4>
+                {/* Always use dangerouslySetInnerHTML for these contents */}
+                <div dangerouslySetInnerHTML={{ __html: questionDetails.details }} />
               </div>
-              
-              {/* Additional details (if available) - NOW MOVED ABOVE THE QUESTION */}
-              {questionDetails.details && (
-                <div className="question-additional-details">
-                  <h4>Additional Information</h4>
-                  <p>{questionDetails.details}</p>
-                </div>
+            )}
+
+            {/* Question text */}
+            <div className="question-text">
+              <h3>Question</h3>
+              {/* Always use dangerouslySetInnerHTML for question text */}
+              <div dangerouslySetInnerHTML={{ __html: questionDetails.question }} />
+            </div>
+
+            {/* Answer Choices */}
+            <div className="answer-choices">
+              <h3>Choose an Answer</h3>
+              {renderAnswerChoices(
+                questionDetails.answerChoices, 
+                questionDetails.answer, 
+                questionDetails.rationale, 
+                questionDetails.questionType,
+                questionDetails.externalId
               )}
+            </div>
 
-              {/* Question text */}
-              <div className="question-text">
-                <h3>Question</h3>
-                <p>{questionDetails.question}</p>
-              </div>
-
-              {/* Answer Choices */}
-              <div className="answer-choices">
-                <h3>Choose an Answer</h3>
-                {renderAnswerChoices(questionDetails.answerChoices, questionDetails.answer, questionDetails.rationale)}
-              </div>
-
-              {/* Navigation */}
-              <div className="navigation-buttons">
-                <button
-                  onClick={handleNavigatePrevious}
-                  disabled={!navigation.hasPrevious}
-                >
-                  Previous
-                </button>
-                <span>
-                  {`${navigation.currentIndex} / ${navigation.totalQuestions}`}
-                </span>
-                <button
-                  onClick={handleNavigateNext}
-                  disabled={!navigation.hasNext}
-                >
-                  Next
-                </button>
-              </div>
+            {/* Navigation */}
+            <div className="navigation-buttons">
+              <button
+                onClick={handleNavigatePrevious}
+                disabled={!navigation.hasPrevious}
+              >
+                Previous
+              </button>
+              <span>
+                {`${navigation.currentIndex} / ${navigation.totalQuestions}`}
+              </span>
+              <button
+                onClick={handleNavigateNext}
+                disabled={!navigation.hasNext}
+              >
+                Next
+              </button>
             </div>
           </div>
-        );
-      default:
-        return null;
-    }
+        </div>
+      );
+    default:
+      return null;
   }
+}
   
   // Renders everything for the UI
   return (

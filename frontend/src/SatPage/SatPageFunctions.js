@@ -73,24 +73,57 @@ export function prepareSubdomains(
   }));
 }
 
-// Render question display logic
-function decodeText(text) {
-  // Create a temporary element to handle the HTML
-  const tempElement = document.createElement('div');
-  tempElement.innerHTML = text;
-
-  // Get the decoded text from the temporary element
-  let decodedText = tempElement.textContent || tempElement.innerText || '';
-
-  // Replace the word "comma" with an actual comma
-  decodedText = decodedText.replace(/\bcomma\b/gi, ',');
-  decodedText = decodedText.replace(/\bnegative\b/gi, '-');
-  decodedText = decodedText.replace(/\*\{stroke-linecap:butt;stroke-linejoin:round;\}/g, '');
-
-  return decodedText;
+export function decodeText(text) {
+  if (!text) return '';
+  
+  // Handle HTML content differently
+  const containsHTML = /<[a-z][\s\S]*>/i.test(text);
+  
+  if (containsHTML) {
+    // For HTML content, we need to be careful with replacements
+    // Replace only text content while preserving tags
+    const replacements = [
+      [/\bcomma\b/g, ','],
+      [/\bnegative\b/g, '-'],
+      [/\bminus\b/g, '-'],
+      [/\bdivided by\b/g, '/'],
+      [/\btimes\b/g, '×']
+    ];
+    
+    // Create a DOM parser to work with the HTML
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(text, 'text/html');
+    
+    // Function to recursively process text nodes
+    function processTextNodes(node) {
+      if (node.nodeType === Node.TEXT_NODE) {
+        let content = node.textContent;
+        replacements.forEach(([pattern, replacement]) => {
+          content = content.replace(pattern, replacement);
+        });
+        node.textContent = content;
+      } else {
+        Array.from(node.childNodes).forEach(processTextNodes);
+      }
+    }
+    
+    processTextNodes(doc.body);
+    return doc.body.innerHTML;
+  } else {
+    // Simple text replacement for non-HTML content
+    let decodedText = text;
+    decodedText = decodedText.replace(/\bcomma\b/gi, ',');
+    decodedText = decodedText.replace(/\bnegative\b/gi, '-');
+    decodedText = decodedText.replace(/\bminus\b/gi, '-');
+    decodedText = decodedText.replace(/\bdivided by\b/gi, '/');
+    decodedText = decodedText.replace(/\btimes\b/gi, '×');
+    decodedText = decodedText.replace(/\*\{stroke-linecap:butt;stroke-linejoin:round;\}/g, '');
+    return decodedText;
+  }
 }
 
 // Render question display logic
+// In SatPageFunctions.js - Updated renderQuestionDisplay function
 export function renderQuestionDisplay(
   isLoading,
   error,
@@ -109,17 +142,28 @@ export function renderQuestionDisplay(
 
   if (currentQuestions.length > 0) {
     const currentQuestion = currentQuestions[currentQuestionIndex];
-
-    // Decode the question text
-    const questionText = decodeText(currentQuestion.question);
-
-    // Decode the additional details (if available)
-    const additionalDetails = currentQuestion.details ? decodeText(currentQuestion.details) : null;
-
-    // Decode the answer choices (if available)
-    const answerChoices = currentQuestion.answer_choices
-      ? decodeText(currentQuestion.answer_choices)
-      : null;
+    
+    // Process the content without transforming HTML
+    let questionText = currentQuestion.question || '';
+    let additionalDetails = currentQuestion.details || '';
+    
+    // Check if content contains SVG or graph elements
+    const hasGraphContent = currentQuestion.hasGraph || 
+                           /svg|graph|plot|chart|figure|<\/?(svg|path|g|rect|circle)/i.test(questionText + additionalDetails);
+    
+    // Only run text replacements (like "comma" to ",") but preserve HTML structure
+    if (!hasGraphContent) {
+      questionText = decodeText(questionText);
+      additionalDetails = decodeText(additionalDetails);
+    } else {
+      if (questionText.includes('comma') || questionText.includes('negative')) {
+        questionText = decodeText(questionText);
+      }
+      
+      if (additionalDetails && (additionalDetails.includes('comma') || additionalDetails.includes('negative'))) {
+        additionalDetails = decodeText(additionalDetails);
+      }
+    }
 
     return {
       type: 'question',
@@ -128,7 +172,9 @@ export function renderQuestionDisplay(
           ...currentQuestion,
           question: questionText,
           details: additionalDetails,
-          answer_choices: answerChoices,
+          hasGraph: hasGraphContent,
+          // Flag to indicate if content should be treated as HTML
+          isHtml: /<[a-z][\s\S]*>/i.test(questionText) || /<[a-z][\s\S]*>/i.test(additionalDetails)
         },
         navigation: {
           hasPrevious: currentQuestionIndex > 0,
