@@ -165,13 +165,16 @@ function SATPage() {
       const nextIndex = currentQuestionIndex + 1;
       setCurrentQuestionIndex(nextIndex);
       setSelectedAnswer(null); // Reset selected answer
+      setTempAnswer(''); // Reset temp answer
     }
   }
+  
   const handleNavigatePrevious = () => {
     if (currentQuestionIndex > 0) {
       const prevIndex = currentQuestionIndex - 1;
       setCurrentQuestionIndex(prevIndex);
       setSelectedAnswer(null); // Reset selected answer
+      setTempAnswer(''); // Reset temp answer
     }
   };
 
@@ -296,58 +299,67 @@ function SATPage() {
   // Supports multiple-choice, free response, and specific JSON formats
   // Handles answer selection, correctness, and rationale display
   const renderAnswerChoices = (choices, correctAnswer, rationale, questionType, externalId) => {
-    if (!choices) return null;
-    
+    // Early check for free response cases - handle both undefined/null and empty array cases
+    const shouldShowFreeResponse = !choices || 
+      (Array.isArray(choices) && choices.length === 0) ||
+      choices === '[]' ||
+      choices === '""' ||
+      choices === '' ||
+      choices === '"\\"\\""' ||  // Handle escaped empty string case
+      choices === '\\"\\""' ||   // Handle another possible escaped string format
+      choices === "\"\"" || 
+      choices === '\\"\\"';      // Handle another possible escaped string format
+  
+    if (shouldShowFreeResponse) {
+      const handleKeyPress = (e) => {
+        if (e.key === 'Enter') {
+          handleSubmitAnswer();
+        }
+      };
+  
+      return (
+        <>
+          <div className="answer-choice free-response-container">
+            <div className="flex gap-2 items-center w-full max-w-xl">
+              <input 
+                type="text"
+                id="free-response-input"
+                value={tempAnswer}
+                onChange={(e) => setTempAnswer(e.target.value)}
+                onKeyPress={handleKeyPress}
+                className={`flex-1 p-2 border rounded-md ${
+                  selectedAnswer 
+                    ? (selectedAnswer === correctAnswer ? 'correct-answer' : 'incorrect-answer')
+                    : ''
+                }`}
+                placeholder="Enter your answer..."
+              />
+              <button
+                onClick={handleSubmitAnswer}
+                className="bg-[#6366F1] hover:bg-[#4F46E5] text-white px-4 py-2 rounded-md transition-colors duration-200"
+                disabled={!tempAnswer.trim()}
+              >
+                Submit
+              </button>
+            </div>
+          </div>
+          {selectedAnswer && (
+            <div className={`rationale-container ${selectedAnswer === correctAnswer ? 'correct' : 'incorrect'}`}>
+              <h4 className="rationale-header">
+                {selectedAnswer === correctAnswer ? 'Correct!' : 'Incorrect'}
+              </h4>
+              <div className="rationale-content" dangerouslySetInnerHTML={{ __html: rationale }} />
+            </div>
+          )}
+        </>
+      );
+    }
+  
+    // Rest of the code remains the same...
     let parsedChoices = choices;
     try {
       if (typeof choices === 'string') {
         parsedChoices = JSON.parse(choices);
-      }
-  
-      // Handle free response questions (empty array case)
-      if (Array.isArray(parsedChoices) && parsedChoices.length === 0) {
-        const handleKeyPress = (e) => {
-          if (e.key === 'Enter') {
-            handleSubmitAnswer();
-          }
-        };
-
-        return (
-          <>
-            <div className="answer-choice free-response-container">
-              <div className="flex gap-2 items-center w-full max-w-xl">
-                <input 
-                  type="text"
-                  id="free-response-input"
-                  value={tempAnswer}
-                  onChange={(e) => setTempAnswer(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  className={`flex-1 p-2 border rounded-md ${
-                    selectedAnswer 
-                      ? (selectedAnswer === correctAnswer ? 'correct-answer' : 'incorrect-answer')
-                      : ''
-                  }`}
-                  placeholder="Enter your answer..."
-                />
-                <button
-                  onClick={handleSubmitAnswer}
-                  className="bg-[#6366F1] hover:bg-[#4F46E5] text-white px-4 py-2 rounded-md transition-colors duration-200"
-                  disabled={!tempAnswer.trim()}
-                >
-                  Submit
-                </button>
-              </div>
-            </div>
-            {selectedAnswer && (
-              <div className={`rationale-container ${selectedAnswer === correctAnswer ? 'correct' : 'incorrect'}`}>
-                <h4 className="rationale-header">
-                  {selectedAnswer === correctAnswer ? 'Correct!' : 'Incorrect'}
-                </h4>
-                <div className="rationale-content" dangerouslySetInnerHTML={{ __html: rationale }} />
-              </div>
-            )}
-          </>
-        );
       }
   
       // Handle special Collegeboard format (MCQ)
@@ -457,9 +469,12 @@ function SATPage() {
       }
     } catch (error) {
       console.error('Error parsing answer choices:', error);
-      return null;
+      // If there's an error parsing the choices, default to free response
+      return renderAnswerChoices(null, correctAnswer, rationale, questionType, externalId);
     }
-    return null;
+    
+    // If we reach here, default to free response
+    return renderAnswerChoices(null, correctAnswer, rationale, questionType, externalId);
   };
 
   // Render the main question view with different states (loading, error, question)
