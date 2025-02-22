@@ -33,7 +33,7 @@
 /* Section common styles */
 .about-section {
     padding: 20px 0;
-    margin-bottom: 40px;
+    margin-bottom: 30px;
 }
 
 .section-content {
@@ -45,7 +45,7 @@
 .section-title {
     text-align: center;
     font-weight: bold;
-    margin-bottom: 40px;
+    margin-bottom: 30px;
     font-size: 4rem;
 }
 
@@ -53,31 +53,56 @@
     text-align: center;
 }
 
+.statement-title{
+    font-size: 3em;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.values-title{
+    font-size: 3em;
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.contact-title{
+    font-size: 3em;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
 /* Team section */
+.team-title{
+    font-size: 4em;
+    text-align: center;
+    margin-bottom: 25px;
+}
+
 .team-grid {
+    height: 100%;
+    width: 100%;
+    gap: 10px;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 30px;
-    margin-top: 40px;
-    overflow-y: scroll;
+    grid-template-columns: repeat(3, 1fr);
+    
 }
 
 .team-card {
-    background-color: #0f35bff5;
-    border-radius: 10px;
+    background-color:  #2f59f4;
+    display: flex;
     padding: 20px;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    border-radius: 10px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    min-height: 300px;
-    color: white;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
+    color:#ffffff;
 }
 
 .card-image {
-    width: 100%;
-    max-height: 150px;
-    object-fit: cover;
+    max-width: 100%;
+    height: auto;
+
 }
 
 
@@ -122,6 +147,13 @@
     justify-content: center; 
     align-items: center;
     text-align: center; 
+}
+
+.exclusive-emails{
+    color:#f8f8f8;
+    #custom-link {
+        color: white; /* change link color */
+    }
 }
 
 
