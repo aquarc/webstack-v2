@@ -33,7 +33,7 @@
 /* Section common styles */
 .about-section {
     padding: 20px 0;
-    margin-bottom: 40px;
+    margin-bottom: 30px;
 }
 
 .section-content {
@@ -44,39 +44,118 @@
 
 .section-title {
     text-align: center;
-    margin-bottom: 40px;
-    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 30px;
+    font-size: 4rem;
+}
+
+.mission-content{
+    text-align: center;
+}
+
+.statement-title{
+    font-size: 3em;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.values-title{
+    font-size: 3em;
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.contact-title{
+    font-size: 3em;
+    text-align: center;
+    margin-bottom: 10px;
 }
 
 /* Team section */
+.team-title{
+    font-size: 4em;
+    text-align: center;
+    margin-bottom: 25px;
+}
+
 .team-grid {
+    height: 100%;
+    width: 100%;
+    gap: 10px;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 30px;
-    margin-top: 40px;
+    grid-template-columns: repeat(3, 1fr);
+    
 }
 
 .team-card {
-    background-color: #ffffff;
-    border-radius: 10px;
+    background-color:  #2f59f4;
+    display: flex;
     padding: 20px;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    border-radius: 10px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    min-height: 300px;
+    color:#ffffff;
 }
+
+.card-image {
+    max-width: 100%;
+    height: auto;
+
+}
+
 
 /* Values section */
 .values-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 30px;
+    padding-bottom: 10px;
+    padding-right: 5px;
+    display: flex;
+    gap: 15px;
+    scroll-behavior: smooth;
+    overflow-x: auto;
+    white-space: nowrap;
+    height: 300px;
+    width: 100%;
 }
 
 .value-card {
     background-color: #f8f8f8;
     border-radius: 10px;
-    padding: 30px;
-    min-height: 200px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    min-height: 90px;
+    max-width: 400px;
+    text-align: center; 
+    white-space: normal;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    flex-basis: 250px; 
+    flex-shrink: 0; 
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
+
+.value-name {
+    margin-bottom: 10px;
+}
+
+.value-content {
+    display: flex;
+    flex-grow: 1; 
+    justify-content: center; 
+    align-items: center;
+    text-align: center; 
+}
+
+.exclusive-emails{
+    color:#f8f8f8;
+    #custom-link {
+        color: white; /* change link color */
+    }
+}
+
 
 /* Contact section */
 .contact-section {
@@ -90,6 +169,7 @@
     max-width: 600px;
     margin: 0 auto;
 }
+
 
 /* Responsive Design */
 @media (max-width: 768px) {

@@ -540,4 +540,6 @@ func initializeSat(db *sql.DB) {
 	http.HandleFunc("/sat/register", register)
 	http.HandleFunc("/sat/verifyRegistration", registerVerificationCode)
 	http.HandleFunc("/sat/login", login)
+
+    initializeLegacySat(db)
 }
