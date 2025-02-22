@@ -11,6 +11,7 @@ import {
 } from './SatPageFunctions';
 import Desmos from 'desmos'
 import { Calculator } from 'lucide-react';
+import PomodoroTimer from './PomodoroTimer';
 
 function SATPage() {
   // State variables for managing the SAT question interface
@@ -29,12 +30,6 @@ function SATPage() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [tempAnswer, setTempAnswer] = useState('');
 
-  const handleSubmitAnswer = () => {
-    if (tempAnswer.trim()) {
-      setSelectedAnswer(tempAnswer);
-    }
-  };
-
   // State for managing loading and error states
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -44,6 +39,12 @@ function SATPage() {
   const calculatorRef = useRef(null);
   const calculatorInstanceRef = useRef(null);
   const calculatorInitializedRef = useRef(false);
+
+  const handleSubmitAnswer = () => {
+    if (tempAnswer.trim()) {
+      setSelectedAnswer(tempAnswer);
+    }
+  };
 
   // Effect hook to initialize the Desmos graphing calculator
   // Creates a div container for the calculator and sets it up when the component mounts
@@ -96,6 +97,19 @@ function SATPage() {
   const toggleCalculator = () => {
     setShowCalculator(!showCalculator);
   };
+
+  // In your useEffect that handles question loading
+  useEffect(() => {
+    if (currentQuestions.length > 0) {
+      const timer = setTimeout(() => {
+        // Create a deep copy to ensure React sees this as a state change
+        const questionsWithForceRender = currentQuestions.map(q => ({...q}));
+        setCurrentQuestions(questionsWithForceRender);
+      }, 200); // Give a little more time for DOM to settle
+      
+      return () => clearTimeout(timer); // Cleanup
+    }
+  }, [currentQuestions.length]); // This will run whenever questions load
   
   // Event handlers for selection changes
   const handleTestChange = (test) => {
@@ -151,13 +165,16 @@ function SATPage() {
       const nextIndex = currentQuestionIndex + 1;
       setCurrentQuestionIndex(nextIndex);
       setSelectedAnswer(null); // Reset selected answer
+      setTempAnswer(''); // Reset temp answer
     }
   }
+  
   const handleNavigatePrevious = () => {
     if (currentQuestionIndex > 0) {
       const prevIndex = currentQuestionIndex - 1;
       setCurrentQuestionIndex(prevIndex);
       setSelectedAnswer(null); // Reset selected answer
+      setTempAnswer(''); // Reset temp answer
     }
   };
 
@@ -282,58 +299,67 @@ function SATPage() {
   // Supports multiple-choice, free response, and specific JSON formats
   // Handles answer selection, correctness, and rationale display
   const renderAnswerChoices = (choices, correctAnswer, rationale, questionType, externalId) => {
-    if (!choices) return null;
-    
+    // Early check for free response cases - handle both undefined/null and empty array cases
+    const shouldShowFreeResponse = !choices || 
+      (Array.isArray(choices) && choices.length === 0) ||
+      choices === '[]' ||
+      choices === '""' ||
+      choices === '' ||
+      choices === '"\\"\\""' ||  // Handle escaped empty string case
+      choices === '\\"\\""' ||   // Handle another possible escaped string format
+      choices === "\"\"" || 
+      choices === '\\"\\"';      // Handle another possible escaped string format
+  
+    if (shouldShowFreeResponse) {
+      const handleKeyPress = (e) => {
+        if (e.key === 'Enter') {
+          handleSubmitAnswer();
+        }
+      };
+  
+      return (
+        <>
+          <div className="answer-choice free-response-container">
+            <div className="flex gap-2 items-center w-full max-w-xl">
+              <input 
+                type="text"
+                id="free-response-input"
+                value={tempAnswer}
+                onChange={(e) => setTempAnswer(e.target.value)}
+                onKeyPress={handleKeyPress}
+                className={`flex-1 p-2 border rounded-md ${
+                  selectedAnswer 
+                    ? (selectedAnswer === correctAnswer ? 'correct-answer' : 'incorrect-answer')
+                    : ''
+                }`}
+                placeholder="Enter your answer..."
+              />
+              <button
+                onClick={handleSubmitAnswer}
+                className="bg-[#6366F1] hover:bg-[#4F46E5] text-white px-4 py-2 rounded-md transition-colors duration-200"
+                disabled={!tempAnswer.trim()}
+              >
+                Submit
+              </button>
+            </div>
+          </div>
+          {selectedAnswer && (
+            <div className={`rationale-container ${selectedAnswer === correctAnswer ? 'correct' : 'incorrect'}`}>
+              <h4 className="rationale-header">
+                {selectedAnswer === correctAnswer ? 'Correct!' : 'Incorrect'}
+              </h4>
+              <div className="rationale-content" dangerouslySetInnerHTML={{ __html: rationale }} />
+            </div>
+          )}
+        </>
+      );
+    }
+  
+    // Rest of the code remains the same...
     let parsedChoices = choices;
     try {
       if (typeof choices === 'string') {
         parsedChoices = JSON.parse(choices);
-      }
-  
-      // Handle free response questions (empty array case)
-      if (Array.isArray(parsedChoices) && parsedChoices.length === 0) {
-        const handleKeyPress = (e) => {
-          if (e.key === 'Enter') {
-            handleSubmitAnswer();
-          }
-        };
-
-        return (
-          <>
-            <div className="answer-choice free-response-container">
-              <div className="flex gap-2 items-center w-full max-w-xl">
-                <input 
-                  type="text"
-                  id="free-response-input"
-                  value={tempAnswer}
-                  onChange={(e) => setTempAnswer(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  className={`flex-1 p-2 border rounded-md ${
-                    selectedAnswer 
-                      ? (selectedAnswer === correctAnswer ? 'correct-answer' : 'incorrect-answer')
-                      : ''
-                  }`}
-                  placeholder="Enter your answer..."
-                />
-                <button
-                  onClick={handleSubmitAnswer}
-                  className="bg-[#6366F1] hover:bg-[#4F46E5] text-white px-4 py-2 rounded-md transition-colors duration-200"
-                  disabled={!tempAnswer.trim()}
-                >
-                  Submit
-                </button>
-              </div>
-            </div>
-            {selectedAnswer && (
-              <div className={`rationale-container ${selectedAnswer === correctAnswer ? 'correct' : 'incorrect'}`}>
-                <h4 className="rationale-header">
-                  {selectedAnswer === correctAnswer ? 'Correct!' : 'Incorrect'}
-                </h4>
-                <div className="rationale-content" dangerouslySetInnerHTML={{ __html: rationale }} />
-              </div>
-            )}
-          </>
-        );
       }
   
       // Handle special Collegeboard format (MCQ)
@@ -443,88 +469,105 @@ function SATPage() {
       }
     } catch (error) {
       console.error('Error parsing answer choices:', error);
-      return null;
+      // If there's an error parsing the choices, default to free response
+      return renderAnswerChoices(null, correctAnswer, rationale, questionType, externalId);
     }
-    return null;
+    
+    // If we reach here, default to free response
+    return renderAnswerChoices(null, correctAnswer, rationale, questionType, externalId);
   };
 
   // Render the main question view with different states (loading, error, question)
-  const renderQuestionView = () => {
-    // Switch between different view states based on current question display
-    switch (questionDisplay.type) {
-      case 'loading':
-        return <div>{questionDisplay.content}</div>;
-      case 'error':
-        return <div className="error">{questionDisplay.content}</div>;
-      case 'question':
-        const { questionDetails, navigation } = questionDisplay.content;
-        return (
-          <div className="question-container">
-            <div className="question-details">
-              <div className="question-metadata">
+  // In SATPage.jsx - Updated renderQuestionView function
+const renderQuestionView = () => {
+  // Switch between different view states based on current question display
+  switch (questionDisplay.type) {
+    case 'loading':
+      return <div>{questionDisplay.content}</div>;
+    case 'error':
+      return <div className="error">{questionDisplay.content}</div>;
+    case 'question':
+      const { questionDetails, navigation } = questionDisplay.content;
+      return (
+        <div className="question-container">
+          <div className="question-details">
+            <div className="question-metadata">
+            </div>
+            
+            {/* Additional details (if available) */}
+            {questionDetails.details && (
+              <div className="question-additional-details">
+                <h4>Additional Information</h4>
+                {/* Always use dangerouslySetInnerHTML for these contents */}
+                <div dangerouslySetInnerHTML={{ __html: questionDetails.details }} />
               </div>
-              
-              {/* Additional details (if available) - NOW MOVED ABOVE THE QUESTION */}
-              {questionDetails.details && (
-                <div className="question-additional-details">
-                  <h4>Additional Information</h4>
-                  <p>{questionDetails.details}</p>
-                </div>
+            )}
+
+            {/* Question text */}
+            <div className="question-text">
+              <h3>Question</h3>
+              {/* Always use dangerouslySetInnerHTML for question text */}
+              <div dangerouslySetInnerHTML={{ __html: questionDetails.question }} />
+            </div>
+
+            {/* Answer Choices */}
+            <div className="answer-choices">
+              <h3>Choose an Answer</h3>
+              {renderAnswerChoices(
+                questionDetails.answerChoices, 
+                questionDetails.answer, 
+                questionDetails.rationale, 
+                questionDetails.questionType,
+                questionDetails.externalId
               )}
+            </div>
 
-              {/* Question text */}
-              <div className="question-text">
-                <h3>Question</h3>
-                <p>{questionDetails.question}</p>
-              </div>
-
-              {/* Answer Choices */}
-              <div className="answer-choices">
-                <h3>Choose an Answer</h3>
-                {renderAnswerChoices(questionDetails.answerChoices, questionDetails.answer, questionDetails.rationale)}
-              </div>
-
-              {/* Navigation */}
-              <div className="navigation-buttons">
-                <button
-                  onClick={handleNavigatePrevious}
-                  disabled={!navigation.hasPrevious}
-                >
-                  Previous
-                </button>
-                <span>
-                  {`${navigation.currentIndex} / ${navigation.totalQuestions}`}
-                </span>
-                <button
-                  onClick={handleNavigateNext}
-                  disabled={!navigation.hasNext}
-                >
-                  Next
-                </button>
-              </div>
+            {/* Navigation */}
+            <div className="navigation-buttons">
+              <button
+                onClick={handleNavigatePrevious}
+                disabled={!navigation.hasPrevious}
+              >
+                Previous
+              </button>
+              <span>
+                {`${navigation.currentIndex} / ${navigation.totalQuestions}`}
+              </span>
+              <button
+                onClick={handleNavigateNext}
+                disabled={!navigation.hasNext}
+              >
+                Next
+              </button>
             </div>
           </div>
-        );
-      default:
-        return null;
-    }
+        </div>
+      );
+    default:
+      return null;
   }
+}
   
   // Renders everything for the UI
   return (
     <div className="sat-page">
       <div className="sat-main-content">
-        <div className="header-container">
-          <h1>Select question type on the right.</h1>
-          {selectedTestSections.includes('Math') && (
-            <button 
-              onClick={toggleCalculator}
-              className={`calculator-icon-button ${showCalculator ? 'active' : ''}`}
-            >
-              <Calculator size={24} />
-            </button>
-          )}
-        </div>
+      <div className="top-section">
+  <div className="header-container">
+    <h1>Select question type on the right.</h1>
+  </div>
+  <div className="tools-timer-container">
+    {selectedTestSections.includes('Math') && (
+      <button 
+        onClick={toggleCalculator}
+        className={`calculator-icon-button ${showCalculator ? 'active' : ''}`}
+      >
+        <Calculator size={24} />
+      </button>
+    )}
+    <PomodoroTimer />
+  </div>
+</div>
         {renderQuestionView()}
       </div>
 
@@ -598,6 +641,8 @@ function SATPage() {
             {isLoading ? 'Searching...' : 'Search Questions'}
           </button>
         </div>
+        
+      
       </div>
     </div>
   );
