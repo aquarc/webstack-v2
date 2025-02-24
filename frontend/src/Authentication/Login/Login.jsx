@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import './Login.css';
+import Cookies from 'js-cookie';
 
 const LoginPage = () => {
     const navigate = useNavigate();
@@ -48,15 +49,16 @@ const LoginPage = () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(formData)
+                body: JSON.stringify(formData),
+                credentials: 'include'
             });
 
             if (!response.ok) {
                 const errorText = await response.text();
-                setApiError(errorText || 'Login failed');
-                return;
+                throw new Error(errorText || 'Login failed');
             }
-
+            const userData = await response.json();
+            Cookies.set('user', JSON.stringify(userData), { expires: 7 }); // Set cookie for 7 days
             // On successful login, navigate to dashboard
             navigate('/dashboard');
             

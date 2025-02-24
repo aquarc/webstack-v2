@@ -10,6 +10,7 @@ import SignUpPage from './Authentication/SignUp/SignUp'
 import Dashboard from './Dashboard/Dashboard'
 import AboutUsPage from './AboutPage/AboutPage';
 import LoginPage from './Authentication/Login/Login';
+import AuthRedirect from './Components/AuthRedirect';
 
 // Wrapper component to handle conditional NavBar rendering
 const AppContent = () => {
@@ -54,7 +55,8 @@ function App() {
   return (
     <div className="App">
       <BrowserRouter>
-        <AppContent />
+        <AuthRedirect />
+          <AppContent />
       </BrowserRouter>
     </div>
   );

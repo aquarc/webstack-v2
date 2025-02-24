@@ -11,9 +11,12 @@
     "axios": "^1.7.8",
     "better-react-mathjax": "^2.0.4-beta1",
     "desmos": "^1.5.4",
+    "js-cookie": "^3.0.5",
     "lucide-react": "^0.462.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-draggable": "^4.4.6",
+    "react-resizable": "^3.0.5",
     "react-router-dom": "^7.0.1",
     "react-scripts": "^5.0.1",
     "web-vitals": "^4.2.4"
