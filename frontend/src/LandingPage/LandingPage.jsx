@@ -8,18 +8,18 @@ import ExtracurricularSection from './ECSection/ECSection';
 
 const headlines = [
   {
-    main: 'better SAT ',
+    main: 'Better SAT ',
     highlight: '2 clicks ',
     end: ' away.'
   },
   {
-    main: 'find your dream ',
+    main: 'Find your dream ',
     highlight: 'programs',
     end: '.',
     specialLayout: true
   },
   {
-    main: 'get your',
+    main: 'Get your',
     highlight: 'internships',
     end: {
       line2: ' weekly,',
@@ -28,7 +28,7 @@ const headlines = [
     specialLayout3Lines: true
   },
   {
-    main: 'make the ',
+    main: 'Make the ',
     highlight: 'most ',
     end: ' of high school.'
   }
@@ -38,7 +38,6 @@ const LandingPage = () => {
   const [currentHeadline, setCurrentHeadline] = useState(0);
   const [fadeOut, setFadeOut] = useState(false);
   const navigate = useNavigate();
-
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -106,7 +105,7 @@ const LandingPage = () => {
         </div>
 
         <div className="subheadline">
-          navigating high school has
+          Navigating high school has
           <br />
           never been easier.
         </div>
@@ -140,7 +139,7 @@ const LandingPage = () => {
           <div className="SAT-content">
             <h2 className="SAT-title">Improve your SAT score</h2>
             <p className="SAT-description">
-              we provide you with the most recent SAT questions to help train you to get the score you want.
+              We provide you with the most recent SAT questions to help train you to get the score you want.
             </p>
             <a href="/sat" className="cta-button">try our tool →</a>
           </div>
