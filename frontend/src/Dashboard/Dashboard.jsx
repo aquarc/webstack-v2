@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import Cookies from 'js-cookie';
 import './Dashboard.css';
 
 function Dashboard() {
     const [username, setUsername] = useState('');
     const location = useLocation();
+    const navigate = useNavigate();
 
     useEffect(() => {
         // If username is passed through navigation state, use it
         if (location.state?.username) {
             setUsername(location.state.username);
         }
-        // Otherwise, fetch it from the server (you'll need to implement this endpoint)
+        // Otherwise, fetch it from the server
         else {
             fetch('/sat/user-info')
                 .then(response => response.json())
@@ -19,6 +21,15 @@ function Dashboard() {
                 .catch(error => console.error('Error fetching user info:', error));
         }
     }, [location]);
+
+    const handleLogout = () => {
+        // Remove the user cookie
+        Cookies.remove('user');
+        
+        // Navigate to landing page
+        navigate('/');
+    };
+
     const nextLessons = {
         math: {
             title: "Advanced Algebra Concepts",
@@ -72,14 +83,18 @@ function Dashboard() {
                             <span>👤</span>
                             <span>Profile</span>
                         </div>
-                        <div className="nav-item">
+                        <div 
+                            className="nav-item"
+                            onClick={handleLogout}
+                            style={{ cursor: 'pointer' }}
+                        >
                             <span>🚪</span>
                             <span>Log out</span>
                         </div>
                     </div>
                 </aside>
 
-                {/* Main Content */}
+                {/* Rest of the component remains the same */}
                 <main className="main-content">
                     <header className="header">
                         <div className="welcome-section">
