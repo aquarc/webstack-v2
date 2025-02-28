@@ -1,21 +1,24 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MathSubdomains, EnglishSubdomains } from './SatSubdomains';
 import './SatPage.css';
-import './CSS/Filter.css'
-import './CSS/QuestionStyles.css'
+import './CSS/Filter.css';
+import './CSS/QuestionStyles.css';
 import {
   getSearchPayload,
   fetchQuestions,
   prepareSubdomains,
   renderQuestionDisplay
 } from './SatPageFunctions';
-import Desmos from 'desmos'
+import Desmos from 'desmos';
 import { Calculator } from 'lucide-react';
 import PomodoroTimer from './PomodoroTimer';
+import Collapsible from '../Components/Collapsible';
+import Draggable from 'react-draggable';
+import { ResizableBox } from 'react-resizable';
+import 'react-resizable/css/styles.css';
 
 function SATPage() {
   // State variables for managing the SAT question interface
-  // Tracks selected test, section, subdomains, difficulties, and current question state
   const [selectedTest, setSelectedTest] = useState('');
   const [selectedTestSections, setSelectedTestSections] = useState([]);
   const [selectedSubdomains, setSelectedSubdomains] = useState({});
@@ -24,13 +27,10 @@ function SATPage() {
     Medium: false,
     Hard: false
   });
-  // State for managing current question interactions
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [currentQuestions, setCurrentQuestions] = useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [tempAnswer, setTempAnswer] = useState('');
-
-  // State for managing loading and error states
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -38,83 +38,57 @@ function SATPage() {
   const [showCalculator, setShowCalculator] = useState(false);
   const calculatorRef = useRef(null);
   const calculatorInstanceRef = useRef(null);
-  const calculatorInitializedRef = useRef(false);
 
-  const handleSubmitAnswer = () => {
-    if (tempAnswer.trim()) {
-      setSelectedAnswer(tempAnswer);
-    }
+  // Toggle function for the calculator
+  const toggleCalculator = () => {
+    setShowCalculator((prev) => !prev);
   };
 
-  // Effect hook to initialize the Desmos graphing calculator
-  // Creates a div container for the calculator and sets it up when the component mounts
-   // Only initialize calculator when Math section is selected
-   useEffect(() => {
-    const isMathSelected = selectedTestSections.includes('Math');
-    
-    // Clean up existing calculator if Math is deselected
-    if (!isMathSelected && calculatorRef.current && calculatorInitializedRef.current) {
-      calculatorRef.current.remove();
-      calculatorInitializedRef.current = false;
-      setShowCalculator(false);
-      return;
-    }
-
-    // Initialize calculator only if Math is selected and calculator isn't already initialized
-    if (isMathSelected && !calculatorInitializedRef.current) {
-      const container = document.createElement('div');
-      container.id = 'desmos-calculator';
-      container.style.width = '600px';
-      container.style.height = '400px';
-      container.style.position = 'absolute';
-      container.style.bottom = '80px';
-      container.style.left = '20px';
-      container.style.display = 'none';
-      container.style.zIndex = '1000';
-      container.style.backgroundColor = 'white';
-      container.style.border = '1px solid #ccc';
-      container.style.borderRadius = '8px';
-      container.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
-
-      const mainContent = document.querySelector('.sat-main-content');
-      if (mainContent) {
-        mainContent.appendChild(container);
-        calculatorRef.current = container;
-        calculatorInstanceRef.current = Desmos.GraphingCalculator(container);
-        calculatorInstanceRef.current.setExpression({ id: 'graph1', latex: '' });
-        calculatorInitializedRef.current = true;
-      }
-    }
-  }, [selectedTestSections]);
-
-  // Control calculator visibility
+  // Hide calculator if Math section is no longer selected
   useEffect(() => {
-    if (calculatorRef.current) {
-      calculatorRef.current.style.display = showCalculator ? 'block' : 'none';
+    if (!selectedTestSections.includes('Math') && showCalculator) {
+      setShowCalculator(false);
+    }
+  }, [selectedTestSections, showCalculator]);
+
+  // Initialize and cleanup the Desmos calculator when showCalculator changes
+  useEffect(() => {
+    if (showCalculator && calculatorRef.current) {
+      // Initialize Desmos on the rendered container
+      calculatorInstanceRef.current = Desmos.GraphingCalculator(calculatorRef.current, {
+        keypad: true,
+        expressions: true,
+        settingsMenu: true,
+        expressionsTopbar: true,
+      });
+      // Optionally, set an empty expression
+      calculatorInstanceRef.current.setExpression({ id: 'graph1', latex: '' });
+      
+      // Cleanup: destroy the instance when component unmounts or showCalculator toggles off
+      return () => {
+        if (calculatorInstanceRef.current) {
+          calculatorInstanceRef.current.destroy();
+          calculatorInstanceRef.current = null;
+        }
+      };
     }
   }, [showCalculator]);
-
-  const toggleCalculator = () => {
-    setShowCalculator(!showCalculator);
-  };
 
   // In your useEffect that handles question loading
   useEffect(() => {
     if (currentQuestions.length > 0) {
       const timer = setTimeout(() => {
-        // Create a deep copy to ensure React sees this as a state change
-        const questionsWithForceRender = currentQuestions.map(q => ({...q}));
+        const questionsWithForceRender = currentQuestions.map(q => ({ ...q }));
         setCurrentQuestions(questionsWithForceRender);
-      }, 200); // Give a little more time for DOM to settle
+      }, 200);
       
-      return () => clearTimeout(timer); // Cleanup
+      return () => clearTimeout(timer);
     }
-  }, [currentQuestions.length]); // This will run whenever questions load
-  
+  }, [currentQuestions.length]);
+
   // Event handlers for selection changes
   const handleTestChange = (test) => {
     setSelectedTest(test);
-    // Reset related states when a different test is selected
     setSelectedTestSections([]);
     setSelectedSubdomains({});
     setSelectedDifficulties({ Easy: false, Medium: false, Hard: false });
@@ -122,18 +96,15 @@ function SATPage() {
 
   const handleTestSectionChange = (section) => {
     setSelectedTestSections(prev => {
-      // If section is already selected, remove it, otherwise add it
       if (prev.includes(section)) {
         return prev.filter(s => s !== section);
       } else {
         return [...prev, section];
       }
     });
-    // Only reset subdomains if the section is being removed
     if (selectedTestSections.includes(section)) {
       setSelectedSubdomains(prev => {
         const newSubdomains = { ...prev };
-        // Remove subdomains associated with the deselected section
         Object.keys(newSubdomains).forEach(key => {
           if (key.startsWith(section)) {
             delete newSubdomains[key];
@@ -158,89 +129,69 @@ function SATPage() {
     }));
   };
 
-  // Navigation handlers for moving between questions
-  // Reset selected answer when navigating  
   const handleNavigateNext = () => {
     if (currentQuestionIndex < currentQuestions.length - 1) {
-      const nextIndex = currentQuestionIndex + 1;
-      setCurrentQuestionIndex(nextIndex);
-      setSelectedAnswer(null); // Reset selected answer
-      setTempAnswer(''); // Reset temp answer
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      setSelectedAnswer(null);
+      setTempAnswer('');
     }
-  }
+  };
   
   const handleNavigatePrevious = () => {
     if (currentQuestionIndex > 0) {
-      const prevIndex = currentQuestionIndex - 1;
-      setCurrentQuestionIndex(prevIndex);
-      setSelectedAnswer(null); // Reset selected answer
-      setTempAnswer(''); // Reset temp answer
+      setCurrentQuestionIndex(currentQuestionIndex - 1);
+      setSelectedAnswer(null);
+      setTempAnswer('');
     }
   };
 
-  // Main search handler to fetch questions based on selected criteria
+  const handleSubmitAnswer = () => {
+    if (tempAnswer.trim()) {
+      setSelectedAnswer(tempAnswer);
+    }
+  };
+
   const handleSearch = async () => {
-    // Validate test selection
     if (!selectedTest) {
       setError('Please select a test type.');
       return;
     }
-
-    // Validate section selection
     if (selectedTestSections.length === 0) {
       setError('Please select a test section.');
       return;
     }
-
-    // select all the subdomains if no subdomains are selected
     if (Object.keys(selectedSubdomains).length === 0) {
-        if (selectedTestSections.includes('Math')) {
-            // add all MathSubdomains
-
-            for (const key in MathSubdomains) {
-                const skills = MathSubdomains[key];
-                for (let i = 0; i < skills.length; i++) {
-                    console.log(skills[i]['value']);
-                    selectedSubdomains[skills[i]['value']]= true;
-                }
-            }
+      if (selectedTestSections.includes('Math')) {
+        for (const key in MathSubdomains) {
+          const skills = MathSubdomains[key];
+          for (let i = 0; i < skills.length; i++) {
+            selectedSubdomains[skills[i]['value']] = true;
+          }
         }
-
-        if (selectedTestSections.includes('English')) {
-            // add all EnglishSubdomains
-            for (const key in EnglishSubdomains) {
-                const skills = EnglishSubdomains[key];
-                for (let i = 0; i < skills.length; i++) {
-                    console.log(skills[i]['value']);
-                    selectedSubdomains[skills[i]['value']]= true;
-                }
-            }
-        } 
-
+      }
+      if (selectedTestSections.includes('English')) {
+        for (const key in EnglishSubdomains) {
+          const skills = EnglishSubdomains[key];
+          for (let i = 0; i < skills.length; i++) {
+            selectedSubdomains[skills[i]['value']] = true;
+          }
+        }
+      }
     }
-
     if (!selectedDifficulties.Easy && !selectedDifficulties.Medium && !selectedDifficulties.Hard) {
-      setError('Please select a question difficulty.')
+      setError('Please select a question difficulty.');
       return;
     }
-
-    // Prepare search payload
     const searchPayload = getSearchPayload({
       selectedTest,
       selectedSubdomains,
       selectedDifficulties
     });
-
     console.log('Sending search request with payload:', searchPayload);
-
-    // Set loading state and reset previous errors
     setIsLoading(true);
     setError(null);
-
     try {
-      // Fetch questions based on search payload
       const questions = await fetchQuestions(searchPayload);
-
       if (questions.length > 0) {
         setCurrentQuestions(questions);
         setCurrentQuestionIndex(0);
@@ -259,12 +210,10 @@ function SATPage() {
     }
   };
 
-  // Prepare subdomain data for rendering based on selected test section
   const subdomainData = selectedTestSections.length > 0
-  ? selectedTestSections.map(section => prepareSubdomains(section, selectedSubdomains, handleSubdomainChange)).flat()
-  : [];
+    ? selectedTestSections.map(section => prepareSubdomains(section, selectedSubdomains, handleSubdomainChange)).flat()
+    : [];
 
-  // Render question display based on current state
   const questionDisplay = renderQuestionDisplay(
     isLoading,
     error,
@@ -274,12 +223,10 @@ function SATPage() {
     handleNavigateNext
   );
 
-  // Render subdomain checkboxes
   const renderSubdomainInputs = () => {
     return subdomainData.map(({ category, subdomains }) => (
       <React.Fragment key={category}>
         <h4>{category}</h4>
-        {/* Create checkbox inputs for each subdomain */}
         {subdomains.map((subdomain) => (
           <div key={subdomain.id} className="checkbox-group">
             <input
@@ -295,20 +242,16 @@ function SATPage() {
     ));
   };
 
-  // Extensive logic to parse and render different answer choice formats
-  // Supports multiple-choice, free response, and specific JSON formats
-  // Handles answer selection, correctness, and rationale display
   const renderAnswerChoices = (choices, correctAnswer, rationale, questionType, externalId) => {
-    // Early check for free response cases - handle both undefined/null and empty array cases
     const shouldShowFreeResponse = !choices || 
       (Array.isArray(choices) && choices.length === 0) ||
       choices === '[]' ||
       choices === '""' ||
       choices === '' ||
-      choices === '"\\"\\""' ||  // Handle escaped empty string case
-      choices === '\\"\\""' ||   // Handle another possible escaped string format
+      choices === '"\\"\\""' ||
+      choices === '\\"\\""' ||
       choices === "\"\"" || 
-      choices === '\\"\\"';      // Handle another possible escaped string format
+      choices === '\\"\\"';
   
     if (shouldShowFreeResponse) {
       const handleKeyPress = (e) => {
@@ -355,14 +298,12 @@ function SATPage() {
       );
     }
   
-    // Rest of the code remains the same...
     let parsedChoices = choices;
     try {
       if (typeof choices === 'string') {
         parsedChoices = JSON.parse(choices);
       }
   
-      // Handle special Collegeboard format (MCQ)
       if (externalId?.startsWith('DC-') || (!Array.isArray(parsedChoices) && typeof parsedChoices === 'object')) {
         return (
           <>
@@ -414,7 +355,6 @@ function SATPage() {
         );
       }
   
-      // Handle regular array format (MCQ)
       if (Array.isArray(parsedChoices)) {
         return (
           <>
@@ -469,113 +409,115 @@ function SATPage() {
       }
     } catch (error) {
       console.error('Error parsing answer choices:', error);
-      // If there's an error parsing the choices, default to free response
       return renderAnswerChoices(null, correctAnswer, rationale, questionType, externalId);
     }
     
-    // If we reach here, default to free response
     return renderAnswerChoices(null, correctAnswer, rationale, questionType, externalId);
   };
 
-  // Render the main question view with different states (loading, error, question)
-  // In SATPage.jsx - Updated renderQuestionView function
-const renderQuestionView = () => {
-  // Switch between different view states based on current question display
-  switch (questionDisplay.type) {
-    case 'loading':
-      return <div>{questionDisplay.content}</div>;
-    case 'error':
-      return <div className="error">{questionDisplay.content}</div>;
-    case 'question':
-      const { questionDetails, navigation } = questionDisplay.content;
-      return (
-        <div className="question-container">
-          <div className="question-details">
-            <div className="question-metadata">
-            </div>
-            
-            {/* Additional details (if available) */}
-            {questionDetails.details && (
-              <div className="question-additional-details">
-                <h4>Additional Information</h4>
-                {/* Always use dangerouslySetInnerHTML for these contents */}
-                <div dangerouslySetInnerHTML={{ __html: questionDetails.details }} />
-              </div>
-            )}
-
-            {/* Question text */}
-            <div className="question-text">
-              <h3>Question</h3>
-              {/* Always use dangerouslySetInnerHTML for question text */}
-              <div dangerouslySetInnerHTML={{ __html: questionDetails.question }} />
-            </div>
-
-            {/* Answer Choices */}
-            <div className="answer-choices">
-              <h3>Choose an Answer</h3>
-              {renderAnswerChoices(
-                questionDetails.answerChoices, 
-                questionDetails.answer, 
-                questionDetails.rationale, 
-                questionDetails.questionType,
-                questionDetails.externalId
+  const renderQuestionView = () => {
+    switch (questionDisplay.type) {
+      case 'loading':
+        return <div>{questionDisplay.content}</div>;
+      case 'error':
+        return <div className="error">{questionDisplay.content}</div>;
+      case 'question':
+        const { questionDetails, navigation } = questionDisplay.content;
+        return (
+          <div className="question-container">
+            <div className="question-details">
+              <div className="question-metadata"></div>
+              {questionDetails.details && (
+                <div className="question-additional-details">
+                  <h4>Additional Information</h4>
+                  <div dangerouslySetInnerHTML={{ __html: questionDetails.details }} />
+                </div>
               )}
-            </div>
-
-            {/* Navigation */}
-            <div className="navigation-buttons">
-              <button
-                onClick={handleNavigatePrevious}
-                disabled={!navigation.hasPrevious}
-              >
-                Previous
-              </button>
-              <span>
-                {`${navigation.currentIndex} / ${navigation.totalQuestions}`}
-              </span>
-              <button
-                onClick={handleNavigateNext}
-                disabled={!navigation.hasNext}
-              >
-                Next
-              </button>
+              <div className="question-text">
+                <h3>Question</h3>
+                <div dangerouslySetInnerHTML={{ __html: questionDetails.question }} />
+              </div>
+              <div className="answer-choices">
+                <h3>Choose an Answer</h3>
+                {renderAnswerChoices(
+                  questionDetails.answerChoices, 
+                  questionDetails.answer, 
+                  questionDetails.rationale, 
+                  questionDetails.questionType,
+                  questionDetails.externalId
+                )}
+              </div>
+              <div className="navigation-buttons">
+                <button
+                  onClick={handleNavigatePrevious}
+                  disabled={!navigation.hasPrevious}
+                >
+                  Previous
+                </button>
+                <span>
+                  {`${navigation.currentIndex} / ${navigation.totalQuestions}`}
+                </span>
+                <button
+                  onClick={handleNavigateNext}
+                  disabled={!navigation.hasNext}
+                >
+                  Next
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      );
-    default:
-      return null;
-  }
-}
+        );
+      default:
+        return null;
+    }
+  };
   
-  // Renders everything for the UI
   return (
     <div className="sat-page">
       <div className="sat-main-content">
-      <div className="top-section">
-  <div className="header-container">
-    <h1>Select question type on the right.</h1>
-  </div>
-  <div className="tools-timer-container">
-    {selectedTestSections.includes('Math') && (
-      <button 
-        onClick={toggleCalculator}
-        className={`calculator-icon-button ${showCalculator ? 'active' : ''}`}
-      >
-        <Calculator size={24} />
-      </button>
-    )}
-    <PomodoroTimer />
-  </div>
-</div>
+        <div className="top-section">
+          <div className="header-container">
+            <h1>Select question type on the right.</h1>
+          </div>
+          <div className="tools-timer-container">
+            {selectedTestSections.includes('Math') && (
+              <button 
+                onClick={toggleCalculator}
+                className={`calculator-icon-button ${showCalculator ? 'active' : ''}`}
+              >
+                <Calculator size={24} />
+              </button>
+            )}
+            <PomodoroTimer />
+          </div>
+        </div>
         {renderQuestionView()}
       </div>
-
+      {showCalculator && (
+        <Draggable bounds="parent" handle=".calculator-handle">
+          <div className="calculator-wrapper">
+            <div className="calculator-handle">Drag here</div>
+            <ResizableBox
+              width={600}
+              height={400}
+              minConstraints={[300, 200]}
+              maxConstraints={[800, 600]}
+              resizeHandles={['se']}
+            >
+              <div
+                id="desmos-calculator"
+                ref={calculatorRef}
+                style={{ width: '100%', height: '100%' }}
+              ></div>
+            </ResizableBox>
+          </div>
+        </Draggable>
+      )}
       <div className="checkbox-column">
         <div className="filter-group">
           <h3>Assessment</h3>
           <p>Please select one</p>
-          {['SAT', 'ACT', 'PSAT 10/11', 'PSAT 8/9'].map((test) => (
+          {['SAT'].map((test) => (
             <div key={test} className="checkbox-group">
               <input
                 type="radio"
@@ -588,9 +530,7 @@ const renderQuestionView = () => {
             </div>
           ))}
         </div>
-
-        <div className="filter-group">
-          <h3>Test Section</h3>
+        <div title="Test Section">
           <p>Please select all that apply</p>
           {['Math', 'English'].map((section) => (
             <div key={section} className="checkbox-group">
@@ -607,19 +547,15 @@ const renderQuestionView = () => {
             </div>
           ))}
         </div>
-
         {selectedTestSections && (
-          <div className="filter-group">
-            <h3>Subdomain</h3>
+          <Collapsible title="Subdomain">
             <p>Select all that apply</p>
             {renderSubdomainInputs()}
-          </div>
+          </Collapsible>
         )}
-
-        <div className="filter-group">
-          <h3>Difficulty</h3>
+        <Collapsible title="Difficulty">
           <p>Select all that apply</p>
-          {['Easy', 'Medium', 'Hard'].map((difficulty) => ( 
+          {['Easy', 'Medium', 'Hard'].map((difficulty) => (
             <div key={difficulty} className="checkbox-group">
               <input
                 type="checkbox"
@@ -630,8 +566,7 @@ const renderQuestionView = () => {
               <label htmlFor={difficulty.toLowerCase()}>{difficulty}</label>
             </div>
           ))}
-        </div>
-
+        </Collapsible>
         <div className="button-group">
           <button
             className="search-button"
@@ -641,8 +576,6 @@ const renderQuestionView = () => {
             {isLoading ? 'Searching...' : 'Search Questions'}
           </button>
         </div>
-        
-      
       </div>
     </div>
   );

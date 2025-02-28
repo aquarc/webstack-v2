@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
     "strconv"
+    "strings"
     "unicode"
 
 	_ "github.com/joho/godotenv/autoload"
@@ -50,7 +51,8 @@ const (
 )
 
 // Function to parse the numeric prefix from the body
-func parseNumericPrefix(body string, l int64) (int64, string, int64) {
+func parseNumericPrefix(body string) (int64, string, int64) {
+    l := int64(len(body))
     var i int64
     for i < l && unicode.IsDigit(rune(body[i])) {
         i++
@@ -69,16 +71,16 @@ func LegacyFindQuestionsHandler(w http.ResponseWriter, r *http.Request) {
     // parse data that looks like random english letters
     // "abdm" is a valid query
 
+    // Extract the dynamic part of the URL (e.g., "asdm" from /legacy/sat-q/asdm)
+    body := strings.TrimPrefix(r.URL.Path, "/legacy/sat-q/")
+
 	// Check if the body is empty first
-	if r.Body == nil || r.ContentLength == 0 {
-		http.Error(w, "Request body is empty", http.StatusBadRequest)
+	if body == "" {
+		http.Error(w, "Query is empty", http.StatusBadRequest)
 		return
 	}
 
-    body := make([]byte, r.ContentLength)
-    r.Body.Read(body)
-    num, bodyStr, l := parseNumericPrefix(string(body), r.ContentLength)
-    body = []byte(bodyStr)
+    num, body, l := parseNumericPrefix(body)
 
     // two arrays we will add to
     difficulty := []string{}
@@ -135,10 +137,13 @@ func LegacyFindQuestionsHandler(w http.ResponseWriter, r *http.Request) {
 
         case 'k':
             difficultySelected = true
+            difficulty = append(difficulty, "Hard")
         case 'l':
             difficultySelected = true
+            difficulty = append(difficulty, "Medium")
         case 'm':
             difficultySelected = true
+            difficulty = append(difficulty, "Easy")
         default:
             http.Error(w, "Invalid request body", http.StatusBadRequest)
             return
@@ -239,5 +244,6 @@ func LegacyFindQuestionsHandler(w http.ResponseWriter, r *http.Request) {
 
 
 func initializeLegacySat(db *sql.DB) {
-	http.HandleFunc("/legacy/sat-q", LegacyFindQuestionsHandler)
+    // Create a new ServeMux
+    http.Handle("/legacy/sat-q/", http.StripPrefix("/legacy/sat-q/", http.HandlerFunc(LegacyFindQuestionsHandler)))
 }
