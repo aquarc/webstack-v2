@@ -1,0 +1,203 @@
+/* ECPage.css */
+.ec-container {
+    max-width: 1400px; /* Increased from 1200px */
+    margin: 0 auto;
+    padding: 2rem 2rem; /* Increased horizontal padding */
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  
+  .ec-header {
+    text-align: center;
+    margin-bottom: 4rem; /* Increased from 3rem */
+  }
+  
+  .ec-header h1 {
+    font-size: 2.75rem; /* Increased from 2.5rem */
+    color: #1a365d;
+    margin-bottom: 0.75rem; /* Increased from 0.5rem */
+  }
+  
+  .ec-header p {
+    font-size: 1.2rem; /* Increased from 1.1rem */
+    color: #4a5568;
+    max-width: 800px; /* Increased from 600px */
+    margin: 0 auto;
+  }
+  
+  .ec-content {
+    display: flex;
+    gap: 3rem; /* Increased from 2rem */
+    flex-direction: column;
+  }
+  
+  @media (min-width: 768px) {
+    .ec-content {
+      flex-direction: row;
+    }
+  }
+  
+  .ec-left-panel, .ec-right-panel {
+    flex: 1;
+  }
+  
+  .ec-info-card, .ec-filter-card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 2rem; /* Increased from 1.5rem */
+    height: 100%;
+  }
+  
+  .ec-info-card h2, .ec-filter-card h2 {
+    font-size: 1.75rem; /* Increased from 1.5rem */
+    color: #2d3748;
+    margin-bottom: 1.5rem; /* Increased from 1rem */
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 1rem; /* Increased from 0.75rem */
+  }
+  
+  .ec-info-card p {
+    color: #4a5568;
+    line-height: 1.7; /* Increased from 1.6 */
+    margin-bottom: 2rem; /* Increased from 1.5rem */
+    font-size: 1.1rem; /* Added font size */
+  }
+  
+  .ec-benefits {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem; /* Increased from 1.5rem */
+  }
+  
+  @media (min-width: 640px) {
+    .ec-benefits {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  
+  .ec-benefit-item {
+    text-align: center;
+    padding: 1.5rem; /* Increased from 1rem */
+    border-radius: 8px;
+    background-color: #f7fafc;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  
+  .ec-benefit-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  }
+  
+  .ec-benefit-icon {
+    font-size: 2.5rem; /* Increased from 2rem */
+    margin-bottom: 1rem; /* Increased from 0.75rem */
+  }
+  
+  .ec-benefit-item h3 {
+    font-size: 1.25rem; /* Increased from 1.1rem */
+    color: #2d3748;
+    margin-bottom: 0.75rem; /* Increased from 0.5rem */
+  }
+  
+  .ec-benefit-item p {
+    font-size: 1rem; /* Increased from 0.9rem */
+    color: #718096;
+    margin-bottom: 0;
+    line-height: 1.5;
+  }
+  
+  .ec-filter-form {
+    display: flex;
+    flex-direction: column;
+    gap: 2.25rem; /* Increased from 1.5rem */
+  }
+  
+  .ec-form-group h3 {
+    font-size: 1.25rem; /* Increased from 1.1rem */
+    color: #4a5568;
+    margin-bottom: 1rem; /* Increased from 0.75rem */
+  }
+  
+  .ec-radio-group, .ec-checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem; /* Increased from 0.75rem */
+    width: 100%; /* Ensure full width */
+  }
+  
+  .ec-radio-label, .ec-checkbox-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 0.75rem 1.25rem; /* Increased from 0.5rem 1rem */
+    border-radius: 6px;
+    background-color: #f7fafc;
+    transition: background-color 0.2s;
+    min-width: 120px; /* Added minimum width */
+    margin-bottom: 0.5rem; /* Added margin bottom */
+    flex: 1 0 calc(50% - 1rem); /* Make items take up more space */
+    max-width: calc(50% - 1rem); /* Limit maximum width */
+  }
+  
+  @media (min-width: 768px) {
+    .ec-radio-label, .ec-checkbox-label {
+      flex: 1 0 calc(33.333% - 1rem); /* 3 items per row on larger screens */
+      max-width: calc(33.333% - 1rem);
+    }
+  }
+  
+  .ec-radio-label:hover, .ec-checkbox-label:hover {
+    background-color: #edf2f7;
+  }
+  
+  .ec-radio-label input, .ec-checkbox-label input {
+    margin-right: 0.75rem; /* Increased from 0.5rem */
+    transform: scale(1.2); /* Make checkboxes/radio buttons larger */
+  }
+  
+  .ec-radio-text, .ec-checkbox-text {
+    font-size: 1.05rem; /* Increased from 0.95rem */
+    color: #4a5568;
+  }
+  
+  .ec-search-btn {
+    margin-top: 1.5rem; /* Increased from 1rem */
+    padding: 1rem 2rem; /* Increased from 0.75rem 1.5rem */
+    background-color: #3182ce;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1.1rem; /* Increased from 1rem */
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    width: 100%;
+  }
+  
+  .ec-search-btn:hover {
+    background-color: #2c5282;
+  }
+  
+  .ec-search-btn:disabled {
+    background-color: #a0aec0;
+    cursor: not-allowed;
+  }
+  
+  /* Add a subtle background pattern */
+  body {
+    background-color: #f8fafc;
+    background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+  
+  /* Add more horizontal spacing for the entire page on larger screens */
+  @media (min-width: 1200px) {
+    .ec-container {
+      max-width: 1600px;
+      padding: 3rem 4rem;
+    }
+    
+    .ec-content {
+      gap: 4rem;
+    }
+  }
