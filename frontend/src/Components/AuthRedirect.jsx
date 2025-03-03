@@ -8,7 +8,7 @@ const AuthRedirect = () => {
     useEffect(() => {
         const user = Cookies.get('user');
         if (user) {
-            navigate('/dashboard');
+            navigate('/extracurricular');
         }
     }, [navigate]);
 

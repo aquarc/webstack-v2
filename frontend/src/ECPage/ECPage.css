@@ -132,11 +132,12 @@
     padding: 0.75rem 1.25rem; /* Increased from 0.5rem 1rem */
     border-radius: 6px;
     background-color: #f7fafc;
-    transition: background-color 0.2s;
+    transition: background-color 0.2s, border-color 0.2s;
     min-width: 120px; /* Added minimum width */
     margin-bottom: 0.5rem; /* Added margin bottom */
     flex: 1 0 calc(50% - 1rem); /* Make items take up more space */
     max-width: calc(50% - 1rem); /* Limit maximum width */
+    border: 2px solid transparent;
   }
   
   @media (min-width: 768px) {
@@ -158,6 +159,31 @@
   .ec-radio-text, .ec-checkbox-text {
     font-size: 1.05rem; /* Increased from 0.95rem */
     color: #4a5568;
+  }
+  
+  /* Style for selected checkboxes */
+  .ec-checkbox-label.selected {
+    background-color: #ebf8ff;
+    border-color: #63b3ed;
+  }
+  
+  /* Style for category checkboxes specifically */
+  .ec-category-checkbox-group .ec-checkbox-label {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 0.85rem 1.5rem;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+  }
+  
+  .ec-category-checkbox-group .ec-checkbox-label.selected {
+    background-color: #e6fffa;
+    border-color: #4fd1c5;
+  }
+  
+  .ec-category-checkbox-group .ec-checkbox-label:hover {
+    background-color: #f0fff4;
   }
   
   .ec-search-btn {

@@ -2,9 +2,17 @@ import React, { useState } from 'react';
 import './ECPage.css';
 
 const ECPage = () => {
-  const [category, setCategory] = useState('');
+  const [categories, setCategories] = useState([]);
   const [gradeLevel, setGradeLevel] = useState('');
   const [difficulty, setDifficulty] = useState([]);
+
+  const handleCategoryChange = (value) => {
+    setCategories(prev => 
+      prev.includes(value) 
+        ? prev.filter(item => item !== value) 
+        : [...prev, value]
+    );
+  };
 
   const handleDifficultyChange = (value) => {
     setDifficulty(prev => 
@@ -15,7 +23,7 @@ const ECPage = () => {
   };
 
   const handleSearch = () => {
-    console.log({ category, gradeLevel, difficulty });
+    console.log({ categories, gradeLevel, difficulty });
   };
 
   return (
@@ -60,38 +68,32 @@ const ECPage = () => {
             <form className="ec-filter-form">
               <div className="ec-form-group">
                 <h3>Category</h3>
-                <div className="ec-radio-group">
-                  <label className="ec-radio-label">
+                <div className="ec-checkbox-group">
+                  <label className="ec-checkbox-label">
                     <input 
-                      type="radio" 
-                      name="category" 
-                      value="Summer Programs"
-                      checked={category === 'Summer Programs'}
-                      onChange={() => setCategory('Summer Programs')} 
+                      type="checkbox"
+                      checked={categories.includes('Summer Programs')}
+                      onChange={() => handleCategoryChange('Summer Programs')} 
                     />
-                    <span className="ec-radio-text">Summer Programs</span>
+                    <span className="ec-checkbox-text">Summer Programs</span>
                   </label>
                   
-                  <label className="ec-radio-label">
+                  <label className="ec-checkbox-label">
                     <input 
-                      type="radio" 
-                      name="category" 
-                      value="Scholarships"
-                      checked={category === 'Scholarships'}
-                      onChange={() => setCategory('Scholarships')} 
+                      type="checkbox"
+                      checked={categories.includes('Scholarships')}
+                      onChange={() => handleCategoryChange('Scholarships')} 
                     />
-                    <span className="ec-radio-text">Scholarships</span>
+                    <span className="ec-checkbox-text">Scholarships</span>
                   </label>
                   
-                  <label className="ec-radio-label">
+                  <label className="ec-checkbox-label">
                     <input 
-                      type="radio" 
-                      name="category" 
-                      value="Competitions"
-                      checked={category === 'Competitions'}
-                      onChange={() => setCategory('Competitions')} 
+                      type="checkbox"
+                      checked={categories.includes('Competitions')}
+                      onChange={() => handleCategoryChange('Competitions')} 
                     />
-                    <span className="ec-radio-text">Competitions</span>
+                    <span className="ec-checkbox-text">Competitions</span>
                   </label>
                 </div>
               </div>
@@ -181,7 +183,7 @@ const ECPage = () => {
                 type="button" 
                 className="ec-search-btn" 
                 onClick={handleSearch}
-                disabled={!category || !gradeLevel}
+                disabled={categories.length === 0 || !gradeLevel}
               >
                 Find Opportunities
               </button>
