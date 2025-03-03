@@ -1,12 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import Cookie from 'js-cookie';
 import './Dashboard.css';
 
 function Dashboard() {
     const [username, setUsername] = useState('');
     const location = useLocation();
+    const navigate = useNavigate();
+
 
     useEffect(() => {
+        // if user is not logged in then redirect to homepage
+        if (!Cookie.get("user"))
+            return navigate("/");
         // If username is passed through navigation state, use it
         if (location.state?.username) {
             setUsername(location.state.username);

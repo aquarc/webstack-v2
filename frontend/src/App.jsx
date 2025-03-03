@@ -11,6 +11,7 @@ import Dashboard from './Dashboard/Dashboard'
 import AboutUsPage from './AboutPage/AboutPage';
 import LoginPage from './Authentication/Login/Login';
 import AuthRedirect from './Components/AuthRedirect';
+import Cookie from 'js-cookie';
 
 // Wrapper component to handle conditional NavBar rendering
 const AppContent = () => {
