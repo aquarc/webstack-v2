@@ -19,7 +19,7 @@ import 'react-resizable/css/styles.css';
 
 function SATPage() {
   // State variables for managing the SAT question interface
-  const [selectedTest, setSelectedTest] = useState('');
+  const [selectedTest, setSelectedTest] = useState('SAT');
   const [selectedTestSections, setSelectedTestSections] = useState([]);
   const [selectedSubdomains, setSelectedSubdomains] = useState({});
   const [selectedDifficulties, setSelectedDifficulties] = useState({
@@ -262,30 +262,29 @@ function SATPage() {
   
       return (
         <>
-          <div className="answer-choice free-response-container">
-            <div className="flex gap-2 items-center w-full max-w-xl">
-              <input 
-                type="text"
-                id="free-response-input"
-                value={tempAnswer}
-                onChange={(e) => setTempAnswer(e.target.value)}
-                onKeyPress={handleKeyPress}
-                className={`flex-1 p-2 border rounded-md ${
-                  selectedAnswer 
-                    ? (selectedAnswer === correctAnswer ? 'correct-answer' : 'incorrect-answer')
-                    : ''
-                }`}
-                placeholder="Enter your answer..."
-              />
-              <button
-                onClick={handleSubmitAnswer}
-                className="bg-[#6366F1] hover:bg-[#4F46E5] text-white px-4 py-2 rounded-md transition-colors duration-200"
-                disabled={!tempAnswer.trim()}
-              >
-                Submit
-              </button>
-            </div>
-          </div>
+          <input 
+            type="text"
+            id="free-response-input"
+            value={tempAnswer}
+            onChange={(e) => setTempAnswer(e.target.value)}
+            onKeyPress={handleKeyPress}
+            className={`flex-1 p-2 border rounded-md ${
+              selectedAnswer 
+                ? (selectedAnswer === correctAnswer ? 'correct-answer' : 'incorrect-answer')
+                : ''
+            }`}
+            placeholder="Enter your answer..."
+          />
+          <br></br>
+          <br></br>
+          <button
+            onClick={handleSubmitAnswer}
+            className="bg-[#6366F1] hover:bg-[#4F46E5] text-white px-4 py-2 rounded-md transition-colors duration-200"
+            disabled={!tempAnswer.trim()}
+          >
+            Submit
+          </button>
+          <br></br>
           {selectedAnswer && (
             <div className={`rationale-container ${selectedAnswer === correctAnswer ? 'correct' : 'incorrect'}`}>
               <h4 className="rationale-header">
@@ -294,6 +293,7 @@ function SATPage() {
               <div className="rationale-content" dangerouslySetInnerHTML={{ __html: rationale }} />
             </div>
           )}
+          <br></br>
         </>
       );
     }
@@ -425,46 +425,41 @@ function SATPage() {
         const { questionDetails, navigation } = questionDisplay.content;
         return (
           <div className="question-container">
-            <div className="question-details">
-              <div className="question-metadata"></div>
-              {questionDetails.details && (
-                <div className="question-additional-details">
-                  <h4>Additional Information</h4>
-                  <div dangerouslySetInnerHTML={{ __html: questionDetails.details }} />
-                </div>
-              )}
-              <div className="question-text">
-                <h3>Question</h3>
-                <div dangerouslySetInnerHTML={{ __html: questionDetails.question }} />
+            <div className="question-metadata"></div>
+            {questionDetails.details && (
+              <div className="question-additional-details">
+                <h4>Additional Information</h4>
+                <div dangerouslySetInnerHTML={{ __html: questionDetails.details }} />
               </div>
-              <div className="answer-choices">
-                <h3>Choose an Answer</h3>
-                {renderAnswerChoices(
-                  questionDetails.answerChoices, 
-                  questionDetails.answer, 
-                  questionDetails.rationale, 
-                  questionDetails.questionType,
-                  questionDetails.externalId
-                )}
-              </div>
-              <div className="navigation-buttons">
-                <button
-                  onClick={handleNavigatePrevious}
-                  disabled={!navigation.hasPrevious}
-                >
-                  Previous
-                </button>
-                <span>
-                  {`${navigation.currentIndex} / ${navigation.totalQuestions}`}
-                </span>
-                <button
-                  onClick={handleNavigateNext}
-                  disabled={!navigation.hasNext}
-                >
-                  Next
-                </button>
-              </div>
+            )}
+            <div className="question-text">
+              <div dangerouslySetInnerHTML={{ __html: questionDetails.question }} />
             </div>
+            <br></br>
+            <div className="answer-choices">
+              {renderAnswerChoices(
+                questionDetails.answerChoices, 
+                questionDetails.answer, 
+                questionDetails.rationale, 
+                questionDetails.questionType,
+                questionDetails.externalId
+              )}
+            </div>
+            <button
+              onClick={handleNavigatePrevious}
+              disabled={!navigation.hasPrevious}
+            >
+              Previous
+            </button>
+            <span>
+              {`${navigation.currentIndex} / ${navigation.totalQuestions}`}
+            </span>
+            <button
+              onClick={handleNavigateNext}
+              disabled={!navigation.hasNext}
+            >
+              Next
+            </button>
           </div>
         );
       default:
@@ -517,7 +512,7 @@ function SATPage() {
         <div className="filter-group">
           <h3>Assessment</h3>
           <p>Please select one</p>
-          {['SAT'].map((test) => (
+          {['SAT', 'PSAT 10/11', 'PSAT 8/9'].map((test) => (
             <div key={test} className="checkbox-group">
               <input
                 type="radio"
