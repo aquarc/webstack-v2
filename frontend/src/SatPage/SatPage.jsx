@@ -10,7 +10,7 @@ import {
   renderQuestionDisplay
 } from './SatPageFunctions';
 import Desmos from 'desmos';
-import { Calculator } from 'lucide-react';
+import { Calculator, Search } from 'lucide-react';
 import PomodoroTimer from './PomodoroTimer';
 import Collapsible from '../Components/Collapsible';
 import Draggable from 'react-draggable';
@@ -33,6 +33,7 @@ function SATPage() {
   const [tempAnswer, setTempAnswer] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [showSidebar, setShowSidebar] = useState(true);
 
   // State and refs for managing the integrated Desmos calculator
   const [showCalculator, setShowCalculator] = useState(false);
@@ -42,6 +43,21 @@ function SATPage() {
   // Toggle function for the calculator
   const toggleCalculator = () => {
     setShowCalculator((prev) => !prev);
+  };
+
+  const toggleSidebar = () => {
+    setShowSidebar((prev) => {
+      if (prev) {
+        // set .checkbox-column width to 0%
+        document.querySelector('.checkbox-column').style.width = '0%';
+        document.querySelector('.checkbox-column').style.padding = '0';
+        return false;
+      } else {
+        document.querySelector('.checkbox-column').style.width = '35%';
+        document.querySelector('.checkbox-column').style.padding = '40px 20px 20px';
+        return true;
+      }
+    });
   };
 
   // Hide calculator if Math section is no longer selected
@@ -484,6 +500,14 @@ function SATPage() {
               </button>
             )}
             <PomodoroTimer />
+            {/* TODO: alternate between X? and make it a smoother animation */}
+            <button 
+              onClick={toggleSidebar}
+              className={`calculator-icon-button ${showCalculator ? 'active' : ''}`}
+            >
+              <Search size={24} />
+            </button>
+
           </div>
         </div>
         {renderQuestionView()}
