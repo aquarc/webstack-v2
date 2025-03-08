@@ -474,6 +474,7 @@ function SATPage() {
   
   return (
     <div className="sat-page">
+      
       <div className="sat-main-content">
         <div className="top-section">
           <div className="header-container">

@@ -10,7 +10,6 @@
     min-height: 100vh;
     background: rgb(243, 238, 245);
     padding-top: 80px;
-    width: 100%;
   }
 
   .main-content {
@@ -135,7 +134,6 @@
     .stats {
         grid-template-columns: 1fr;
         gap: 1.5rem;
-        padding: 1rem 1rem; /* Add padding to stats section */
     }
 
     .headline-container {

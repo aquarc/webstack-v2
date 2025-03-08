@@ -17,6 +17,7 @@ import Cookie from 'js-cookie';
 const AppContent = () => {
   const location = useLocation();
   const isDashboard = location.pathname === '/dashboard';
+  
 
   useEffect(() => {
     if (process.env.NODE_ENV !== 'production' && window.gtag) {
