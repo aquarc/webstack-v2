@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { MathSubdomains, EnglishSubdomains } from './SatSubdomains';
 import './SatPage.css';
 import './CSS/Filter.css';
@@ -10,7 +11,7 @@ import {
   renderQuestionDisplay
 } from './SatPageFunctions';
 import Desmos from 'desmos';
-import { Calculator, Search } from 'lucide-react';
+import { Calculator, ListFilter, X } from 'lucide-react';
 import PomodoroTimer from './PomodoroTimer';
 import Collapsible from '../Components/Collapsible';
 import Draggable from 'react-draggable';
@@ -18,6 +19,16 @@ import { ResizableBox } from 'react-resizable';
 import 'react-resizable/css/styles.css';
 
 function SATPage() {
+  // navbar
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const toggleMenu = (e) => {
+    e.stopPropagation();
+    setIsMenuOpen(!isMenuOpen);
+    document.body.style.overflow = !isMenuOpen ? 'hidden' : '';
+  };
+
   // State variables for managing the SAT question interface
   const [selectedTest, setSelectedTest] = useState('SAT');
   const [selectedTestSections, setSelectedTestSections] = useState([]);
@@ -49,12 +60,10 @@ function SATPage() {
     setShowSidebar((prev) => {
       if (prev) {
         // set .checkbox-column width to 0%
-        document.querySelector('.checkbox-column').style.width = '0%';
-        document.querySelector('.checkbox-column').style.padding = '0';
+        document.querySelector('.checkbox-column').style.display = 'none';
         return false;
       } else {
-        document.querySelector('.checkbox-column').style.width = '35%';
-        document.querySelector('.checkbox-column').style.padding = '40px 20px 20px';
+        document.querySelector('.checkbox-column').style.display = 'flex';
         return true;
       }
     });
@@ -484,13 +493,16 @@ function SATPage() {
   };
   
   return (
-    <div className="sat-page">
-      <div className="sat-main-content">
-        <div className="top-section">
-          <div className="header-container">
-            <h1>Select question type on the right.</h1>
+    <>
+      <div style={{ position: 'relative' }}>
+        <nav className={`nav sat-nav`}>
+          <div className="logo" onClick={() => navigate('/')} 
+               style={{ cursor: 'pointer' }}>
+            <img src="/aquLogo.png" alt="Aquarc Logo" className="logo-image" />
           </div>
-          <div className="tools-timer-container">
+
+          <PomodoroTimer />
+          <div>
             {selectedTestSections.includes('Math') && (
               <button 
                 onClick={toggleCalculator}
@@ -499,104 +511,105 @@ function SATPage() {
                 <Calculator size={24} />
               </button>
             )}
-            <PomodoroTimer />
-            {/* TODO: alternate between X? and make it a smoother animation */}
             <button 
               onClick={toggleSidebar}
-              className={`calculator-icon-button ${showCalculator ? 'active' : ''}`}
+              className={`calculator-icon-button`}
             >
-              <Search size={24} />
+              <ListFilter size={24} />
             </button>
+          </div>
+        </nav>
+      </div>
 
-          </div>
+      <div className="sat-page">
+
+        <div className="sat-main-content">
+          <br></br>
+          <br></br>
+          {currentQuestions.length > 0 ? renderQuestionView(): 
+              (
+                  <>
+                    <h1>Please use the menu to filter and search for SAT questions.</h1>
+                  </>
+              )}
         </div>
-        {renderQuestionView()}
-      </div>
-      {showCalculator && (
-        <Draggable bounds="parent" handle=".calculator-handle">
-          <div className="calculator-wrapper">
-            <div className="calculator-handle">Drag here</div>
-            <ResizableBox
-              width={600}
-              height={400}
-              minConstraints={[300, 200]}
-              maxConstraints={[800, 600]}
-              resizeHandles={['se']}
+
+        <div className={`checkbox-column ${showSidebar ? '' : 'collapsed'}`}>
+          {/* Search button inside sidebar header */}
+          <div className="sidebar-header">
+            <h2>Assessment</h2>
+            <button 
+              onClick={toggleSidebar}
+              className="sidebar-close-button"
             >
-              <div
-                id="desmos-calculator"
-                ref={calculatorRef}
-                style={{ width: '100%', height: '100%' }}
-              ></div>
-            </ResizableBox>
+              <X size={20} />
+            </button>
           </div>
-        </Draggable>
-      )}
-      <div className="checkbox-column">
-        <div className="filter-group">
-          <h3>Assessment</h3>
-          <p>Please select one</p>
-          {['SAT', 'PSAT 10/11', 'PSAT 8/9'].map((test) => (
-            <div key={test} className="checkbox-group">
-              <input
-                type="radio"
-                id={test}
-                name="assessment"
-                onChange={() => handleTestChange(test)}
-                checked={selectedTest === test}
-              />
-              <label htmlFor={test}>{test}</label>
-            </div>
-          ))}
-        </div>
-        <div title="Test Section">
-          <p>Please select all that apply</p>
-          {['Math', 'English'].map((section) => (
-            <div key={section} className="checkbox-group">
-              <input
-                type="checkbox"
-                id={section.toLowerCase()}
-                name="test-section"
-                onChange={() => handleTestSectionChange(section)}
-                checked={selectedTestSections.includes(section)}
-              />
-              <label htmlFor={section.toLowerCase()}>
-                {section === 'English' ? 'Reading and Writing' : section}
-              </label>
-            </div>
-          ))}
-        </div>
-        {selectedTestSections && (
-          <Collapsible title="Subdomain">
+
+          {/* Existing filter content */}
+          <div className="filter-group">
+            {['SAT', 'PSAT 10/11', 'PSAT 8/9'].map((test) => (
+              <div key={test} className="checkbox-group">
+                <input
+                  type="radio"
+                  id={test}
+                  name="assessment"
+                  onChange={() => handleTestChange(test)}
+                  checked={selectedTest === test}
+                />
+                <label htmlFor={test}>{test}</label>
+              </div>
+            ))}
+          </div>
+          <div title="Test Section">
+            <p>Please select all that apply</p>
+            {['Math', 'English'].map((section) => (
+              <div key={section} className="checkbox-group">
+                <input
+                  type="checkbox"
+                  id={section.toLowerCase()}
+                  name="test-section"
+                  onChange={() => handleTestSectionChange(section)}
+                  checked={selectedTestSections.includes(section)}
+                />
+                <label htmlFor={section.toLowerCase()}>
+                  {section === 'English' ? 'Reading and Writing' : section}
+                </label>
+              </div>
+            ))}
+          </div>
+          {selectedTestSections && (
+            <Collapsible title="Subdomain">
+              <p>Select all that apply</p>
+              {renderSubdomainInputs()}
+            </Collapsible>
+          )}
+          <Collapsible title="Difficulty">
             <p>Select all that apply</p>
-            {renderSubdomainInputs()}
+            {['Easy', 'Medium', 'Hard'].map((difficulty) => (
+              <div key={difficulty} className="checkbox-group">
+                <input
+                  type="checkbox"
+                  id={difficulty.toLowerCase()}
+                  checked={selectedDifficulties[difficulty]}
+                  onChange={() => handleDifficultyChange(difficulty)}
+                />
+                <label htmlFor={difficulty.toLowerCase()}>{difficulty}</label>
+              </div>
+            ))}
           </Collapsible>
-        )}
-        <Collapsible title="Difficulty">
-          <p>Select all that apply</p>
-          {['Easy', 'Medium', 'Hard'].map((difficulty) => (
-            <div key={difficulty} className="checkbox-group">
-              <input
-                type="checkbox"
-                id={difficulty.toLowerCase()}
-                checked={selectedDifficulties[difficulty]}
-                onChange={() => handleDifficultyChange(difficulty)}
-              />
-              <label htmlFor={difficulty.toLowerCase()}>{difficulty}</label>
-            </div>
-          ))}
-        </Collapsible>
-        <div className="button-group">
-          <button
-            className="search-button"
-            onClick={handleSearch}
-            disabled={isLoading}
-          >
-            {isLoading ? 'Searching...' : 'Search Questions'}
-          </button>
+          <div className="button-group">
+            <button
+              className="search-button"
+              onClick={handleSearch}
+              disabled={isLoading}
+            >
+              {isLoading ? 'Searching...' : 'Search Questions'}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 

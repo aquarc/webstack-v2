@@ -66,9 +66,9 @@ const PomodoroTimer = () => {
         {!showModal && (
           <button
             onClick={() => setShowModal(true)}
-            className="inline-flex items-center gap-1 bg-indigo-600 hover:bg-indigo-700 text-white p-1.5 rounded-md shadow-md transition-colors duration-200"
+              className={`calculator-icon-button `}
           >
-            <Clock size={16} />
+            <Clock size={24} />
           </button>
         )}
 

@@ -1,7 +1,7 @@
 .nav {
     display: flex;
     justify-content: space-between;
-    padding: 1.5rem 2rem;
+    padding: 1.2rem 2rem;
     align-items: center;
     position: fixed;
     top: 0;
@@ -141,3 +141,30 @@
       border-radius: 15px;
     }
   }
+/* SAT Page specific styles */
+.sat-nav {
+  background: #f8f9fa;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.sat-nav .logo {
+  gap: 8px;
+  color: #2d3436;
+}
+
+.sat-nav-controls {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .sat-nav .sat-nav-controls {
+    display: none;
+  }
+  
+  .sat-nav .button {
+    display: none;
+  }
+}
