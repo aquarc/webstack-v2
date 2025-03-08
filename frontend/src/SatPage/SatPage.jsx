@@ -533,6 +533,26 @@ function SATPage() {
                   </>
               )}
         </div>
+        {showCalculator && (
+          <Draggable bounds="parent" handle=".calculator-handle">
+            <div className="calculator-wrapper">
+              <div className="calculator-handle">Drag here</div>
+              <ResizableBox
+                width={600}
+                height={400}
+                minConstraints={[300, 200]}
+                maxConstraints={[800, 600]}
+                resizeHandles={['se']}
+              >
+                <div
+                  id="desmos-calculator"
+                  ref={calculatorRef}
+                  style={{ width: '100%', height: '100%' }}
+                ></div>
+              </ResizableBox>
+            </div>
+          </Draggable>
+        )}
 
         <div className={`checkbox-column ${showSidebar ? '' : 'collapsed'}`}>
           {/* Search button inside sidebar header */}
