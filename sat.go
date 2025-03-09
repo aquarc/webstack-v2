@@ -367,6 +367,16 @@ CEO of Aquarc`, data.Username, randomCodeString))
 		MaxAge:   86400 * 7, // 7 days
 	})
 
+	http.SetCookie(w, &http.Cookie{
+		Name:     "username",
+		Value:    data.Username,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteStrictMode,
+		MaxAge:   86400 * 7, // 7 days
+	})
+
 	log.Printf("✅ Successfully registered user and sent verification code to: %s", data.Email)
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("User registered successfully. Please check your email for verification code."))
@@ -417,14 +427,15 @@ func login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var username string
 	var storedPasswordHex string
 	var storedSaltHex string
 	var verified int
 
 	err := db.QueryRow(`
-        SELECT password, salt, verified 
+        SELECT username, password, salt, verified 
         FROM users 
-        WHERE email = $1`, data.Email).Scan(&storedPasswordHex, &storedSaltHex, &verified)
+        WHERE email = $1`, data.Email).Scan(&username, &storedPasswordHex, &storedSaltHex, &verified)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			http.Error(w, "User Does Not Exist", http.StatusBadRequest)
@@ -474,6 +485,17 @@ func login(w http.ResponseWriter, r *http.Request) {
 		Path:     "/",
 		HttpOnly: true,
 		Secure:   true, // set to true in production with HTTPS
+		SameSite: http.SameSiteStrictMode,
+		MaxAge:   86400 * 7, // 7 days
+	})
+
+	// Set username cookie
+	http.SetCookie(w, &http.Cookie{
+		Name:     "username",
+		Value:    username,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true,
 		SameSite: http.SameSiteStrictMode,
 		MaxAge:   86400 * 7, // 7 days
 	})
