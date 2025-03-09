@@ -17,7 +17,7 @@ import Cookie from 'js-cookie';
 const AppContent = () => {
   const location = useLocation();
   const isDashboard = location.pathname === '/dashboard';
-  
+  const isSatPage = location.pathname === '/sat';
 
   useEffect(() => {
     if (process.env.NODE_ENV !== 'production' && window.gtag) {
@@ -29,7 +29,7 @@ const AppContent = () => {
 
   return (
     <>
-      {!isDashboard && <NavBar />}
+      {!isDashboard && !isSatPage && <NavBar />}
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/feedback" element={<FeedBackPage />} />

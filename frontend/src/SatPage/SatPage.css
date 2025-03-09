@@ -8,7 +8,7 @@
   flex: 1;
   padding-left: 20px;
   position: relative;
-  background-color: #f4f4f4;
+  background-color: #ffffff;
   isolation: isolate;
   overflow-x: hidden;
 }
@@ -17,7 +17,7 @@
 .header-container {
   position: relative;
   z-index: 10;
-  background-color: #f4f4f4;
+  background-color: #ffffff;
   padding-bottom: 20px;
   display: flex;
   flex-direction: column;
@@ -53,18 +53,36 @@
   background-color: #0033aa;
 }
 
-/* Calculator Icon Button */
 .calculator-icon-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   padding: 8px;
   background: none;
   border: none;
   cursor: pointer;
   color: #666;
-  transition: color 0.2s ease;
+  /* Add these new styles */
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px; /* Match icon button height */
 }
+/* Remove sr-only class since we want to show the text */
+.calculator-icon-button span {
+  font-size: 24px; /* Match clock icon size */
+  line-height: 1;
+  margin: 0;
+  padding: 0;
+}
+
+/* Remove sr-only class since we want to show the text */
+.calculator-icon-button span {
+  font-size: 24px; /* Match clock icon size */
+  line-height: 1;
+  margin: 0;
+  padding: 0;
+}
+
+/* If you want to keep the original sr-only class for other elements, 
+   create a new class instead */
 
 .calculator-icon-button:hover,
 .calculator-icon-button.active {
@@ -246,3 +264,133 @@
   box-sizing: border-box;
   cursor: se-resize;
 }
+
+/* Add/update these styles in your CSS */
+
+/* Sidebar container */
+.checkbox-column {
+  position: fixed;
+  right: 0;
+  top: 0;
+  width: 35%;
+  height: 100vh;
+  background-color: #f4f4f4;
+  padding: 40px 20px 20px;
+  transition: transform 0.3s ease;
+  z-index: 1000;
+  overflow-y: auto;
+}
+
+.checkbox-column.collapsed {
+  transform: translateX(100%);
+}
+
+/* Header with toggle button */
+.filter-header {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.sidebar-toggle-button {
+  position: absolute;
+  right: -50px; /* Position outside the sidebar */
+  top: 50%;
+  transform: translateY(-50%);
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  z-index: 1001;
+}
+
+.checkbox-column:not(.collapsed) .sidebar-toggle-button {
+  right: 20px; /* Position inside the sidebar when open */
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .checkbox-column {
+    width: 100%;
+  }
+  
+  .sidebar-toggle-button {
+    right: -40px !important;
+  }
+  
+  .checkbox-column:not(.collapsed) .sidebar-toggle-button {
+    right: 20px !important;
+  }
+}
+
+/* Transition animations */
+.checkbox-column {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-toggle-button {
+  transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Sidebar header with close button */
+.checkbox-column {
+  position: fixed;
+  right: 0;
+  top: 0;
+  height: 100vh;
+  width: 35%;
+  background: #ffffff;
+  box-shadow: -2px 0 12px rgba(0,0,0,0.1);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1000;
+  padding: 20px;
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-right: 10px;
+}
+
+.sidebar-close-button {
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  color: #666;
+  transition: all 0.2s ease;
+}
+
+.sidebar-close-button:hover {
+  color: #ffffff;
+}
+
+.checkbox-column.collapsed {
+  transform: translateX(100%);
+}
+
+@media (max-width: 768px) {
+  .checkbox-column {
+    width: 100%;
+    padding: 15px;
+  }
+}
+.pomodoro-modal {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 10px;
+  background-color: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  padding: 15px;
+  z-index: 1000;
+  white-space: nowrap;
+  }

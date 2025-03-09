@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { MathSubdomains, EnglishSubdomains } from './SatSubdomains';
 import './SatPage.css';
 import './CSS/Filter.css';
@@ -10,7 +11,7 @@ import {
   renderQuestionDisplay
 } from './SatPageFunctions';
 import Desmos from 'desmos';
-import { Calculator } from 'lucide-react';
+import { Calculator, ListFilter, X } from 'lucide-react';
 import PomodoroTimer from './PomodoroTimer';
 import Collapsible from '../Components/Collapsible';
 import Draggable from 'react-draggable';
@@ -18,8 +19,18 @@ import { ResizableBox } from 'react-resizable';
 import 'react-resizable/css/styles.css';
 
 function SATPage() {
+  // navbar
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const toggleMenu = (e) => {
+    e.stopPropagation();
+    setIsMenuOpen(!isMenuOpen);
+    document.body.style.overflow = !isMenuOpen ? 'hidden' : '';
+  };
+
   // State variables for managing the SAT question interface
-  const [selectedTest, setSelectedTest] = useState('');
+  const [selectedTest, setSelectedTest] = useState('SAT');
   const [selectedTestSections, setSelectedTestSections] = useState([]);
   const [selectedSubdomains, setSelectedSubdomains] = useState({});
   const [selectedDifficulties, setSelectedDifficulties] = useState({
@@ -33,6 +44,7 @@ function SATPage() {
   const [tempAnswer, setTempAnswer] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [showSidebar, setShowSidebar] = useState(true);
 
   // State and refs for managing the integrated Desmos calculator
   const [showCalculator, setShowCalculator] = useState(false);
@@ -42,6 +54,19 @@ function SATPage() {
   // Toggle function for the calculator
   const toggleCalculator = () => {
     setShowCalculator((prev) => !prev);
+  };
+
+  const toggleSidebar = () => {
+    setShowSidebar((prev) => {
+      if (prev) {
+        // set .checkbox-column width to 0%
+        document.querySelector('.checkbox-column').style.display = 'none';
+        return false;
+      } else {
+        document.querySelector('.checkbox-column').style.display = 'flex';
+        return true;
+      }
+    });
   };
 
   // Hide calculator if Math section is no longer selected
@@ -262,30 +287,29 @@ function SATPage() {
   
       return (
         <>
-          <div className="answer-choice free-response-container">
-            <div className="flex gap-2 items-center w-full max-w-xl">
-              <input 
-                type="text"
-                id="free-response-input"
-                value={tempAnswer}
-                onChange={(e) => setTempAnswer(e.target.value)}
-                onKeyPress={handleKeyPress}
-                className={`flex-1 p-2 border rounded-md ${
-                  selectedAnswer 
-                    ? (selectedAnswer === correctAnswer ? 'correct-answer' : 'incorrect-answer')
-                    : ''
-                }`}
-                placeholder="Enter your answer..."
-              />
-              <button
-                onClick={handleSubmitAnswer}
-                className="bg-[#6366F1] hover:bg-[#4F46E5] text-white px-4 py-2 rounded-md transition-colors duration-200"
-                disabled={!tempAnswer.trim()}
-              >
-                Submit
-              </button>
-            </div>
-          </div>
+          <input 
+            type="text"
+            id="free-response-input"
+            value={tempAnswer}
+            onChange={(e) => setTempAnswer(e.target.value)}
+            onKeyPress={handleKeyPress}
+            className={`flex-1 p-2 border rounded-md ${
+              selectedAnswer 
+                ? (selectedAnswer === correctAnswer ? 'correct-answer' : 'incorrect-answer')
+                : ''
+            }`}
+            placeholder="Enter your answer..."
+          />
+          <br></br>
+          <br></br>
+          <button
+            onClick={handleSubmitAnswer}
+            className="bg-[#6366F1] hover:bg-[#4F46E5] text-white px-4 py-2 rounded-md transition-colors duration-200"
+            disabled={!tempAnswer.trim()}
+          >
+            Submit
+          </button>
+          <br></br>
           {selectedAnswer && (
             <div className={`rationale-container ${selectedAnswer === correctAnswer ? 'correct' : 'incorrect'}`}>
               <h4 className="rationale-header">
@@ -294,6 +318,7 @@ function SATPage() {
               <div className="rationale-content" dangerouslySetInnerHTML={{ __html: rationale }} />
             </div>
           )}
+          <br></br>
         </>
       );
     }
@@ -425,46 +450,41 @@ function SATPage() {
         const { questionDetails, navigation } = questionDisplay.content;
         return (
           <div className="question-container">
-            <div className="question-details">
-              <div className="question-metadata"></div>
-              {questionDetails.details && (
-                <div className="question-additional-details">
-                  <h4>Additional Information</h4>
-                  <div dangerouslySetInnerHTML={{ __html: questionDetails.details }} />
-                </div>
-              )}
-              <div className="question-text">
-                <h3>Question</h3>
-                <div dangerouslySetInnerHTML={{ __html: questionDetails.question }} />
+            <div className="question-metadata"></div>
+            {questionDetails.details && (
+              <div className="question-additional-details">
+                <h4>Additional Information</h4>
+                <div dangerouslySetInnerHTML={{ __html: questionDetails.details }} />
               </div>
-              <div className="answer-choices">
-                <h3>Choose an Answer</h3>
-                {renderAnswerChoices(
-                  questionDetails.answerChoices, 
-                  questionDetails.answer, 
-                  questionDetails.rationale, 
-                  questionDetails.questionType,
-                  questionDetails.externalId
-                )}
-              </div>
-              <div className="navigation-buttons">
-                <button
-                  onClick={handleNavigatePrevious}
-                  disabled={!navigation.hasPrevious}
-                >
-                  Previous
-                </button>
-                <span>
-                  {`${navigation.currentIndex} / ${navigation.totalQuestions}`}
-                </span>
-                <button
-                  onClick={handleNavigateNext}
-                  disabled={!navigation.hasNext}
-                >
-                  Next
-                </button>
-              </div>
+            )}
+            <div className="question-text">
+              <div dangerouslySetInnerHTML={{ __html: questionDetails.question }} />
             </div>
+            <br></br>
+            <div className="answer-choices">
+              {renderAnswerChoices(
+                questionDetails.answerChoices, 
+                questionDetails.answer, 
+                questionDetails.rationale, 
+                questionDetails.questionType,
+                questionDetails.externalId
+              )}
+            </div>
+            <button
+              onClick={handleNavigatePrevious}
+              disabled={!navigation.hasPrevious}
+            >
+              Previous
+            </button>
+            <span>
+              {`${navigation.currentIndex} / ${navigation.totalQuestions}`}
+            </span>
+            <button
+              onClick={handleNavigateNext}
+              disabled={!navigation.hasNext}
+            >
+              Next
+            </button>
           </div>
         );
       default:
@@ -473,14 +493,16 @@ function SATPage() {
   };
   
   return (
-    <div className="sat-page">
-      
-      <div className="sat-main-content">
-        <div className="top-section">
-          <div className="header-container">
-            <h1>Select question type on the right.</h1>
+    <>
+      <div style={{ position: 'relative' }}>
+        <nav className={`nav sat-nav`}>
+          <div className="logo" onClick={() => navigate('/')} 
+               style={{ cursor: 'pointer' }}>
+            <img src="/aquLogo.png" alt="Aquarc Logo" className="logo-image" />
           </div>
-          <div className="tools-timer-container">
+
+          <PomodoroTimer />
+          <div>
             {selectedTestSections.includes('Math') && (
               <button 
                 onClick={toggleCalculator}
@@ -489,96 +511,125 @@ function SATPage() {
                 <Calculator size={24} />
               </button>
             )}
-            <PomodoroTimer />
-          </div>
-        </div>
-        {renderQuestionView()}
-      </div>
-      {showCalculator && (
-        <Draggable bounds="parent" handle=".calculator-handle">
-          <div className="calculator-wrapper">
-            <div className="calculator-handle">Drag here</div>
-            <ResizableBox
-              width={600}
-              height={400}
-              minConstraints={[300, 200]}
-              maxConstraints={[800, 600]}
-              resizeHandles={['se']}
+            <button 
+              onClick={toggleSidebar}
+              className={`calculator-icon-button`}
             >
-              <div
-                id="desmos-calculator"
-                ref={calculatorRef}
-                style={{ width: '100%', height: '100%' }}
-              ></div>
-            </ResizableBox>
+              <ListFilter size={24} />
+            </button>
           </div>
-        </Draggable>
-      )}
-      <div className="checkbox-column">
-        <div className="filter-group">
-          <h3>Assessment</h3>
-          <p>Please select one</p>
-          {['SAT'].map((test) => (
-            <div key={test} className="checkbox-group">
-              <input
-                type="radio"
-                id={test}
-                name="assessment"
-                onChange={() => handleTestChange(test)}
-                checked={selectedTest === test}
-              />
-              <label htmlFor={test}>{test}</label>
-            </div>
-          ))}
+        </nav>
+      </div>
+
+      <div className="sat-page">
+
+        <div className="sat-main-content">
+          <br></br>
+          <br></br>
+          {currentQuestions.length > 0 ? renderQuestionView(): 
+              (
+                  <>
+                    <h1>Please use the menu to filter and search for SAT questions.</h1>
+                  </>
+              )}
         </div>
-        <div title="Test Section">
-          <p>Please select all that apply</p>
-          {['Math', 'English'].map((section) => (
-            <div key={section} className="checkbox-group">
-              <input
-                type="checkbox"
-                id={section.toLowerCase()}
-                name="test-section"
-                onChange={() => handleTestSectionChange(section)}
-                checked={selectedTestSections.includes(section)}
-              />
-              <label htmlFor={section.toLowerCase()}>
-                {section === 'English' ? 'Reading and Writing' : section}
-              </label>
+        {showCalculator && (
+          <Draggable bounds="parent" handle=".calculator-handle">
+            <div className="calculator-wrapper">
+              <div className="calculator-handle">Drag here</div>
+              <ResizableBox
+                width={600}
+                height={400}
+                minConstraints={[300, 200]}
+                maxConstraints={[800, 600]}
+                resizeHandles={['se']}
+              >
+                <div
+                  id="desmos-calculator"
+                  ref={calculatorRef}
+                  style={{ width: '100%', height: '100%' }}
+                ></div>
+              </ResizableBox>
             </div>
-          ))}
-        </div>
-        {selectedTestSections && (
-          <Collapsible title="Subdomain">
-            <p>Select all that apply</p>
-            {renderSubdomainInputs()}
-          </Collapsible>
+          </Draggable>
         )}
-        <Collapsible title="Difficulty">
-          <p>Select all that apply</p>
-          {['Easy', 'Medium', 'Hard'].map((difficulty) => (
-            <div key={difficulty} className="checkbox-group">
-              <input
-                type="checkbox"
-                id={difficulty.toLowerCase()}
-                checked={selectedDifficulties[difficulty]}
-                onChange={() => handleDifficultyChange(difficulty)}
-              />
-              <label htmlFor={difficulty.toLowerCase()}>{difficulty}</label>
-            </div>
-          ))}
-        </Collapsible>
-        <div className="button-group">
-          <button
-            className="search-button"
-            onClick={handleSearch}
-            disabled={isLoading}
-          >
-            {isLoading ? 'Searching...' : 'Search Questions'}
-          </button>
+
+        <div className={`checkbox-column ${showSidebar ? '' : 'collapsed'}`}>
+          {/* Search button inside sidebar header */}
+          <div className="sidebar-header">
+            <h2>Assessment</h2>
+            <button 
+              onClick={toggleSidebar}
+              className="sidebar-close-button"
+            >
+              <X size={20} />
+            </button>
+          </div>
+
+          {/* Existing filter content */}
+          <div className="filter-group">
+            {['SAT', 'PSAT 10/11', 'PSAT 8/9'].map((test) => (
+              <div key={test} className="checkbox-group">
+                <input
+                  type="radio"
+                  id={test}
+                  name="assessment"
+                  onChange={() => handleTestChange(test)}
+                  checked={selectedTest === test}
+                />
+                <label htmlFor={test}>{test}</label>
+              </div>
+            ))}
+          </div>
+          <div title="Test Section">
+            <p>Please select all that apply</p>
+            {['Math', 'English'].map((section) => (
+              <div key={section} className="checkbox-group">
+                <input
+                  type="checkbox"
+                  id={section.toLowerCase()}
+                  name="test-section"
+                  onChange={() => handleTestSectionChange(section)}
+                  checked={selectedTestSections.includes(section)}
+                />
+                <label htmlFor={section.toLowerCase()}>
+                  {section === 'English' ? 'Reading and Writing' : section}
+                </label>
+              </div>
+            ))}
+          </div>
+          {selectedTestSections && (
+            <Collapsible title="Subdomain">
+              <p>Select all that apply</p>
+              {renderSubdomainInputs()}
+            </Collapsible>
+          )}
+          <Collapsible title="Difficulty">
+            <p>Select all that apply</p>
+            {['Easy', 'Medium', 'Hard'].map((difficulty) => (
+              <div key={difficulty} className="checkbox-group">
+                <input
+                  type="checkbox"
+                  id={difficulty.toLowerCase()}
+                  checked={selectedDifficulties[difficulty]}
+                  onChange={() => handleDifficultyChange(difficulty)}
+                />
+                <label htmlFor={difficulty.toLowerCase()}>{difficulty}</label>
+              </div>
+            ))}
+          </Collapsible>
+          <div className="button-group">
+            <button
+              className="search-button"
+              onClick={handleSearch}
+              disabled={isLoading}
+            >
+              {isLoading ? 'Searching...' : 'Search Questions'}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
