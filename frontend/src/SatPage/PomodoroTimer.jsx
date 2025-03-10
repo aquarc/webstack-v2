@@ -241,7 +241,7 @@ const PomodoroTimer = () => {
                 }
               }}
             />
-            <label className="block text-xs text-gray-600 mb-2">Long Break:</label>
+            <label className="block text-xs text-gray-600 mb-2">Long Break Duration (Every 4): </label>
             <div className="input-group">
               <input 
                 id="duration-long-break" 
