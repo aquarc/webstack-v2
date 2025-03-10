@@ -51,6 +51,9 @@ function SATPage() {
   const calculatorRef = useRef(null);
   const calculatorInstanceRef = useRef(null);
 
+  // automatic opening and closing
+  const [isSubdomainOpen, setIsSubdomainOpen] = useState(false);
+
   // Toggle function for the calculator
   const toggleCalculator = () => {
     setShowCalculator((prev) => !prev);
@@ -68,6 +71,14 @@ function SATPage() {
       }
     });
   };
+
+  // Automatically open subdomain when sections are selected
+  useEffect(() => {
+    if (selectedTestSections.length > 0) {
+      setIsSubdomainOpen(true);
+    }
+  }, [selectedTestSections]);
+
 
   // Hide calculator if Math section is no longer selected
   useEffect(() => {
@@ -232,6 +243,7 @@ function SATPage() {
       setCurrentQuestions([]);
     } finally {
       setIsLoading(false);
+      toggleSidebar();
     }
   };
 
@@ -249,7 +261,7 @@ function SATPage() {
   );
 
   const renderSubdomainInputs = () => {
-    return subdomainData.map(({ category, subdomains }) => (
+    return subdomainData.length > 0 ? subdomainData.map(({ category, subdomains }) => (
       <React.Fragment key={category}>
         <h4>{category}</h4>
         {subdomains.map((subdomain) => (
@@ -264,7 +276,9 @@ function SATPage() {
           </div>
         ))}
       </React.Fragment>
-    ));
+    )) : (
+      <p>Please select a test section</p>
+    );
   };
 
   const renderAnswerChoices = (choices, correctAnswer, rationale, questionType, externalId) => {
@@ -582,7 +596,7 @@ function SATPage() {
             ))}
           </div>
           <div title="Test Section">
-            <p>Please select all that apply</p>
+            <p>Section</p>
             {['Math', 'English'].map((section) => (
               <div key={section} className="checkbox-group">
                 <input
@@ -599,13 +613,18 @@ function SATPage() {
             ))}
           </div>
           {selectedTestSections && (
-            <Collapsible title="Subdomain">
-              <p>Select all that apply</p>
+            <Collapsible 
+              title="Subdomain"
+              isControlled
+              isOpen={isSubdomainOpen}
+              onToggle={setIsSubdomainOpen}
+            >
               {renderSubdomainInputs()}
             </Collapsible>
           )}
-          <Collapsible title="Difficulty">
-            <p>Select all that apply</p>
+          <Collapsible 
+            title="Difficulty"
+          >
             {['Easy', 'Medium', 'Hard'].map((difficulty) => (
               <div key={difficulty} className="checkbox-group">
                 <input

@@ -65,6 +65,10 @@
   gap: 8px;
   min-height: 40px; /* Match icon button height */
 }
+
+.calculator-icon-button:hover {
+    color: #ffffff;
+}
 /* Remove sr-only class since we want to show the text */
 .calculator-icon-button span {
   font-size: 24px; /* Match clock icon size */
@@ -73,18 +77,9 @@
   padding: 0;
 }
 
-/* Remove sr-only class since we want to show the text */
-.calculator-icon-button span {
-  font-size: 24px; /* Match clock icon size */
-  line-height: 1;
-  margin: 0;
-  padding: 0;
-}
 
 /* If you want to keep the original sr-only class for other elements, 
    create a new class instead */
-
-.calculator-icon-button:hover,
 .calculator-icon-button.active {
   color: #0044cc;
 }
@@ -394,3 +389,72 @@
   z-index: 1000;
   white-space: nowrap;
   }
+
+/* Add this to your existing CSS (or JSX inline styles) */
+.input-group {
+  display: flex;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.input-group:focus-within {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 1px #6366f1;
+}
+
+.input-group-button:hover {
+  background: #f8fafc;
+}
+
+.input-group-button.active {
+  background: #6366f1;
+  color: white;
+}
+/* Update these styles in your CSS */
+.input-group {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto; /* 1fr takes remaining space */
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+  width: 100%; /* Take full width of container */
+}
+
+.input-group-input {
+  width: 133px; /* Reduced from 60px */
+  min-width: 133px; /* Add minimum width */
+  grid-column: 1; /* First column */
+  border: none;
+  border-radius: 0px;
+}
+
+.input-group-button {
+  grid-column: auto; /* Subsequent columns */
+  white-space: nowrap; /* Prevent button text wrapping */
+  border: none;
+  border-left: 1px solid #e2e8f0;
+  background: white;
+  padding: 6px 10px; /* Reduced padding */
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0; /* Prevent button shrinking */
+  border-radius: 0px;
+  color: #666666;
+}
+
+.format-time {
+  margin-left: 0.5rem; /* ml-2 */
+  font-size: 0.875rem; /* text-sm */
+  line-height: 1.25rem; /* text-sm */
+  font-weight: 500; /* font-medium */
+  color: #374151; /* text-gray-700 */
+  transition: color 0.2s ease-in-out;
+}
+
+/* Hover state when parent is hovered */
+.format-time:hover {
+  color: #ffffff; /* pure white */
+}

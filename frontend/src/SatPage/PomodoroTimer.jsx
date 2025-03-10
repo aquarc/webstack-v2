@@ -26,9 +26,14 @@ const PomodoroTimer = () => {
   const modalRef = useRef(null);
 
   const durations = [
-    { label: "15 min", value: 15 * 60 },
-    { label: "25 min", value: 25 * 60 },
-    { label: "55 min", value: 55 * 60 }
+    { label: "15", value: 15 * 60 },
+    { label: "25", value: 25 * 60 },
+    { label: "55", value: 55 * 60 }
+  ];
+  const longBreakDurations = [
+    { label: "10", value: 10 * 60 },
+    { label: "15", value: 15 * 60 },
+    { label: "20", value: 20 * 60 }
   ];
 
   // Keep input in sync with duration changes
@@ -134,7 +139,7 @@ const PomodoroTimer = () => {
         onClick={() => setShowModal(!showModal)}
         className="calculator-icon-button bg-white/90 backdrop-blur-sm border border-gray-200 rounded-lg p-2 shadow-sm hover:bg-gray-50 transition-colors"
       >
-        <span className="ml-2 text-sm font-medium text-gray-700">
+        <span className="format-time">
           {formatTime(time)}
         </span>
       </button>
@@ -147,72 +152,70 @@ const PomodoroTimer = () => {
         >
           <div className="sidebar-header">
             <h3 className="text-sm font-semibold text-gray-900">Pomodoro Timer</h3>
-            <button
-              onClick={() => setShowModal(false)}
-              className="text-gray-400 hover:text-gray-500 transition-colors sidebar-close-button"
-            >
-              <X size={16} />
-            </button>
-          </div>
-          <div className="flex justify-between items-center mb-4">
-            <button
-              onClick={toggleTimer}
-              className={`text-xs px-3 py-2 rounded transition-colors sidebar-close-button
-              ${
-                isActive 
-                  ? 'bg-red-500 hover:bg-red-600 text-white'
-                  : 'bg-indigo-500 hover:bg-indigo-600 text-white'
-              }`}
-            >
-              {isActive ? (
-                  <Pause size={16} />
-              ) : (
-                  <Play size={16} />
-              )}
-            </button>
-            <button
-              onClick={resetTimer}
-              className="text-xs px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded transition-colors sidebar-close-button"
-            >
-            <RotateCcw size={16} />
-            </button>
+            <div>
+              <button
+                onClick={toggleTimer}
+                className={`text-xs px-3 py-2 rounded transition-colors sidebar-close-button
+                ${
+                  isActive 
+                    ? 'bg-red-500 hover:bg-red-600 text-white'
+                    : 'bg-indigo-500 hover:bg-indigo-600 text-white'
+                }`}
+              >
+                {isActive ? (
+                    <Pause size={16} />
+                ) : (
+                    <Play size={16} />
+                )}
+              </button>
+              <button
+                onClick={resetTimer}
+                className="text-xs px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded transition-colors sidebar-close-button"
+              >
+              <RotateCcw size={16} />
+              </button>
+              <button
+                onClick={() => setShowModal(false)}
+                className="text-gray-400 hover:text-gray-500 transition-colors sidebar-close-button"
+              >
+                <X size={16} />
+              </button>
+            </div>
           </div>
 
           {/* Duration Selection */}
           <div className="mb-4">
             <label className="block text-xs text-gray-600 mb-2">Duration:</label>
-            { /* TODO: you don't do anything with this (nothing for duration-work)
-                also validate input */ }
-            <input 
-              id="duration-work" 
-              type="number"
-              value={inputValue}
-              onChange={(e) => {
-                const value = e.target.value;
-                setInputValue(value);
-                const minutes = parseFloat(value);
-                if (!isNaN(minutes) && minutes > 0) {
-                  handleDurationChange(minutes * 60, false);
-                }
-              }}
-              onBlur={() => {
-                const minutes = parseFloat(inputValue);
-                if (isNaN(minutes) || minutes <= 0) {
-                  handleDurationChange(selectedDuration); // Reset to last valid value
-                }
-              }}
-            >
-            </input>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="input-group">
+              <input 
+                id="duration-work" 
+                className="input-group-input"
+                type="number"
+                value={inputValue}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setInputValue(value);
+                  const minutes = parseFloat(value);
+                  if (!isNaN(minutes) && minutes > 0) {
+                    handleDurationChange(minutes * 60, false);
+                  }
+                }}
+                onBlur={() => {
+                  const minutes = parseFloat(inputValue);
+                  if (isNaN(minutes) || minutes <= 0) {
+                    handleDurationChange(selectedDuration); // Reset to last valid value
+                  }
+                }}
+              >
+              </input>
               {durations.map(duration => (
                 <button
                   key={duration.value}
-                  onClick={() => handleDurationChange(duration.value)}
-                  className={`text-xs px-2 py-1 rounded transition-colors ${
-                    selectedDuration === duration.value
-                      ? 'bg-indigo-500 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  type="button"
+                  className={`input-group-button ${
+                    selectedDuration === duration.value ? 'active' : ''
                   }`}
+                  onClick={() => handleDurationChange(duration.value)}
                 >
                   {duration.label}
                 </button>
@@ -239,37 +242,37 @@ const PomodoroTimer = () => {
               }}
             />
             <label className="block text-xs text-gray-600 mb-2">Long Break:</label>
-            <input 
-              id="duration-long-break" 
-              type="number"
-              value={longBreakInputValue}
-              onChange={(e) => {
-                const value = e.target.value;
-                setLongBreakInputValue(value);
-                const minutes = parseFloat(value);
-                if (!isNaN(minutes) && minutes > 0) {
-                  handleLongBreakDurationChange(minutes * 60, false);
-                }
-              }}
-              onBlur={() => {
-                const minutes = parseFloat(longBreakInputValue);
-                if (isNaN(minutes) || minutes <= 0) {
-                  handleLongBreakDurationChange(selectedLongBreakDuration);
-                }
-              }}
-            />
-            <div className="grid grid-cols-3 gap-2 mb-2">
-              {[15, 25, 55].map((mins) => (
+            <div className="input-group">
+              <input 
+                id="duration-long-break" 
+                className="input-group-input"
+                type="number"
+                value={longBreakInputValue}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setLongBreakInputValue(value);
+                  const minutes = parseFloat(value);
+                  if (!isNaN(minutes) && minutes > 0) {
+                    handleLongBreakDurationChange(minutes * 60, false);
+                  }
+                }}
+                onBlur={() => {
+                  const minutes = parseFloat(longBreakInputValue);
+                  if (isNaN(minutes) || minutes <= 0) {
+                    handleLongBreakDurationChange(selectedLongBreakDuration);
+                  }
+                }}
+              />
+              {longBreakDurations.map(duration => (
                 <button
-                  key={mins}
-                  onClick={() => handleLongBreakDurationChange(mins * 60)}
-                  className={`text-xs px-2 py-1 rounded transition-colors ${
-                    selectedLongBreakDuration === mins * 60
-                      ? 'bg-green-500 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  key={duration.value}
+                  onClick={() => handleLongBreakDurationChange(duration.value)}
+                  type="button"
+                  className={`input-group-button ${
+                    selectedLongBreakDuration === duration.value ? 'active' : ''
                   }`}
                 >
-                  {mins} min
+                  {duration.label}
                 </button>
               ))}
             </div>
