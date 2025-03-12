@@ -4,6 +4,7 @@ import Pfp1 from '../Assets/omR.jpeg';
 import Pfp2 from '../Assets/RonithN.jpeg';
 import Pfp4 from '../Assets/MufK.jpg';
 import Pfp5 from '../Assets/NikilP.jpeg';
+import Pfp6 from '../Assets/DhanyaV.jpeg';
 import defMpfp from '../Assets/defaultMpfp.png';
 
 function AboutUsPage() {
@@ -126,14 +127,14 @@ function AboutUsPage() {
                                 <p>Full-Stack Dev</p>
                             </div>
                         </div>
-                        <div className="team-card" id="Riley">
+                        <div className="team-card" id="Dhanya">
                             <div className="card-image">
-                                <img src={defMpfp} alt="Riley"></img>
+                                <img src={Pfp6} alt="Dhanya"></img>
                             </div>
                             <div>
-                                <h2>Riley</h2>
-                                <a className="exclusive-emails" href="mailto:riley@aquarc.org">riley@aquarc.org</a>
-                                <p>Dev</p>
+                                <h2>Dhanya</h2>
+                                <a className="exclusive-emails" href="mailto:dhanya@aquarc.org">dhanya@aquarc.org</a>
+                                <p>Marketing/Dev</p>
                             </div>
                         </div>
 
