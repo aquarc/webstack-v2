@@ -356,14 +356,14 @@ function SATPage() {
                 const isCorrect = isSelected && letter.toLowerCase() === correctAnswer.toLowerCase();
   
                 let answerClass = 'answer-choice';
-                if (isSelected) {
-                  answerClass += isCorrect ? ' correct-answer' : ' incorrect-answer';
-                }
+//                if (isSelected) {
+//                  answerClass += isCorrect ? ' correct-answer' : ' incorrect-answer';
+//                }
   
                 return (
                   <div 
                     key={choiceKey} 
-                    className={answerClass}
+                    className='answer-choice'
                     onClick={() => setSelectedAnswer(letter)}
                   >
                     <input 
@@ -376,6 +376,7 @@ function SATPage() {
                     />
                     <label 
                       htmlFor={choiceKey}
+                      className={isSelected ? (isCorrect ? ' correct-answer' : ' incorrect-answer') : 'unselected-answer'}
                       dangerouslySetInnerHTML={{ __html: content }}
                     />
                   </div>
@@ -409,9 +410,9 @@ function SATPage() {
                 const isCorrect = isSelected && letterChoice === correctAnswer.toLowerCase();
   
                 let answerClass = 'answer-choice';
-                if (isSelected) {
-                  answerClass += isCorrect ? ' correct-answer' : ' incorrect-answer';
-                }
+//                if (isSelected) {
+//                  answerClass += isCorrect ? ' correct-answer' : ' incorrect-answer';
+//                }
   
                 return (
                   <div 
@@ -429,6 +430,7 @@ function SATPage() {
                     />
                     <label 
                       htmlFor={choiceKey}
+                      className={isSelected ? (isCorrect ? ' correct-answer' : ' incorrect-answer') : 'unselected-answer'}
                       dangerouslySetInnerHTML={{ __html: content }}
                     />
                   </div>
@@ -520,7 +522,7 @@ function SATPage() {
             {selectedTestSections.includes('Math') && (
               <button 
                 onClick={toggleCalculator}
-                className={`calculator-icon-button ${showCalculator ? 'active' : ''}`}
+                className={`calculator-icon-button`}
               >
                 <Calculator size={24} />
               </button>
@@ -543,7 +545,7 @@ function SATPage() {
           {currentQuestions.length > 0 ? renderQuestionView(): 
               (
                   <>
-                    <h1>Please use the menu to filter and search for SAT questions.</h1>
+                    <div class="question-container">Please filter questions.</div>
                   </>
               )}
         </div>

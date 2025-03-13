@@ -137,9 +137,9 @@ const PomodoroTimer = () => {
       <button
         ref={buttonRef}
         onClick={() => setShowModal(!showModal)}
-        className="calculator-icon-button bg-white/90 backdrop-blur-sm border border-gray-200 rounded-lg p-2 shadow-sm hover:bg-gray-50 transition-colors"
+        className="calculator-icon-button bg-white/90 backdrop-blur-sm border border-gray-200 rounded-lg p-2 shadow-sm hover:bg-gray-50 transition-colors format-time"
       >
-        <span className="format-time">
+        <span>
           {formatTime(time)}
         </span>
       </button>
