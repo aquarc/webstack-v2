@@ -170,15 +170,21 @@ function SATPage() {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setSelectedAnswer(null);
       setTempAnswer('');
-    }
+    } else {
+      setCurrentQuestionIndex(0);
+      setSelectedAnswer(null);
+      setTempAnswer('');
+    } 
   };
   
   const handleNavigatePrevious = () => {
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex(currentQuestionIndex - 1);
+    } else {
+      setCurrentQuestionIndex(currentQuestions.length - 1);
       setSelectedAnswer(null);
       setTempAnswer('');
-    }
+    } 
   };
 
   const handleSubmitAnswer = () => {
@@ -188,6 +194,8 @@ function SATPage() {
   };
 
   const handleSearch = async () => {
+    setSelectedAnswer(null);
+    setTempAnswer('');
     if (!selectedTest) {
       setError('Please select a test type.');
       return;
@@ -466,26 +474,45 @@ function SATPage() {
         const { questionDetails, navigation } = questionDisplay.content;
         return (
           <div className="question-container">
-            <div className="question-metadata"></div>
             {questionDetails.details && (
-              <div className="question-additional-details">
-                <h4>Additional Information</h4>
-                <div dangerouslySetInnerHTML={{ __html: questionDetails.details }} />
-              </div>
+              <div 
+                className="question-additional-details"
+                dangerouslySetInnerHTML={{ __html: questionDetails.details }}
+              />
             )}
-            <div className="question-text">
-              <div dangerouslySetInnerHTML={{ __html: questionDetails.question }} />
+            <div className="vertical-bar"></div>
+            <div class="question-right-side">
+              <div className="question-text">
+                <div dangerouslySetInnerHTML={{ __html: questionDetails.question }} />
+              </div>
+              <br></br>
+              <div className="answer-choices">
+                {renderAnswerChoices(
+                  questionDetails.answerChoices, 
+                  questionDetails.answer, 
+                  questionDetails.rationale, 
+                  questionDetails.questionType,
+                  questionDetails.externalId
+                )}
+              </div>
             </div>
-            <br></br>
-            <div className="answer-choices">
-              {renderAnswerChoices(
-                questionDetails.answerChoices, 
-                questionDetails.answer, 
-                questionDetails.rationale, 
-                questionDetails.questionType,
-                questionDetails.externalId
-              )}
-            </div>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
+  const renderNavigationView = () => {
+    switch (questionDisplay.type) {
+      case 'loading': case 'error':
+        return null;
+      case 'question':
+        const { questionDetails, navigation } = questionDisplay.content;
+
+
+        return (
+          <div class="fixed-bottom-bar">
             <button
               onClick={handleNavigatePrevious}
               disabled={!navigation.hasPrevious}
@@ -501,12 +528,12 @@ function SATPage() {
             >
               Next
             </button>
-          </div>
+          </div> 
         );
-      default:
-        return null;
+    default:
+      return null;
     }
-  };
+  } 
   
   return (
     <>
@@ -616,7 +643,7 @@ function SATPage() {
           </div>
           {selectedTestSections && (
             <Collapsible 
-              title="Subdomain"
+              title="Unit"
               isControlled
               isOpen={isSubdomainOpen}
               onToggle={setIsSubdomainOpen}
@@ -650,6 +677,7 @@ function SATPage() {
           </div>
         </div>
       </div>
+      { currentQuestions.length > 0  && renderNavigationView() }
     </>
   );
 }
