@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Clock, X, Play, Pause, RotateCcw } from 'lucide-react';
+import { ChevronDown, Clock, X, Play, Pause, RotateCcw } from 'lucide-react';
 
 const PomodoroTimer = () => {
   const [isActive, setIsActive] = useState(false);
@@ -142,6 +142,8 @@ const PomodoroTimer = () => {
         <span>
           {formatTime(time)}
         </span>
+        
+        <ChevronDown size={16} />
       </button>
 
       {/* Dropdown Modal */}

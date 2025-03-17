@@ -11,7 +11,7 @@ import {
   renderQuestionDisplay
 } from './SatPageFunctions';
 import Desmos from 'desmos';
-import { Calculator, ListFilter, X } from 'lucide-react';
+import { Bookmark, Calculator, ListFilter, X } from 'lucide-react';
 import PomodoroTimer from './PomodoroTimer';
 import Collapsible from '../Components/Collapsible';
 import Draggable from 'react-draggable';
@@ -53,6 +53,10 @@ function SATPage() {
 
   // automatic opening and closing
   const [isSubdomainOpen, setIsSubdomainOpen] = useState(false);
+
+  // cross out mode for answer choices
+  const [isCrossOutMode, setIsCrossOutMode] = useState(false);
+  const [crossedOutAnswers, setCrossedOutAnswers] = useState({});
 
   // Toggle function for the calculator
   const toggleCalculator = () => {
@@ -122,6 +126,12 @@ function SATPage() {
     }
   }, [currentQuestions.length]);
 
+  // Reset crossedOutAnswers and isCrossOutMode when currentQuestions changes
+  useEffect(() => {
+    setCrossedOutAnswers({});
+    setIsCrossOutMode(false);
+  }, [currentQuestions]);
+
   // Event handlers for selection changes
   const handleTestChange = (test) => {
     setSelectedTest(test);
@@ -180,6 +190,8 @@ function SATPage() {
   const handleNavigatePrevious = () => {
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex(currentQuestionIndex - 1);
+      setSelectedAnswer(null);
+      setTempAnswer('');
     } else {
       setCurrentQuestionIndex(currentQuestions.length - 1);
       setSelectedAnswer(null);
@@ -289,8 +301,8 @@ function SATPage() {
     );
   };
 
-  const renderAnswerChoices = (choices, correctAnswer, rationale, questionType, externalId) => {
-    const shouldShowFreeResponse = !choices || 
+  const shouldShowFreeResponse = (choices) => {
+    return !choices || 
       (Array.isArray(choices) && choices.length === 0) ||
       choices === '[]' ||
       choices === '""' ||
@@ -299,8 +311,10 @@ function SATPage() {
       choices === '\\"\\""' ||
       choices === "\"\"" || 
       choices === '\\"\\"';
-  
-    if (shouldShowFreeResponse) {
+  };
+
+  const renderAnswerChoices = (choices, correctAnswer, rationale, questionType, externalId) => {
+    if (shouldShowFreeResponse(choices)) {
       const handleKeyPress = (e) => {
         if (e.key === 'Enter') {
           handleSubmitAnswer();
@@ -368,11 +382,26 @@ function SATPage() {
 //                  answerClass += isCorrect ? ' correct-answer' : ' incorrect-answer';
 //                }
   
+                const isCrossedOut = 
+                      crossedOutAnswers[currentQuestionIndex]?.has(choiceKey);
+
                 return (
                   <div 
                     key={choiceKey} 
-                    className='answer-choice'
-                    onClick={() => setSelectedAnswer(letter)}
+                    className={`answer-choice ${isCrossedOut ? 'crossed-out' : ''}`}
+                    onClick={(e) => {
+                      if (isCrossOutMode) {
+                        setCrossedOutAnswers(prev => ({
+                          ...prev,
+                          [currentQuestionIndex]: 
+                            new Set([...(prev[currentQuestionIndex] || []), 
+                                choiceKey])
+                        }));
+                        e.stopPropagation();
+                      } else {
+                        setSelectedAnswer(letter);
+                      }
+                    }}
                   >
                     <input 
                       type="radio" 
@@ -380,7 +409,6 @@ function SATPage() {
                       name="answer-choices" 
                       value={letter}
                       checked={isSelected}
-                      onChange={() => setSelectedAnswer(letter)}
                     />
                     <label 
                       htmlFor={choiceKey}
@@ -415,18 +443,29 @@ function SATPage() {
                 const letterChoice = String.fromCharCode(65 + index).toLowerCase();
                 const choiceKey = choice.id || `choice-${index}`;
                 const isSelected = selectedAnswer === letterChoice;
-                const isCorrect = isSelected && letterChoice === correctAnswer.toLowerCase();
+                const isCorrect = isSelected && 
+                      letterChoice === correctAnswer.toLowerCase();
   
-                let answerClass = 'answer-choice';
-//                if (isSelected) {
-//                  answerClass += isCorrect ? ' correct-answer' : ' incorrect-answer';
-//                }
-  
+                const isCrossedOut = 
+                      crossedOutAnswers[currentQuestionIndex]?.has(choiceKey);
+
                 return (
                   <div 
                     key={choiceKey} 
-                    className={answerClass}
-                    onClick={() => setSelectedAnswer(letterChoice)}
+                    className={`answer-choice ${isCrossedOut ? 'crossed-out' : ''}`}
+                    onClick={(e) => {
+                      if (isCrossOutMode) {
+                        setCrossedOutAnswers(prev => ({
+                          ...prev,
+                          [currentQuestionIndex]: 
+                            new Set([...(prev[currentQuestionIndex] || []), 
+                                choiceKey])
+                        }));
+                        e.stopPropagation();
+                      } else {
+                        setSelectedAnswer(letterChoice);
+                      }
+                    }}
                   >
                     <input 
                       type="radio" 
@@ -434,7 +473,6 @@ function SATPage() {
                       name="answer-choices" 
                       value={letterChoice}
                       checked={isSelected}
-                      onChange={() => setSelectedAnswer(letterChoice)}
                     />
                     <label 
                       htmlFor={choiceKey}
@@ -464,40 +502,99 @@ function SATPage() {
     return renderAnswerChoices(null, correctAnswer, rationale, questionType, externalId);
   };
 
+  // Update the renderQuestionView function
   const renderQuestionView = () => {
     switch (questionDisplay.type) {
       case 'loading':
         return <div>{questionDisplay.content}</div>;
-      case 'error':
-        return <div className="error">{questionDisplay.content}</div>;
       case 'question':
         const { questionDetails, navigation } = questionDisplay.content;
-        return (
-          <div className="question-container">
-            {questionDetails.details && (
-              <div 
-                className="question-additional-details"
-                dangerouslySetInnerHTML={{ __html: questionDetails.details }}
-              />
-            )}
-            <div className="vertical-bar"></div>
-            <div class="question-right-side">
-              <div className="question-text">
-                <div dangerouslySetInnerHTML={{ __html: questionDetails.question }} />
-              </div>
-              <br></br>
-              <div className="answer-choices">
-                {renderAnswerChoices(
-                  questionDetails.answerChoices, 
-                  questionDetails.answer, 
-                  questionDetails.rationale, 
-                  questionDetails.questionType,
-                  questionDetails.externalId
-                )}
+        if (questionDetails.category === 'Math') {
+          return (
+            <div className={`question-container math-layout`}>
+              {questionDetails.details && (
+                <>
+                  { !shouldShowFreeResponse(questionDetails.answerChoices) && 
+                    <button 
+                      className={`control-button eliminate-button 
+                          ${isCrossOutMode ? 'active' : ''}`}
+                      onClick={() => setIsCrossOutMode(!isCrossOutMode)}
+                    >
+                      <X size={18} />
+                      <span>Eliminate Answer</span> 
+                    </button>
+                  } 
+                  <div 
+                    className="question-additional-details"
+                    dangerouslySetInnerHTML={{ __html: questionDetails.details }}
+                  />
+                </>
+              )}
+              <div className="question-right-side">
+                <div className="question-control-header">
+                  <button className="control-button save-button">
+                    <Bookmark size={18} />
+                    <span>Save</span>
+                  </button>
+                  {!questionDetails.details 
+                      && !shouldShowFreeResponse(questionDetails.answerChoices) && 
+                    <button 
+                      className={`control-button eliminate-button 
+                          ${isCrossOutMode ? 'active' : ''}`}
+                      onClick={() => setIsCrossOutMode(!isCrossOutMode)}
+                    >
+                      <X size={18} />
+                      <span>Eliminate Answer</span> 
+                    </button>
+                  }
+                </div>
+
+                <div className="question-text">
+                  <div dangerouslySetInnerHTML={{ __html: questionDetails.question }} />
+                </div>
+                <br/>
+                <div className="answer-choices">
+                  {renderAnswerChoices(
+                    questionDetails.answerChoices, 
+                    questionDetails.answer, 
+                    questionDetails.rationale, 
+                    questionDetails.questionType,
+                    questionDetails.externalId
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        );
+          );
+        } else {
+          return (
+            <div className={`question-container`}>
+              {questionDetails.details && (
+                <>
+                  <div 
+                    className="question-additional-details"
+                    dangerouslySetInnerHTML={{ __html: questionDetails.details }}
+                  />
+                  <div className="vertical-bar"></div>
+                </>
+              )}
+              <div className="question-right-side">
+                <div className="question-text">
+                  <div dangerouslySetInnerHTML={{ __html: questionDetails.question }} />
+                </div>
+                <br/>
+                <div className="answer-choices">
+                  {renderAnswerChoices(
+                    questionDetails.answerChoices, 
+                    questionDetails.answer, 
+                    questionDetails.rationale, 
+                    questionDetails.questionType,
+                    questionDetails.externalId
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        }
       default:
         return null;
     }
@@ -549,14 +646,14 @@ function SATPage() {
             {selectedTestSections.includes('Math') && (
               <button 
                 onClick={toggleCalculator}
-                className={`calculator-icon-button`}
+                className={`calculator-icon-button format-time`}
               >
                 <Calculator size={24} />
               </button>
             )}
             <button 
               onClick={toggleSidebar}
-              className={`calculator-icon-button`}
+              className={`calculator-icon-button format-time`}
             >
               <ListFilter size={24} />
             </button>
@@ -577,7 +674,7 @@ function SATPage() {
               )}
         </div>
         {showCalculator && (
-          <Draggable bounds="parent" handle=".calculator-handle">
+          <Draggable bounds="html" handle=".calculator-handle">
             <div className="calculator-wrapper">
               <div className="calculator-handle">Drag here</div>
               <ResizableBox
@@ -666,6 +763,11 @@ function SATPage() {
               </div>
             ))}
           </Collapsible>
+          { questionDisplay.type === 'error' && (
+            <div className="error-message">
+              {questionDisplay.content}
+            </div>
+          )}
           <div className="button-group">
             <button
               className="search-button"

@@ -64,6 +64,6 @@
     background-color: #f4f4f4;
     order: 1;
     max-height: none;
-    overflow-y: visible;
+    overflow-y: scroll;
   }
 }
