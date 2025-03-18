@@ -140,7 +140,6 @@
 /* cross out */
 .crossed-out {
   position: relative;
-  pointer-events: none;
 }
 
 .crossed-out::after {

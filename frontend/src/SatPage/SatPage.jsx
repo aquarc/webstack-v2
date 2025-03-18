@@ -178,25 +178,27 @@ function SATPage() {
   const handleNavigateNext = () => {
     if (currentQuestionIndex < currentQuestions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
-      setSelectedAnswer(null);
-      setTempAnswer('');
+      clearChanges();
     } else {
       setCurrentQuestionIndex(0);
-      setSelectedAnswer(null);
-      setTempAnswer('');
+      clearChanges();
     } 
   };
   
   const handleNavigatePrevious = () => {
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex(currentQuestionIndex - 1);
-      setSelectedAnswer(null);
-      setTempAnswer('');
+      clearChanges();
     } else {
       setCurrentQuestionIndex(currentQuestions.length - 1);
-      setSelectedAnswer(null);
-      setTempAnswer('');
+      clearChanges();
     } 
+  };
+
+  const clearChanges = () => {
+    setSelectedAnswer(null);
+    setTempAnswer('');
+    setIsCrossOutMode(false);
   };
 
   const handleSubmitAnswer = () => {
@@ -391,25 +393,26 @@ function SATPage() {
                     className={`answer-choice ${isCrossedOut ? 'crossed-out' : ''}`}
                     onClick={(e) => {
                       if (isCrossOutMode) {
-                        setCrossedOutAnswers(prev => ({
-                          ...prev,
-                          [currentQuestionIndex]: 
-                            new Set([...(prev[currentQuestionIndex] || []), 
-                                choiceKey])
-                        }));
-                        e.stopPropagation();
+                        setCrossedOutAnswers(prev => {
+                          const currentCrossouts = new Set(prev[currentQuestionIndex] || []);
+                          
+                          if (currentCrossouts.has(choiceKey)) {
+                            currentCrossouts.delete(choiceKey);
+                          } else {
+                            if (selectedAnswer == letter) setSelectedAnswer(null);
+                            currentCrossouts.add(choiceKey);
+                          }
+                          
+                          return {
+                            ...prev,
+                            [currentQuestionIndex]: currentCrossouts
+                          };
+                        });
                       } else {
                         setSelectedAnswer(letter);
                       }
                     }}
                   >
-                    <input 
-                      type="radio" 
-                      id={choiceKey} 
-                      name="answer-choices" 
-                      value={letter}
-                      checked={isSelected}
-                    />
                     <label 
                       htmlFor={choiceKey}
                       className={isSelected ? (isCorrect ? ' correct-answer' : ' incorrect-answer') : 'unselected-answer'}
@@ -455,25 +458,26 @@ function SATPage() {
                     className={`answer-choice ${isCrossedOut ? 'crossed-out' : ''}`}
                     onClick={(e) => {
                       if (isCrossOutMode) {
-                        setCrossedOutAnswers(prev => ({
-                          ...prev,
-                          [currentQuestionIndex]: 
-                            new Set([...(prev[currentQuestionIndex] || []), 
-                                choiceKey])
-                        }));
-                        e.stopPropagation();
+                        setCrossedOutAnswers(prev => {
+                          const currentCrossouts = new Set(prev[currentQuestionIndex] || []);
+                          
+                          if (currentCrossouts.has(choiceKey)) {
+                            currentCrossouts.delete(choiceKey);
+                          } else {
+                            if (selectedAnswer == letterChoice) setSelectedAnswer(null);
+                            currentCrossouts.add(choiceKey);
+                          }
+                          
+                          return {
+                            ...prev,
+                            [currentQuestionIndex]: currentCrossouts
+                          };
+                        });
                       } else {
                         setSelectedAnswer(letterChoice);
                       }
                     }}
                   >
-                    <input 
-                      type="radio" 
-                      id={choiceKey} 
-                      name="answer-choices" 
-                      value={letterChoice}
-                      checked={isSelected}
-                    />
                     <label 
                       htmlFor={choiceKey}
                       className={isSelected ? (isCorrect ? ' correct-answer' : ' incorrect-answer') : 'unselected-answer'}
@@ -514,16 +518,22 @@ function SATPage() {
             <div className={`question-container math-layout`}>
               {questionDetails.details && (
                 <>
-                  { !shouldShowFreeResponse(questionDetails.answerChoices) && 
-                    <button 
-                      className={`control-button eliminate-button 
-                          ${isCrossOutMode ? 'active' : ''}`}
-                      onClick={() => setIsCrossOutMode(!isCrossOutMode)}
-                    >
-                      <X size={18} />
-                      <span>Eliminate Answer</span> 
+                  <div className="question-control-header">
+                    <button className="control-button save-button">
+                      <Bookmark size={18} />
+                      <span>Save</span>
                     </button>
-                  } 
+                    { !shouldShowFreeResponse(questionDetails.answerChoices) && 
+                      <button 
+                        className={`control-button eliminate-button 
+                            ${isCrossOutMode ? 'active' : ''}`}
+                        onClick={() => setIsCrossOutMode(!isCrossOutMode)}
+                      >
+                        <X size={18} />
+                        <span>Eliminate Answer</span> 
+                      </button>
+                    } 
+                  </div>
                   <div 
                     className="question-additional-details"
                     dangerouslySetInnerHTML={{ __html: questionDetails.details }}
@@ -531,23 +541,24 @@ function SATPage() {
                 </>
               )}
               <div className="question-right-side">
-                <div className="question-control-header">
-                  <button className="control-button save-button">
-                    <Bookmark size={18} />
-                    <span>Save</span>
-                  </button>
-                  {!questionDetails.details 
-                      && !shouldShowFreeResponse(questionDetails.answerChoices) && 
-                    <button 
-                      className={`control-button eliminate-button 
-                          ${isCrossOutMode ? 'active' : ''}`}
-                      onClick={() => setIsCrossOutMode(!isCrossOutMode)}
-                    >
-                      <X size={18} />
-                      <span>Eliminate Answer</span> 
+                {!questionDetails.details &&
+                  <div className="question-control-header">
+                    <button className="control-button save-button">
+                      <Bookmark size={18} />
+                      <span>Save</span>
                     </button>
-                  }
-                </div>
+                    { !shouldShowFreeResponse(questionDetails.answerChoices) &&
+                      <button 
+                        className={`control-button eliminate-button 
+                            ${isCrossOutMode ? 'active' : ''}`}
+                        onClick={() => setIsCrossOutMode(!isCrossOutMode)}
+                      >
+                        <X size={18} />
+                        <span>Eliminate Answer</span> 
+                      </button>
+                    } 
+                  </div>
+                }
 
                 <div className="question-text">
                   <div dangerouslySetInnerHTML={{ __html: questionDetails.question }} />
