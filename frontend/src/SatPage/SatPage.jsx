@@ -519,9 +519,11 @@ function SATPage() {
               {questionDetails.details && (
                 <>
                   <div className="question-control-header">
-                    <button className="control-button save-button">
+                    <button 
+                        className="control-button save-button"
+                    >
                       <Bookmark size={18} />
-                      <span>Save</span>
+                      <span>Coming Soon</span>
                     </button>
                     { !shouldShowFreeResponse(questionDetails.answerChoices) && 
                       <button 
@@ -543,9 +545,11 @@ function SATPage() {
               <div className="question-right-side">
                 {!questionDetails.details &&
                   <div className="question-control-header">
-                    <button className="control-button save-button">
+                    <button 
+                        className="control-button save-button"
+                    >
                       <Bookmark size={18} />
-                      <span>Save</span>
+                      <span>Coming Soon</span>
                     </button>
                     { !shouldShowFreeResponse(questionDetails.answerChoices) &&
                       <button 
@@ -589,6 +593,22 @@ function SATPage() {
                 </>
               )}
               <div className="question-right-side">
+                <div className="question-control-header">
+                  <button 
+                    className="control-button save-button"
+                  >
+                    <Bookmark size={18} />
+                    <span>Coming Soon</span>
+                  </button>
+                  <button 
+                    className={`control-button eliminate-button 
+                        ${isCrossOutMode ? 'active' : ''}`}
+                    onClick={() => setIsCrossOutMode(!isCrossOutMode)}
+                  >
+                    <X size={18} />
+                    <span>Eliminate Answer</span> 
+                  </button>
+                </div>
                 <div className="question-text">
                   <div dangerouslySetInnerHTML={{ __html: questionDetails.question }} />
                 </div>
