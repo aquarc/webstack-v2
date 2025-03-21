@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ChevronDown, Clock, X, Play, Pause, RotateCcw } from 'lucide-react';
 
 const PomodoroTimer = () => {
+  const [mode, setMode] = useState('Stopwatch'); // 'Pomodoro' or 'Stopwatch'
+  /* Pomodoro mode */
   const [isActive, setIsActive] = useState(false);
   const [isBreak, setIsBreak] = useState(false);
     
@@ -36,10 +38,47 @@ const PomodoroTimer = () => {
     { label: "20", value: 20 * 60 }
   ];
 
+  // reset timer when mode is changed
+  useEffect(() => {
+    resetTimer();
+  }, [mode]);
+
   // Keep input in sync with duration changes
   useEffect(() => {
     setInputValue(String(selectedDuration / 60));
   }, [selectedDuration]);
+
+  /*
+  // Timer logic
+  useEffect(() => {
+    let interval = null;
+
+    if (isActive) {
+      interval = setInterval(() => {
+        if (mode === 'Pomodoro') {
+          setTime(time => time - 1);
+        } else {
+          setTime(time => time + 1);
+        }
+      }, 1000);
+    }
+
+    if (mode === 'Pomodoro' && time <= 0) {
+      clearInterval(interval);
+      if (!isBreak) {
+        const newCount = PomodoroCount + 1;
+        setPomodoroCount(newCount);
+        setIsBreak(true);
+        setTime(newCount % 4 === 0 ? selectedLongBreakDuration : selectedBreakDuration);
+      } else {
+        setIsBreak(false);
+        setTime(selectedDuration);
+      }
+    }
+
+    return () => clearInterval(interval);
+  }, [isActive, time, isBreak, mode, selectedDuration, selectedBreakDuration, selectedLongBreakDuration, PomodoroCount]);
+  */
 
   // Modified duration handling
   const handleDurationChange = (value, updateInput = true) => {
@@ -70,32 +109,35 @@ const PomodoroTimer = () => {
     setBreakInputValue(String(selectedBreakDuration / 60));
   }, [selectedBreakDuration]);
 
-  // Update timer effect to handle long breaks
   useEffect(() => {
-    let interval = null;
+    if (mode === 'Pomodoro') {
+      let interval = null;
 
-    if (isActive && time > 0) {
-      interval = setInterval(() => {
-        setTime(time => time - 1);
-      }, 1000);
-    } else if (isActive && time <= 0) {
-      clearInterval(interval);
-      if (!isBreak) {
-        // Completed a work session
-        const newCount = pomodoroCount + 1;
-        setPomodoroCount(newCount);
-        
-        // Every 4 pomodoros, take a long break
-        setIsBreak(true);
-        setTime(newCount % 4 === 0 ? selectedLongBreakDuration : selectedBreakDuration);
-      } else {
-        // Break finished
-        setIsBreak(false);
-        setTime(selectedDuration);
+      if (isActive && time > 0) {
+        interval = setInterval(() => {
+          setTime(time => time - 1);
+        }, 1000);
+      } else if (isActive && time <= 0) {
+        clearInterval(interval);
+        if (!isBreak) {
+          // Completed a work session
+          const newCount = pomodoroCount + 1;
+          setPomodoroCount(newCount);
+          
+          // Every 4 Pomodoros, take a long break
+          setIsBreak(true);
+          setTime(newCount % 4 === 0 ? selectedLongBreakDuration : selectedBreakDuration);
+        } else {
+          // Break finished
+          setIsBreak(false);
+          setTime(selectedDuration);
+        }
+
+        return () => clearInterval(interval);
+      } else if (mode == "Stopwatch") {
+          setTime(time => time + 1);
       }
     }
-
-    return () => clearInterval(interval);
   }, [isActive, time, isBreak, selectedDuration, selectedBreakDuration, selectedLongBreakDuration, pomodoroCount]);
 
   // Add long break handlers
@@ -105,15 +147,8 @@ const PomodoroTimer = () => {
     if (updateInput) setLongBreakInputValue(String(minutes));
   };
 
-  // Add break duration handler
-  const handleBreakDurationChange = (value, updateInput = true) => {
-    const minutes = value / 60;
-    setSelectedBreakDuration(value);
-    if (updateInput) setBreakInputValue(String(minutes));
-  };
-
   const toggleTimer = () => {
-    if (!isActive) {
+    if (mode === 'Pomodoro' && !isActive) {
       setTime(selectedDuration);
     }
     setIsActive(!isActive);
@@ -122,7 +157,11 @@ const PomodoroTimer = () => {
   const resetTimer = () => {
     setIsActive(false);
     setIsBreak(false);
-    setTime(selectedDuration);
+    if (mode === 'Pomodoro') {
+      setTime(selectedDuration);
+    } else {
+      setTime(0);
+    }
   };
 
   const formatTime = (seconds) => {
@@ -185,100 +224,119 @@ const PomodoroTimer = () => {
             </div>
           </div>
 
-          {/* Duration Selection */}
-          <div className="mb-4">
-            <label className="block text-xs text-gray-600 mb-2">Duration:</label>
-            <div className="input-group">
-              <input 
-                id="duration-work" 
-                className="input-group-input"
-                type="number"
-                value={inputValue}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setInputValue(value);
-                  const minutes = parseFloat(value);
-                  if (!isNaN(minutes) && minutes > 0) {
-                    handleDurationChange(minutes * 60, false);
-                  }
-                }}
-                onBlur={() => {
-                  const minutes = parseFloat(inputValue);
-                  if (isNaN(minutes) || minutes <= 0) {
-                    handleDurationChange(selectedDuration); // Reset to last valid value
-                  }
-                }}
+          {/* Mode Toggle */}
+          <div className="input-group">
+            {["Stopwatch", "Pomodoro"].map((modeChoice) => (
+              <button
+                key={modeChoice}
+                onClick={() => setMode(modeChoice)}
+                type="button"
+                className={`input-group-button ${
+                  modeChoice === mode ? 'active' : ''
+                }`}
               >
-              </input>
-              {durations.map(duration => (
-                <button
-                  key={duration.value}
-                  type="button"
-                  className={`input-group-button ${
-                    selectedDuration === duration.value ? 'active' : ''
-                  }`}
-                  onClick={() => handleDurationChange(duration.value)}
+                {modeChoice}
+              </button>
+            ))}
+          </div>
+
+          {/* Pomodoro settings */ }
+          {/* Duration Selection */}
+          {mode === 'Pomodoro' && (
+            <div className="mb-4">
+              <label className="block text-xs text-gray-600 mb-2">Duration:</label>
+              <div className="input-group">
+                <input 
+                  id="duration-work" 
+                  className="input-group-input"
+                  type="number"
+                  value={inputValue}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setInputValue(value);
+                    const minutes = parseFloat(value);
+                    if (!isNaN(minutes) && minutes > 0) {
+                      handleDurationChange(minutes * 60, false);
+                    }
+                  }}
+                  onBlur={() => {
+                    const minutes = parseFloat(inputValue);
+                    if (isNaN(minutes) || minutes <= 0) {
+                      handleDurationChange(selectedDuration); // Reset to last valid value
+                    }
+                  }}
                 >
-                  {duration.label}
-                </button>
-              ))}
-            </div>
-            <label className="block text-xs text-gray-600 mb-2">Break Duration:</label>
-            <input 
-              id="duration-break" 
-              type="number"
-              value={breakInputValue}
-              onChange={(e) => {
-                const value = e.target.value;
-                setBreakInputValue(value);
-                const minutes = parseFloat(value);
-                if (!isNaN(minutes) && minutes > 0) {
-                  handleBreakDurationChange(minutes * 60, false);
-                }
-              }}
-              onBlur={() => {
-                const minutes = parseFloat(breakInputValue);
-                if (isNaN(minutes) || minutes <= 0) {
-                  handleBreakDurationChange(selectedBreakDuration);
-                }
-              }}
-            />
-            <label className="block text-xs text-gray-600 mb-2">Long Break Duration (Every 4): </label>
-            <div className="input-group">
+                </input>
+                {durations.map(duration => (
+                  <button
+                    key={duration.value}
+                    type="button"
+                    className={`input-group-button ${
+                      selectedDuration === duration.value ? 'active' : ''
+                    }`}
+                    onClick={() => handleDurationChange(duration.value)}
+                  >
+                    {duration.label}
+                  </button>
+                ))}
+              </div>
+              <label className="block text-xs text-gray-600 mb-2">Break Duration:</label>
               <input 
-                id="duration-long-break" 
-                className="input-group-input"
+                id="duration-break" 
                 type="number"
-                value={longBreakInputValue}
+                value={breakInputValue}
                 onChange={(e) => {
                   const value = e.target.value;
-                  setLongBreakInputValue(value);
+                  setBreakInputValue(value);
                   const minutes = parseFloat(value);
                   if (!isNaN(minutes) && minutes > 0) {
-                    handleLongBreakDurationChange(minutes * 60, false);
+                    handleBreakDurationChange(minutes * 60, false);
                   }
                 }}
                 onBlur={() => {
-                  const minutes = parseFloat(longBreakInputValue);
+                  const minutes = parseFloat(breakInputValue);
                   if (isNaN(minutes) || minutes <= 0) {
-                    handleLongBreakDurationChange(selectedLongBreakDuration);
+                    handleBreakDurationChange(selectedBreakDuration);
                   }
                 }}
               />
-              {longBreakDurations.map(duration => (
-                <button
-                  key={duration.value}
-                  onClick={() => handleLongBreakDurationChange(duration.value)}
-                  type="button"
-                  className={`input-group-button ${
-                    selectedLongBreakDuration === duration.value ? 'active' : ''
-                  }`}
-                >
-                  {duration.label}
-                </button>
-              ))}
+              <label className="block text-xs text-gray-600 mb-2">Long Break Duration (Every 4): </label>
+              <div className="input-group">
+                <input 
+                  id="duration-long-break" 
+                  className="input-group-input"
+                  type="number"
+                  value={longBreakInputValue}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setLongBreakInputValue(value);
+                    const minutes = parseFloat(value);
+                    if (!isNaN(minutes) && minutes > 0) {
+                      handleLongBreakDurationChange(minutes * 60, false);
+                    }
+                  }}
+                  onBlur={() => {
+                    const minutes = parseFloat(longBreakInputValue);
+                    if (isNaN(minutes) || minutes <= 0) {
+                      handleLongBreakDurationChange(selectedLongBreakDuration);
+                    }
+                  }}
+                />
+                {longBreakDurations.map(duration => (
+                  <button
+                    key={duration.value}
+                    onClick={() => handleLongBreakDurationChange(duration.value)}
+                    type="button"
+                    className={`input-group-button ${
+                      selectedLongBreakDuration === duration.value ? 'active' : ''
+                    }`}
+                  >
+                    {duration.label}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       )}
     </div>
