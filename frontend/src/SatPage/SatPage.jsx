@@ -17,6 +17,7 @@ import Collapsible from '../Components/Collapsible';
 import Draggable from 'react-draggable';
 import { ResizableBox } from 'react-resizable';
 import 'react-resizable/css/styles.css';
+import Cookies from 'js-cookie';
 
 function SATPage() {
   // navbar
@@ -58,6 +59,12 @@ function SATPage() {
   const [isCrossOutMode, setIsCrossOutMode] = useState(false);
   const [crossedOutAnswers, setCrossedOutAnswers] = useState({});
 
+  // State variables for time
+  const [startTime, setStartTime] = useState(null);
+  const [topicTimings, setTopicTimings] = useState({});
+
+  const userCookie = Cookies.get('user');
+
   // Toggle function for the calculator
   const toggleCalculator = () => {
     setShowCalculator((prev) => !prev);
@@ -83,6 +90,73 @@ function SATPage() {
     }
   }, [selectedTestSections]);
 
+
+  useEffect(() => {
+    if (currentQuestions.length > 0) {
+      // Record end time for previous question if applicable
+      if (startTime !== null) {
+        const previousQuestion = currentQuestions[currentQuestionIndex - 1 < 0 ? 
+          currentQuestions.length - 1 : currentQuestionIndex - 1];
+        
+        // Calculate time spent in seconds
+        const timeSpent = Math.floor((Date.now() - startTime) / 1000);
+        
+        // Only record if user spent more than 1 second on the question
+        if (timeSpent > 1) {
+          const topic = previousQuestion.skill;
+          
+          // Update local tracking state
+          setTopicTimings(prev => ({
+            ...prev,
+            [topic]: (prev[topic] || 0) + timeSpent
+          }));
+          
+          // Send timing data to backend
+          sendTimingData(previousQuestion.skill, timeSpent);
+        }
+      }
+      
+      // Start timing for new question
+      setStartTime(Date.now());
+    }
+  }, [currentQuestionIndex, currentQuestions]);
+  
+  // This function sends timing data to backend
+  const sendTimingData = async (topic, timeSpent) => {
+    try {
+        const response = await fetch('/sat/record-topic-timing', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                topic: topic,
+                timeSpent: timeSpent,
+                userId: userCookie.userId // Assuming you have the user ID in the cookie
+            }),
+        });
+        
+        if (!response.ok) {
+            console.error('Failed to record timing data');
+        }
+    } catch (error) {
+        console.error('Error sending timing data:', error);
+    }
+};
+  
+  // Also add a cleanup effect to record time when component unmounts
+  useEffect(() => {
+    return () => {
+      if (startTime !== null && currentQuestions.length > 0) {
+        const currentQuestion = currentQuestions[currentQuestionIndex];
+        const timeSpent = Math.floor((Date.now() - startTime) / 1000);
+        
+        if (timeSpent > 1) {
+          sendTimingData(currentQuestion.skill, timeSpent);
+        }
+      }
+    };
+  }, [startTime, currentQuestionIndex, currentQuestions]);
 
   // Hide calculator if Math section is no longer selected
   useEffect(() => {

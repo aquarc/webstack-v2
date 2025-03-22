@@ -3,11 +3,13 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"github.com/joho/godotenv"
-	_ "github.com/lib/pq"
 	"log"
 	"net/http"
 	"os"
+	"strings"
+
+	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
 
 	"github.com/rs/cors"
 )
@@ -31,6 +33,20 @@ func index(w http.ResponseWriter, r *http.Request) {
 // indexThing loads index.html from the build directory.
 func indexThing(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "./frontend/build/index.html")
+}
+
+// Add this to your main.go
+func serveStatic(w http.ResponseWriter, r *http.Request) {
+    path := "./frontend/build" + r.URL.Path
+    
+    // Set the correct Content-Type based on file extension
+    if strings.HasSuffix(path, ".css") {
+        w.Header().Set("Content-Type", "text/css")
+    } else if strings.HasSuffix(path, ".js") {
+        w.Header().Set("Content-Type", "application/javascript")
+    }
+    
+    http.ServeFile(w, r, path)
 }
 
 func main() {
