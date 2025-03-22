@@ -1,5 +1,5 @@
 import { React, useEffect } from 'react'
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom'
 import NavBar from './Components/NavBar'
 import LandingPage from './LandingPage/LandingPage';
 import LPFooter from './Components/Footer';
@@ -12,12 +12,14 @@ import AboutUsPage from './AboutPage/AboutPage';
 import LoginPage from './Authentication/Login/Login';
 import AuthRedirect from './Components/AuthRedirect';
 import Cookie from 'js-cookie';
+import Overview from './Dashboard/Overview';
+import Analytics from './Dashboard/Analytics';
+import EcFinder from './Dashboard/EcFinder';
+import SatPrep from './Dashboard/SatPrep';
 
 // Wrapper component to handle conditional NavBar rendering
 const AppContent = () => {
   const location = useLocation();
-  const isDashboard = location.pathname === '/dashboard';
-  const isSatPage = location.pathname === '/sat';
 
   useEffect(() => {
     if (process.env.NODE_ENV !== 'production' && window.gtag) {
@@ -29,17 +31,31 @@ const AppContent = () => {
 
   return (
     <>
-      {!isDashboard && !isSatPage && <NavBar />}
+      {/* Routes that will not render the nav bar */}
+      {!location.pathname.startsWith('/overview') && !location.pathname.startsWith('/analytics') 
+        && !location.pathname.startsWith('/ec-finder') && !location.pathname.startsWith('/sat-prep')
+        && location.pathname !== '/sat' && <NavBar
+      />}    
+
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/feedback" element={<FeedBackPage />} />
         <Route path="/sat" element={<SatPage />} />
         <Route path="/extracurricular" element={<ECPage/>} />
         <Route path="/signup" element={<SignUpPage/>} />
-        <Route path="/dashboard" element={<Dashboard/>} />
         <Route path="/aboutPage" element={<AboutUsPage/>} />
         <Route path="/login" element={<LoginPage />} />
-
+        
+        {/* Dashboard routes - nested structure */}
+        <Route path="/" element={<Dashboard />}>
+          <Route path="dashboard" element={<Navigate to="/overview" replace />} />
+          <Route path="overview" element={<Overview />} />
+          <Route path="analytics" element={<Analytics />} />
+          <Route path="ec-finder" element={<EcFinder />} />
+          <Route path="sat-prep" element={<SatPrep />} />
+        </Route>
+        
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       {/* Use location to conditionally render footer */}
       <Routes>

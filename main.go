@@ -85,6 +85,14 @@ func main() {
 	http.HandleFunc("/signup", indexThing)
 	http.HandleFunc("/dashboard", indexThing)
 	http.HandleFunc("/login", indexThing)
+	http.HandleFunc("/overview", indexThing)
+	http.HandleFunc("/analytics", indexThing)
+	http.HandleFunc("/ec-finder", indexThing)
+	http.HandleFunc("/sat-prep", indexThing)
+
+
+
+
 
 	// Set up CORS with credentials enabled.
 	handler := cors.New(cors.Options{

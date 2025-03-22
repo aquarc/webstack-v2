@@ -1,4 +1,3 @@
-// Components/AuthRedirect.js
 import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Cookies from 'js-cookie';
@@ -9,17 +8,27 @@ const AuthRedirect = () => {
     
     useEffect(() => {
         const user = Cookies.get('user');
-        const publicRoutes = ['/', '/login', '/signup', '/feedback', '/aboutPage'];
+        const publicRoutes = ['/', '/login', '/signup', '/feedback', '/aboutPage', '/extracurricular', '/sat'];
+        const isDashboardRoute = location.pathname === '/dashboard';
+        const isDashboardSubRoute = location.pathname.startsWith('/overview') || 
+                                   location.pathname.startsWith('/analytics') || 
+                                   location.pathname.startsWith('/ec-finder') || 
+                                   location.pathname.startsWith('/sat-prep');
         const currentPath = location.pathname;
         
-        // Only redirect to dashboard if user is authenticated AND on a public route
+        // Redirect authenticated users from public routes to overview
         if (user && publicRoutes.includes(currentPath)) {
-            navigate('/dashboard');
+            navigate('/overview');
         }
         
-        // Redirect to landing page if user is not authenticated AND on a protected route
+        // Redirect unauthenticated users from protected routes to landing page
         if (!user && !publicRoutes.includes(currentPath)) {
             navigate('/');
+        }
+
+        // Redirect from /dashboard to /overview
+        if (user && isDashboardRoute) {
+            navigate('/overview');
         }
     }, [navigate, location]);
 
