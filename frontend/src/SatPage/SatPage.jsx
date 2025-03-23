@@ -214,10 +214,6 @@ function SATPage() {
       setError('Please select a test type.');
       return;
     }
-    if (selectedTestSections.length === 0) {
-      setError('Please select a test section.');
-      return;
-    }
     if (Object.keys(selectedSubdomains).length === 0) {
       if (selectedTestSections.includes('Math')) {
         for (const key in MathSubdomains) {
@@ -752,6 +748,8 @@ function SATPage() {
               </div>
             ))}
           </div>
+
+          {/* 
           <div title="Test Section">
             <p>Section</p>
             {['Math', 'English'].map((section) => (
@@ -769,19 +767,42 @@ function SATPage() {
               </div>
             ))}
           </div>
-          {selectedTestSections && (
-            <Collapsible 
-              title="Unit"
-              isControlled
-              isOpen={isSubdomainOpen}
-              onToggle={setIsSubdomainOpen}
-            >
-              {renderSubdomainInputs()}
-            </Collapsible>
+          */}
+
+          {(
+            [MathSubdomains, EnglishSubdomains].map((selectedTestChoice) => (
+                <Collapsible 
+                  title=
+                        {selectedTestChoice == MathSubdomains 
+                            ? 'Math' : 'English'}
+                >
+                    { Object.entries(selectedTestChoice)
+                          .map(([category, subdomains]) => (
+                      <React.Fragment key={category}>
+                        <h4 class="sidebar-standalone-category">
+                          {category}
+                        </h4>
+                        {subdomains.map((subdomain) => (
+                          <div key={subdomain.id} className="checkbox-group">
+                            <input
+                              type="checkbox"
+                              id={subdomain.id}
+                              onChange={subdomain.onChange}
+                              checked={subdomain.checked}
+                            />
+                            <label htmlFor={subdomain.id}>{subdomain.label}</label>
+                          </div>
+                        ))}
+                      </React.Fragment>
+                    ))}
+                </Collapsible>
+            ))
           )}
-          <Collapsible 
-            title="Difficulty"
-          >
+
+          <div class="sidebar-standalone-content">
+            <h2 class="sidebar-standalone-header">
+              Difficulty
+            </h2>
             {['Easy', 'Medium', 'Hard'].map((difficulty) => (
               <div key={difficulty} className="checkbox-group">
                 <input
@@ -793,7 +814,7 @@ function SATPage() {
                 <label htmlFor={difficulty.toLowerCase()}>{difficulty}</label>
               </div>
             ))}
-          </Collapsible>
+          </div>
           { questionDisplay.type === 'error' && (
             <div className="error-message">
               {questionDisplay.content}

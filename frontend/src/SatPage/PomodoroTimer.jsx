@@ -110,9 +110,10 @@ const PomodoroTimer = () => {
   }, [selectedBreakDuration]);
 
   useEffect(() => {
-    if (mode === 'Pomodoro') {
-      let interval = null;
+    // update interval
+    let interval = null;
 
+    if (mode === 'Pomodoro') {
       if (isActive && time > 0) {
         interval = setInterval(() => {
           setTime(time => time - 1);
@@ -132,13 +133,18 @@ const PomodoroTimer = () => {
           setIsBreak(false);
           setTime(selectedDuration);
         }
-
-        return () => clearInterval(interval);
-      } else if (mode == "Stopwatch") {
+      } 
+    } else if (mode === 'Stopwatch') {
+      if (isActive) {
+        interval = setInterval(() => {
           setTime(time => time + 1);
+        }, 1000);
       }
     }
-  }, [isActive, time, isBreak, selectedDuration, selectedBreakDuration, selectedLongBreakDuration, pomodoroCount]);
+
+    return () => clearInterval(interval);
+  }, [isActive, time, isBreak, mode, selectedDuration, 
+      selectedBreakDuration, selectedLongBreakDuration, pomodoroCount]);
 
   // Add long break handlers
   const handleLongBreakDurationChange = (value, updateInput = true) => {
@@ -148,8 +154,12 @@ const PomodoroTimer = () => {
   };
 
   const toggleTimer = () => {
-    if (mode === 'Pomodoro' && !isActive) {
-      setTime(selectedDuration);
+    if (!isActive) {
+      if (mode === 'Pomodoro') {
+        setTime(selectedDuration);
+      } else if (mode === 'Stopwatch') {
+        setTime(0);
+      }
     }
     setIsActive(!isActive);
   };
@@ -162,6 +172,14 @@ const PomodoroTimer = () => {
     } else {
       setTime(0);
     }
+  };
+
+
+  // Add break duration handler
+  const handleBreakDurationChange = (value, updateInput = true) => {
+    const minutes = value / 60;
+    setSelectedBreakDuration(value);
+    if (updateInput) setBreakInputValue(String(minutes));
   };
 
   const formatTime = (seconds) => {
@@ -192,7 +210,7 @@ const PomodoroTimer = () => {
           className="absolute right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg w-64 p-4 z-50 pomodoro-modal"
         >
           <div className="sidebar-header">
-            <h3 className="text-sm font-semibold text-gray-900">Pomodoro Timer</h3>
+            <h3 className="text-sm font-semibold text-gray-900">Stopwatch/Timer</h3>
             <div>
               <button
                 onClick={toggleTimer}
@@ -231,7 +249,7 @@ const PomodoroTimer = () => {
                 key={modeChoice}
                 onClick={() => setMode(modeChoice)}
                 type="button"
-                className={`input-group-button ${
+                className={`input-group-button solo ${
                   modeChoice === mode ? 'active' : ''
                 }`}
               >
