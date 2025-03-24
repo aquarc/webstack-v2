@@ -12,6 +12,10 @@ import AboutUsPage from './AboutPage/AboutPage';
 import LoginPage from './Authentication/Login/Login';
 import AuthRedirect from './Components/AuthRedirect';
 
+import Cookie from 'js-cookie';
+import ECSection from './LandingPage/ECSection/ECSection';
+
+
 // Wrapper component to handle conditional NavBar rendering
 const AppContent = () => {
   const location = useLocation();
@@ -37,7 +41,6 @@ const AppContent = () => {
         <Route path="/dashboard" element={<Dashboard/>} />
         <Route path="/aboutPage" element={<AboutUsPage/>} />
         <Route path="/login" element={<LoginPage />} />
-
       </Routes>
       {/* Use location to conditionally render footer */}
       <Routes>
@@ -46,6 +49,7 @@ const AppContent = () => {
         <Route path="/feedback" element={<LPFooter />} />
         <Route path="/extracurricular" element={<LPFooter />} />
         <Route path="/aboutPage" element={<LPFooter />} />
+        <Route path="/ecpage" element={<ECSection />} />
       </Routes>
     </>
   );
