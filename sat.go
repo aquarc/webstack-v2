@@ -67,6 +67,12 @@ type TopicTiming struct {
 	TimeSpent int    `json:"timeSpent"`
 }
 
+// Type definition for tracking correct/incorrect answers
+type AnswerTracking struct {
+	Topic    string `json:"topic"`
+	Correct  bool   `json:"correct"`
+}
+
 // -----------------------------
 // Global Email Dialer
 // -----------------------------
@@ -553,6 +559,142 @@ func recordTopicTiming(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+// Function for recording correct/incorrect answers by topic
+func recordTopicAnswers(w http.ResponseWriter, r *http.Request) {
+	// Get email from the session cookie
+	cookie, err := r.Cookie("session")
+	if err != nil {
+		http.Error(w, "Unauthorized: No session cookie", http.StatusUnauthorized)
+		return
+	}
+
+	sessionToken := cookie.Value
+
+	// Look up email from session token
+	var email string
+	err = db.QueryRow("SELECT email FROM user_sessions WHERE token = $1", sessionToken).Scan(&email)
+	if err != nil {
+		http.Error(w, "Unauthorized: Invalid session", http.StatusUnauthorized)
+		return
+	}
+
+	var tracking AnswerTracking
+	if err := json.NewDecoder(r.Body).Decode(&tracking); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Update the correct or incorrect count based on the answer result
+	var updateColumn string
+	if tracking.Correct {
+		updateColumn = "correct_count"
+	} else {
+		updateColumn = "incorrect_count"
+	}
+
+	// Insert or update the answer tracking record
+	query := fmt.Sprintf(`
+		INSERT INTO user_topic_answers (email, topic, correct_count, incorrect_count)
+		VALUES ($1, $2, $3, $4)
+		ON CONFLICT (email, topic) DO UPDATE
+		SET %s = user_topic_answers.%s + 1
+	`, updateColumn, updateColumn)
+
+	// Default values for correct_count and incorrect_count
+	correctCount := 0
+	incorrectCount := 0
+	
+	// Set the appropriate count to 1 based on the answer
+	if tracking.Correct {
+		correctCount = 1
+	} else {
+		incorrectCount = 1
+	}
+
+	_, err = db.Exec(query, email, tracking.Topic, correctCount, incorrectCount)
+	if err != nil {
+		log.Printf("Error recording topic answer: %v", err)
+		http.Error(w, "Failed to record answer data", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+// Function to get answer statistics by topic
+func getTopicAnswerStats(w http.ResponseWriter, r *http.Request) {
+    // Get email from the session cookie
+    cookie, err := r.Cookie("session")
+    if err != nil {
+        http.Error(w, "Unauthorized: No session cookie", http.StatusUnauthorized)
+        return
+    }
+
+    sessionToken := cookie.Value
+
+    // Look up email from session token
+    var email string
+    err = db.QueryRow("SELECT email FROM user_sessions WHERE token = $1", sessionToken).Scan(&email)
+    if err != nil {
+        http.Error(w, "Unauthorized: Invalid session", http.StatusUnauthorized)
+        return
+    }
+
+    // Query the database for answer statistics
+    rows, err := db.Query(`
+        SELECT topic, correct_count, incorrect_count
+        FROM user_topic_answers
+        WHERE email = $1
+    `, email)
+    if err != nil {
+        log.Printf("Error querying answer statistics: %v", err)
+        http.Error(w, "Failed to fetch answer statistics", http.StatusInternalServerError)
+        return
+    }
+    defer rows.Close()
+
+    // Prepare the response data
+    type AnswerStat struct {
+        Topic         string `json:"topic"`
+        CorrectCount  int    `json:"correctCount"`
+        IncorrectCount int   `json:"incorrectCount"`
+        TotalCount    int    `json:"totalCount"`
+        CorrectPercentage float64 `json:"correctPercentage"`
+    }
+    var answerStats []AnswerStat
+
+    for rows.Next() {
+        var topic string
+        var correctCount, incorrectCount int
+        if err := rows.Scan(&topic, &correctCount, &incorrectCount); err != nil {
+            log.Printf("Error scanning answer stats row: %v", err)
+            continue
+        }
+        
+        totalCount := correctCount + incorrectCount
+        var correctPercentage float64 = 0
+        if totalCount > 0 {
+            correctPercentage = float64(correctCount) / float64(totalCount) * 100
+        }
+        
+        answerStats = append(answerStats, AnswerStat{
+            Topic: topic, 
+            CorrectCount: correctCount, 
+            IncorrectCount: incorrectCount,
+            TotalCount: totalCount,
+            CorrectPercentage: correctPercentage,
+        })
+    }
+
+    // Return the answer stats as JSON
+    w.Header().Set("Content-Type", "application/json")
+    if err := json.NewEncoder(w).Encode(answerStats); err != nil {
+        log.Printf("Error encoding answer stats to JSON: %v", err)
+        http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+        return
+    }
+}
+
 // Add this function to handle fetching practice times
 func getPracticeTimes(w http.ResponseWriter, r *http.Request) {
     // Get email from the session cookie
@@ -695,6 +837,18 @@ func initializeSat(db *sql.DB) {
 		log.Fatal(err)
 	}
 
+	// Create table for topic answer tracking
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS user_topic_answers (
+        email TEXT,
+        topic TEXT,
+        correct_count INTEGER DEFAULT 0,
+        incorrect_count INTEGER DEFAULT 0,
+        PRIMARY KEY (email, topic)
+    )`)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	// Create table for user sessions if you don't have one
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS user_sessions (
 	token TEXT PRIMARY KEY,
@@ -714,6 +868,8 @@ func initializeSat(db *sql.DB) {
 	http.HandleFunc("/sat/login", login)
 	http.HandleFunc("/sat/record-topic-timing", recordTopicTiming)
 	http.HandleFunc("/sat/get-practice-times", getPracticeTimes)
+	http.HandleFunc("/sat/record-topic-answers", recordTopicAnswers)
+	http.HandleFunc("/sat/get-topic-answer-stats", getTopicAnswerStats)
 
 
 	// If you have legacy SAT initialization, call it here.
