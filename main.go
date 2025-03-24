@@ -90,10 +90,6 @@ func main() {
 	http.HandleFunc("/ec-finder", indexThing)
 	http.HandleFunc("/sat-prep", indexThing)
 
-
-
-
-
 	// Set up CORS with credentials enabled.
 	handler := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000", "https://aquarc.org"},

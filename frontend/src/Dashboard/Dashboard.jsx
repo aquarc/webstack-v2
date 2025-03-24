@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import Cookies from 'js-cookie';
-import { BarChart, LineChart, PieChart, Bell, User, LogOut, Book, Award, BarChart2, Search } from 'lucide-react';
+import { BarChart, Bell, User, LogOut, Book, Award, BarChart2 } from 'lucide-react';
 import './Dashboard.css';
 
 function Dashboard() {
@@ -39,6 +39,7 @@ function Dashboard() {
             <aside className="sidebar">
                 <div className="sidebar-header">
                     <img src="/aquLogo.png" alt="Aquarc Logo" className="sidebar-logo" />
+                    <h1>aquarc</h1>
                 </div>
                 
                 <div className="sidebar-menu">
