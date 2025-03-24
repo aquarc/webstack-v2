@@ -721,7 +721,7 @@ function SATPage() {
             >
               Previous
             </button>
-            <span>
+            <span class="progress-text">
               {`${navigation.currentIndex} / ${navigation.totalQuestions}`}
             </span>
             <button
