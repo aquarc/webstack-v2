@@ -8,27 +8,32 @@ const AuthRedirect = () => {
     
     useEffect(() => {
         const user = Cookies.get('user');
-        const publicRoutes = ['/', '/login', '/signup', '/feedback', '/aboutPage', '/extracurricular', '/sat'];
-        const isDashboardRoute = location.pathname === '/dashboard';
-        const isDashboardSubRoute = location.pathname.startsWith('/overview') || 
-                                   location.pathname.startsWith('/analytics') || 
-                                   location.pathname.startsWith('/ec-finder') || 
-                                   location.pathname.startsWith('/sat-prep');
+        const publicRoutes = [
+            '/', 
+            '/login', 
+            '/signup', 
+            '/feedback', 
+            '/aboutPage', 
+            '/extracurricular', 
+            '/sat'
+        ];
+        const dashboardRoutes = [
+            '/dashboard/overview',
+            '/dashboard/analytics',
+            '/dashboard/ec-finder',
+            '/dashboard/sat-prep',
+            '/dashboard/sat'
+        ];
         const currentPath = location.pathname;
         
-        // Redirect authenticated users from public routes to overview
+        // Redirect authenticated users from public routes to dashboard overview
         if (user && publicRoutes.includes(currentPath)) {
-            navigate('/overview');
+            navigate('/dashboard/overview');
         }
         
         // Redirect unauthenticated users from protected routes to landing page
-        if (!user && !publicRoutes.includes(currentPath)) {
+        if (!user && (dashboardRoutes.includes(currentPath) || currentPath.startsWith('/dashboard'))) {
             navigate('/');
-        }
-
-        // Redirect from /dashboard to /overview
-        if (user && isDashboardRoute) {
-            navigate('/overview');
         }
     }, [navigate, location]);
 

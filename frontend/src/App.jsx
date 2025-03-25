@@ -32,10 +32,11 @@ const AppContent = () => {
   return (
     <>
       {/* Routes that will not render the nav bar */}
-      {!location.pathname.startsWith('/overview') && !location.pathname.startsWith('/analytics') 
-        && !location.pathname.startsWith('/ec-finder') && !location.pathname.startsWith('/sat-prep')
-        && location.pathname !== '/sat' && <NavBar
-      />}    
+      {!location.pathname.startsWith('/dashboard/overview') 
+        && !location.pathname.startsWith('/dashboard/analytics') 
+        && !location.pathname.startsWith('/dashboard/ec-finder') 
+        && !location.pathname.startsWith('/dashboard/sat-prep')
+        && location.pathname !== '/sat' && <NavBar />}    
 
       <Routes>
         <Route path="/" element={<LandingPage />} />
@@ -47,13 +48,19 @@ const AppContent = () => {
         <Route path="/login" element={<LoginPage />} />
         
         {/* Dashboard routes - nested structure */}
-        <Route path="/" element={<Dashboard />}>
-          <Route path="dashboard" element={<Navigate to="/overview" replace />} />
+        <Route path="/dashboard" element={<Dashboard />}>
+          <Route index element={<Navigate to="overview" replace />} />
           <Route path="overview" element={<Overview />} />
           <Route path="analytics" element={<Analytics />} />
           <Route path="ec-finder" element={<EcFinder />} />
           <Route path="sat-prep" element={<SatPrep />} />
+          <Route path="sat-prep" element={<SatPrep />}>
+              <Route path="sat" element={<SatPage />} />
+          </Route>
+          <Route path="/dashboard/sat-prep/sat" element={<SatPage />} />
+
         </Route>
+
         
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 
 function SatPrep() {
     const navigate = useNavigate();
     const location = useLocation();
     const [practiceTimes, setPracticeTimes] = useState([]);
+    const [isInPracticeTest, setIsInPracticeTest] = useState(false);
 
     const handleStartPracticeSession = () => {
-        // Navigate to the SAT practice test page
-        navigate('/sat');
+        // Navigate to the SAT practice test page and set practice test state
+        navigate('/dashboard/sat-prep/sat');
+        setIsInPracticeTest(true);
     };
+
+
 
     useEffect(() => {
         const fetchPracticeTimes = async () => {
@@ -33,6 +37,16 @@ function SatPrep() {
     
         fetchPracticeTimes();
     }, []);
+
+    useEffect(() => {
+        // Update practice test state based on current route
+        setIsInPracticeTest(location.pathname === '/dashboard/sat-prep/sat');
+    }, [location]);
+
+    // If in practice test, render only the practice test content
+    if (isInPracticeTest) {
+        return <Outlet />;
+    }
 
     // Check if the current route is /sat
     const isPracticeTestPage = location.pathname === '/sat';
