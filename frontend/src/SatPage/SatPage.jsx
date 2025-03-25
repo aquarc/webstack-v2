@@ -707,13 +707,13 @@ function SATPage() {
                           <div 
                             key={subdomain.id} 
                             className="checkbox-group"
-                            ref={((el) => selectedRef.current[selectedRefLength++] = el)}
                           >
                             <input
                               type="checkbox"
                               id={subdomain.id}
                               onChange={subdomain.onChange}
                               checked={subdomain.checked}
+                              ref={((el) => selectedRef.current[selectedRefLength++] = el)}
                             />
                             <label htmlFor={subdomain.id}>{subdomain.label}</label>
                           </div>
