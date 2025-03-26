@@ -235,6 +235,9 @@ function SATPage() {
     }
   };
 
+  const subdomainData = prepareSubdomains(selectedSubdomains, handleSubdomainChange);
+  console.log("subdomainData:", subdomainData);
+
   const questionDisplay = renderQuestionDisplay(
     isLoading,
     error,
@@ -243,6 +246,31 @@ function SATPage() {
     handleNavigatePrevious,
     handleNavigateNext
   );
+
+  const renderSubdomainInputs = () => {
+    if (subdomainData.length <= 0) {
+      return null;
+    }
+    return subdomainData.map(({ category, subdomains }) => (
+      <Collapsible 
+        title={category}
+        key={category}
+      >
+        <h4>{category}</h4>
+        {subdomains.map((subdomain) => (
+          <div key={subdomain.id} className="checkboxgroup">
+            <input
+              type="checkbox"
+              id={subdomain.id}
+              onChange={subdomain.onChange}
+              checked={subdomain.checked}
+            />
+            <label htmlFor={subdomain.id}>{subdomain.label}</label>
+          </div>
+        ))}
+      </Collapsible>
+    ));
+  };
 
   const shouldShowFreeResponse = (choices) => {
     return !choices || 
@@ -691,38 +719,7 @@ function SATPage() {
             ))}
           </div>
 
-          {(
-            [["Math", MathSubdomains], ["English", EnglishSubdomains]]
-              .map(([selectedTestName, selectedTestChoice]) => (
-                <Collapsible 
-                  title={selectedTestName}
-                >
-                    { Object.entries(selectedTestChoice)
-                          .map(([category, subdomains]) => (
-                      <React.Fragment key={category}>
-                        <h4 class="sidebar-standalone-category">
-                          {category}
-                        </h4>
-                        {subdomains.map((subdomain) => (
-                          <div 
-                            key={subdomain.id} 
-                            className="checkbox-group"
-                          >
-                            <input
-                              type="checkbox"
-                              id={subdomain.id}
-                              onChange={subdomain.onChange}
-                              checked={subdomain.checked}
-                              ref={((el) => selectedRef.current[selectedRefLength++] = el)}
-                            />
-                            <label htmlFor={subdomain.id}>{subdomain.label}</label>
-                          </div>
-                        ))}
-                      </React.Fragment>
-                    ))}
-                </Collapsible>
-            ))
-          )}
+          { renderSubdomainInputs() } 
 
           <div class="sidebar-standalone-content">
             <h2 class="sidebar-standalone-header">

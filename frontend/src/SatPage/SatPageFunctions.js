@@ -56,21 +56,19 @@ export async function fetchQuestions(searchPayload) {
 
 // Prepare subdomains for rendering
 export function prepareSubdomains(
-  selectedTestSection,
   selectedSubdomains,
   handleSubdomainChange
 ) {
-  const subdomainConfig =
-    selectedTestSection === 'Math' ? MathSubdomains : EnglishSubdomains;
-
-  return Object.entries(subdomainConfig).map(([category, subdomains]) => ({
-    category,
-    subdomains: subdomains.map((subdomain) => ({
-      ...subdomain,
-      checked: selectedSubdomains[subdomain.value] || false,
-      onChange: () => handleSubdomainChange(subdomain.value),
-    })),
-  }));
+  return [MathSubdomains, EnglishSubdomains].map((subdomainConfig) =>
+    Object.entries(subdomainConfig).map(([category, subdomains]) => ({
+      category,
+      subdomains: subdomains.map((subdomain) => ({
+        ...subdomain,
+        checked: selectedSubdomains[subdomain.value] || false,
+        onChange: () => handleSubdomainChange(subdomain.value),
+      })),
+    }))
+  );
 }
 
 export function decodeText(text) {
