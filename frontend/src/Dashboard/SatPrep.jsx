@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 
 function SatPrep() {
     const navigate = useNavigate();
     const location = useLocation();
     const [practiceTimes, setPracticeTimes] = useState([]);
-
+    const [isInPracticeTest, setIsInPracticeTest] = useState(false);
+    
     const handleStartPracticeSession = () => {
         // Navigate to the SAT practice test page
         navigate('/sat');
@@ -19,13 +20,13 @@ function SatPrep() {
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    credentials: 'include', // Include cookies for session authentication
+                    credentials: 'include',
                 });
                 if (!response.ok) {
                     throw new Error('Failed to fetch practice times');
                 }
                 const data = await response.json();
-                setPracticeTimes(data); // Assuming you have a state variable for practice times
+                setPracticeTimes(data);
             } catch (error) {
                 console.error('Error fetching practice times:', error);
             }
@@ -34,8 +35,38 @@ function SatPrep() {
         fetchPracticeTimes();
     }, []);
 
+    useEffect(() => {
+        setIsInPracticeTest(location.pathname === '/dashboard/sat-prep/sat');
+    }, [location]);
+
+    if (isInPracticeTest) {
+        return <Outlet />;
+    }
+
     // Check if the current route is /sat
     const isPracticeTestPage = location.pathname === '/sat';
+
+    // Function to format time (convert seconds to minutes/hours)
+    const formatTime = (seconds) => {
+        const minutes = Math.round(seconds / 60);
+        if (minutes < 60) {
+            return `${minutes} min`;
+        } else {
+            const hours = Math.floor(minutes / 60);
+            const remainingMinutes = minutes % 60;
+            return `${hours}h ${remainingMinutes}m`;
+        }
+    };
+
+    // Filter out topics with no practice time and sort by time (descending)
+    const filteredPracticeTimes = practiceTimes
+        ?.filter(topic => topic.timeSpent > 0)
+        ?.sort((a, b) => b.timeSpent - a.timeSpent) || [];
+
+    // Calculate max time for scaling the bars
+    const maxTime = filteredPracticeTimes.length > 0 
+        ? Math.max(...filteredPracticeTimes.map(topic => topic.timeSpent)) 
+        : 1;
 
     return (
         <div className="sat-prep-container">
@@ -44,10 +75,8 @@ function SatPrep() {
                 <div className="practice-test-page">
                     <h1>SAT Practice Test</h1>
                     <p>Welcome to the SAT practice test. Start your session below.</p>
-                    {/* Add your practice test content here */}
                 </div>
             ) : (
-                // Render the SAT Prep dashboard
                 <>
                     <div className="sat-header">
                         <h2>SAT Preparation</h2>
@@ -56,18 +85,30 @@ function SatPrep() {
                         </button>
                     </div>
                     <div className="sat-progress">
-                        <h3>Practice Times</h3>
-                        <ul>
-                            {practiceTimes && practiceTimes.length > 0 ? (
-                                practiceTimes.map((topic, index) => (
-                                    <li key={index}>
-                                        {topic.topic}: {topic.timeSpent} seconds
-                                    </li>
-                                ))
-                            ) : (
-                                <li>No practice times recorded.</li>
-                            )}
-                        </ul>
+                        <h3>Practice Time Breakdown</h3>
+                        {filteredPracticeTimes.length > 0 ? (
+                            <div className="time-graph-container">
+                                {filteredPracticeTimes.map((topic, index) => {
+                                    const widthPercentage = (topic.timeSpent / maxTime) * 100;
+                                    return (
+                                        <div key={index} className="time-graph-item">
+                                            <div className="time-graph-label">
+                                                <span className="topic-name">{topic.topic}</span>
+                                                <span className="topic-time">{formatTime(topic.timeSpent)}</span>
+                                            </div>
+                                            <div className="time-graph-bar-container">
+                                                <div 
+                                                    className="time-graph-bar" 
+                                                    style={{ width: `${widthPercentage}%` }}
+                                                ></div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        ) : (
+                            <p className="no-practice-message">No practice sessions recorded yet.</p>
+                        )}
                     </div>
                     
                     <div className="sat-progress">
@@ -152,7 +193,7 @@ function SatPrep() {
                                 <div className="sat-practice-cell">Actions</div>
                             </div>
                             
-                            ]
+                            
                         </div>
                         
                         <div className="sat-practice-actions">

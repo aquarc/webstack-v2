@@ -61,7 +61,7 @@ function SATPage() {
 
   // State variables for time
   const [startTime, setStartTime] = useState(null);
-  const [topicTimings, setTopicTimings] = useState({});
+  const [setTopicTimings] = useState({}); 
 
   const userCookie = Cookies.get('user');
 
