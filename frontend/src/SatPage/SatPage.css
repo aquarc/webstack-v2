@@ -12,6 +12,9 @@ html {
   width: 100%;
 }
 
+/*imported fonts*/
+@import url('https://fonts.googleapis.com/css2?family=Archivo:ital,wght@1,600&display=swap');
+
 .sat-main-content {
   flex: 1;
   position: relative;
@@ -38,6 +41,14 @@ html {
   box-sizing: border-box;
   margin: 0;
   height: fit-content;
+}
+
+.progress-text{
+  margin-left: 5px;
+  margin-right: 5px;
+  font-family: 'Archivo', sans-serif;
+  font-weight: 600;
+  font-style: italic;
 }
 
 /* Header Styles */

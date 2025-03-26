@@ -17,6 +17,7 @@ import Collapsible from '../Components/Collapsible';
 import Draggable from 'react-draggable';
 import { ResizableBox } from 'react-resizable';
 import 'react-resizable/css/styles.css';
+import Cookies from 'js-cookie';
 
 function SATPage() {
   // navbar
@@ -58,6 +59,12 @@ function SATPage() {
   // cross out mode for answer choices
   const [isCrossOutMode, setIsCrossOutMode] = useState(false);
   const [crossedOutAnswers, setCrossedOutAnswers] = useState({});
+
+  // State variables for time
+  const [startTime, setStartTime] = useState(null);
+  const [topicTimings, setTopicTimings] = useState({});
+
+  const userCookie = Cookies.get('user');
 
   // Toggle function for the calculator
   const toggleCalculator = () => {
@@ -617,7 +624,7 @@ function SATPage() {
             >
               Previous
             </button>
-            <span>
+            <span class="progress-text">
               {`${navigation.currentIndex} / ${navigation.totalQuestions}`}
             </span>
             <button

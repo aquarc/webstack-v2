@@ -1,6 +1,5 @@
 * {
     margin: 0;
-    padding-top: 0px;
     box-sizing: border-box;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     max-width: 100%;
@@ -12,16 +11,11 @@
     padding-top: 80px;
   }
 
-  .main-content {
-    background: rgb(123, 28, 160);
-    max-width: 100%;
-    padding: 0rem;
-    
-  }
 
 .headline-container {
     text-align: center;
     transition: opacity 0.5s ease;
+    padding-top: 50px;
 }
 
 .headline-container.fade {
