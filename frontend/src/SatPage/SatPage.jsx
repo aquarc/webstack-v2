@@ -32,7 +32,8 @@ function SATPage() {
 
   // State variables for managing the SAT question interface
   const [selectedTest, setSelectedTest] = useState('SAT');
-  const [selectedTestSections, setSelectedTestSections] = useState([]);
+  const selectedRef = useRef([]);
+  let selectedRefLength = 0;
   const [selectedSubdomains, setSelectedSubdomains] = useState({});
   const [selectedDifficulties, setSelectedDifficulties] = useState({
     Easy: false,
@@ -83,88 +84,6 @@ function SATPage() {
     });
   };
 
-  // Automatically open subdomain when sections are selected
-  useEffect(() => {
-    if (selectedTestSections.length > 0) {
-      setIsSubdomainOpen(true);
-    }
-  }, [selectedTestSections]);
-
-
-  useEffect(() => {
-    if (currentQuestions.length > 0) {
-      // Record end time for previous question if applicable
-      if (startTime !== null) {
-        const previousQuestion = currentQuestions[currentQuestionIndex - 1 < 0 ? 
-          currentQuestions.length - 1 : currentQuestionIndex - 1];
-        
-        // Calculate time spent in seconds
-        const timeSpent = Math.floor((Date.now() - startTime) / 1000);
-        
-        // Only record if user spent more than 1 second on the question
-        if (timeSpent > 1) {
-          const topic = previousQuestion.skill;
-          
-          // Update local tracking state
-          setTopicTimings(prev => ({
-            ...prev,
-            [topic]: (prev[topic] || 0) + timeSpent
-          }));
-          
-          // Send timing data to backend
-          sendTimingData(previousQuestion.skill, timeSpent);
-        }
-      }
-      
-      // Start timing for new question
-      setStartTime(Date.now());
-    }
-  }, [currentQuestionIndex, currentQuestions]);
-  
-  // This function sends timing data to backend
-  const sendTimingData = async (topic, timeSpent) => {
-    try {
-        const response = await fetch('/sat/record-topic-timing', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                topic: topic,
-                timeSpent: timeSpent,
-                userId: userCookie.userId // Assuming you have the user ID in the cookie
-            }),
-        });
-        
-        if (!response.ok) {
-            console.error('Failed to record timing data');
-        }
-    } catch (error) {
-        console.error('Error sending timing data:', error);
-    }
-};
-  
-  // Also add a cleanup effect to record time when component unmounts
-  useEffect(() => {
-    return () => {
-      if (startTime !== null && currentQuestions.length > 0) {
-        const currentQuestion = currentQuestions[currentQuestionIndex];
-        const timeSpent = Math.floor((Date.now() - startTime) / 1000);
-        
-        if (timeSpent > 1) {
-          sendTimingData(currentQuestion.skill, timeSpent);
-        }
-      }
-    };
-  }, [startTime, currentQuestionIndex, currentQuestions]);
-
-  // Hide calculator if Math section is no longer selected
-  useEffect(() => {
-    if (!selectedTestSections.includes('Math') && showCalculator) {
-      setShowCalculator(false);
-    }
-  }, [selectedTestSections, showCalculator]);
-
   // Initialize and cleanup the Desmos calculator when showCalculator changes
   useEffect(() => {
     if (showCalculator && calculatorRef.current) {
@@ -209,30 +128,8 @@ function SATPage() {
   // Event handlers for selection changes
   const handleTestChange = (test) => {
     setSelectedTest(test);
-    setSelectedTestSections([]);
     setSelectedSubdomains({});
     setSelectedDifficulties({ Easy: false, Medium: false, Hard: false });
-  };
-
-  const handleTestSectionChange = (section) => {
-    setSelectedTestSections(prev => {
-      if (prev.includes(section)) {
-        return prev.filter(s => s !== section);
-      } else {
-        return [...prev, section];
-      }
-    });
-    if (selectedTestSections.includes(section)) {
-      setSelectedSubdomains(prev => {
-        const newSubdomains = { ...prev };
-        Object.keys(newSubdomains).forEach(key => {
-          if (key.startsWith(section)) {
-            delete newSubdomains[key];
-          }
-        });
-        return newSubdomains;
-      });
-    }
   };
 
   const handleSubdomainChange = (subdomain) => {
@@ -273,6 +170,7 @@ function SATPage() {
     setSelectedAnswer(null);
     setTempAnswer('');
     setIsCrossOutMode(false);
+    setShowCalculator(false);
   };
 
   const handleSubmitAnswer = () => {
@@ -288,28 +186,29 @@ function SATPage() {
       setError('Please select a test type.');
       return;
     }
-    if (selectedTestSections.length === 0) {
-      setError('Please select a test section.');
-      return;
-    }
-    if (Object.keys(selectedSubdomains).length === 0) {
-      if (selectedTestSections.includes('Math')) {
-        for (const key in MathSubdomains) {
-          const skills = MathSubdomains[key];
-          for (let i = 0; i < skills.length; i++) {
-            selectedSubdomains[skills[i]['value']] = true;
-          }
+    if (true /*selectedSubdomains.length > 0*/) {
+      // for each ref in selectedRef, console.log it
+      console.log("eeee:", selectedRef);
+
+
+      // TODO: this code does not work anymore and will never work
+      /*
+      for (const key in MathSubdomains) {
+        const skills = MathSubdomains[key];
+        for (let i = 0; i < skills.length; i++) {
+          selectedSubdomains[skills[i]['value']] = true;
         }
       }
-      if (selectedTestSections.includes('English')) {
-        for (const key in EnglishSubdomains) {
-          const skills = EnglishSubdomains[key];
-          for (let i = 0; i < skills.length; i++) {
-            selectedSubdomains[skills[i]['value']] = true;
-          }
+      for (const key in EnglishSubdomains) {
+        const skills = EnglishSubdomains[key];
+        for (let i = 0; i < skills.length; i++) {
+          selectedSubdomains[skills[i]['value']] = true;
         }
       }
-    }
+      */
+    } else {
+      console.log("TODO: insert real error");
+    } 
     if (!selectedDifficulties.Easy && !selectedDifficulties.Medium && !selectedDifficulties.Hard) {
       setError('Please select a question difficulty.');
       return;
@@ -343,9 +242,8 @@ function SATPage() {
     }
   };
 
-  const subdomainData = selectedTestSections.length > 0
-    ? selectedTestSections.map(section => prepareSubdomains(section, selectedSubdomains, handleSubdomainChange)).flat()
-    : [];
+  const subdomainData = prepareSubdomains(selectedSubdomains, handleSubdomainChange);
+  console.log("subdomainData:", subdomainData);
 
   const questionDisplay = renderQuestionDisplay(
     isLoading,
@@ -357,24 +255,32 @@ function SATPage() {
   );
 
   const renderSubdomainInputs = () => {
-    return subdomainData.length > 0 ? subdomainData.map(({ category, subdomains }) => (
-      <React.Fragment key={category}>
-        <h4>{category}</h4>
-        {subdomains.map((subdomain) => (
-          <div key={subdomain.id} className="checkbox-group">
-            <input
-              type="checkbox"
-              id={subdomain.id}
-              onChange={subdomain.onChange}
-              checked={subdomain.checked}
-            />
-            <label htmlFor={subdomain.id}>{subdomain.label}</label>
-          </div>
+    if (subdomainData.length <= 0) {
+      return null;
+    }
+    return Object.entries(subdomainData).map(([sectionName, section]) => (
+      <Collapsible 
+        title={sectionName}
+        key={sectionName}
+      >
+        {section.map(({ category, subdomains }) => (
+          <React.Fragment key={category}>
+            <h4>{category}</h4>
+            {subdomains.map((subdomain) => (
+              <div key={subdomain.id} className="checkbox-group">
+                <input
+                  type="checkbox"
+                  id={subdomain.id}
+                  onChange={subdomain.onChange}
+                  checked={subdomain.checked}
+                />
+                <label htmlFor={subdomain.id}>{subdomain.label}</label>
+              </div>
+            ))}
+          </React.Fragment>
         ))}
-      </React.Fragment>
-    )) : (
-      <p>Please select a test section</p>
-    );
+      </Collapsible>
+    ));
   };
 
   const shouldShowFreeResponse = (choices) => {
@@ -454,9 +360,6 @@ function SATPage() {
                 const isCorrect = isSelected && letter.toLowerCase() === correctAnswer.toLowerCase();
   
                 let answerClass = 'answer-choice';
-//                if (isSelected) {
-//                  answerClass += isCorrect ? ' correct-answer' : ' incorrect-answer';
-//                }
   
                 const isCrossedOut = 
                       crossedOutAnswers[currentQuestionIndex]?.has(choiceKey);
@@ -748,7 +651,7 @@ function SATPage() {
 
           <PomodoroTimer />
           <div>
-            {selectedTestSections.includes('Math') && (
+            { questionDisplay.content?.questionDetails?.category == "Math" && (
               <button 
                 onClick={toggleCalculator}
                 className={`calculator-icon-button format-time`}
@@ -826,36 +729,13 @@ function SATPage() {
               </div>
             ))}
           </div>
-          <div title="Test Section">
-            <p>Section</p>
-            {['Math', 'English'].map((section) => (
-              <div key={section} className="checkbox-group">
-                <input
-                  type="checkbox"
-                  id={section.toLowerCase()}
-                  name="test-section"
-                  onChange={() => handleTestSectionChange(section)}
-                  checked={selectedTestSections.includes(section)}
-                />
-                <label htmlFor={section.toLowerCase()}>
-                  {section === 'English' ? 'Reading and Writing' : section}
-                </label>
-              </div>
-            ))}
-          </div>
-          {selectedTestSections && (
-            <Collapsible 
-              title="Unit"
-              isControlled
-              isOpen={isSubdomainOpen}
-              onToggle={setIsSubdomainOpen}
-            >
-              {renderSubdomainInputs()}
-            </Collapsible>
-          )}
-          <Collapsible 
-            title="Difficulty"
-          >
+
+          { renderSubdomainInputs() } 
+
+          <div class="sidebar-standalone-content">
+            <h2 class="sidebar-standalone-header">
+              Difficulty
+            </h2>
             {['Easy', 'Medium', 'Hard'].map((difficulty) => (
               <div key={difficulty} className="checkbox-group">
                 <input
@@ -867,7 +747,7 @@ function SATPage() {
                 <label htmlFor={difficulty.toLowerCase()}>{difficulty}</label>
               </div>
             ))}
-          </Collapsible>
+          </div>
           { questionDisplay.type === 'error' && (
             <div className="error-message">
               {questionDisplay.content}

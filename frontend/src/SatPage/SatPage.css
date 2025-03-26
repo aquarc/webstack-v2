@@ -239,7 +239,20 @@ html {
   cursor: se-resize;
 }
 
-/* Add/update these styles in your CSS */
+.sidebar-standalone-content {
+  padding: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px ;
+} 
+
+.sidebar-standalone-header {
+  border-bottom: 1px solid #ccc;
+  margin-bottom: 10px;
+} 
+
+.sidebar-standalone-category {
+  margin-bottom: 5px;
+} 
 
 /* Sidebar container */
 .checkbox-column {
@@ -395,6 +408,10 @@ html {
   border-radius: 0px;
   color: #666666;
 }
+
+.input-group-button.solo {
+  border-left: 0px;
+} 
 
 .format-time {
   transition: color 0.2s ease-in-out;
