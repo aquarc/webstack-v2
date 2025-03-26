@@ -59,15 +59,17 @@ export function prepareSubdomains(
   selectedSubdomains,
   handleSubdomainChange
 ) {
-  return [MathSubdomains, EnglishSubdomains].map((subdomainConfig) =>
-    Object.entries(subdomainConfig).map(([category, subdomains]) => ({
-      category,
-      subdomains: subdomains.map((subdomain) => ({
-        ...subdomain,
-        checked: selectedSubdomains[subdomain.value] || false,
-        onChange: () => handleSubdomainChange(subdomain.value),
-      })),
-    }))
+  return Object.fromEntries(
+    [["Math", MathSubdomains], ["English", EnglishSubdomains]].map(([name, subdomainConfig]) =>
+      [name, Object.entries(subdomainConfig).map(([category, subdomains]) => ({
+        category,
+        subdomains: subdomains.map((subdomain) => ({
+          ...subdomain,
+          checked: selectedSubdomains[subdomain.value] || false,
+          onChange: () => handleSubdomainChange(subdomain.value),
+        })),
+      }))
+    ])
   );
 }
 

@@ -251,22 +251,26 @@ function SATPage() {
     if (subdomainData.length <= 0) {
       return null;
     }
-    return subdomainData.map(({ category, subdomains }) => (
+    return Object.entries(subdomainData).map(([sectionName, section]) => (
       <Collapsible 
-        title={category}
-        key={category}
+        title={sectionName}
+        key={sectionName}
       >
-        <h4>{category}</h4>
-        {subdomains.map((subdomain) => (
-          <div key={subdomain.id} className="checkboxgroup">
-            <input
-              type="checkbox"
-              id={subdomain.id}
-              onChange={subdomain.onChange}
-              checked={subdomain.checked}
-            />
-            <label htmlFor={subdomain.id}>{subdomain.label}</label>
-          </div>
+        {section.map(({ category, subdomains }) => (
+          <React.Fragment key={category}>
+            <h4>{category}</h4>
+            {subdomains.map((subdomain) => (
+              <div key={subdomain.id} className="checkbox-group">
+                <input
+                  type="checkbox"
+                  id={subdomain.id}
+                  onChange={subdomain.onChange}
+                  checked={subdomain.checked}
+                />
+                <label htmlFor={subdomain.id}>{subdomain.label}</label>
+              </div>
+            ))}
+          </React.Fragment>
         ))}
       </Collapsible>
     ));
