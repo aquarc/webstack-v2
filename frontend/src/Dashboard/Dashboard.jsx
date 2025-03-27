@@ -8,6 +8,7 @@ function Dashboard() {
     const location = useLocation();
     const navigate = useNavigate();
     const [userName, setUserName] = useState('');
+    const [showSidebar, setShowSidebar] = useState(true);
 
     useEffect(() => {
         // Check if the user cookie is present
@@ -26,6 +27,11 @@ function Dashboard() {
         }
     }, [navigate]);
 
+    useEffect(() => {
+        // Hide sidebar when in SAT practice test
+        setShowSidebar(!location.pathname.includes('/dashboard/sat-prep/sat'));
+    }, [location]);
+
     const handleLogout = () => {
         // Remove the user cookie
         Cookies.remove('user');
@@ -36,43 +42,45 @@ function Dashboard() {
 
     return (
         <div className="dashboard-container">
+            {showSidebar && (
             <aside className="sidebar">
                 <div className="sidebar-header">
                     <img src="/aquLogo.png" alt="Aquarc Logo" className="sidebar-logo" />
                 </div>
                 
                 <div className="sidebar-menu">
-                    <Link 
-                        to="/overview" 
-                        className={`sidebar-menu-item ${location.pathname === '/overview' ? 'active' : ''}`}
-                    >
-                        <BarChart2 size={20} />
-                        <span>Overview</span>
-                    </Link>
-                    
-                    <Link 
-                        to="/analytics" 
-                        className={`sidebar-menu-item ${location.pathname === '/analytics' ? 'active' : ''}`}
-                    >
-                        <BarChart size={20} />
-                        <span>Analytics</span>
-                    </Link>
-                    
-                    <Link 
-                        to="/ec-finder" 
-                        className={`sidebar-menu-item ${location.pathname === '/ec-finder' ? 'active' : ''}`}
-                    >
-                        <Award size={20} />
-                        <span>EC Finder</span>
-                    </Link>
-                    
-                    <Link 
-                        to="/sat-prep" 
-                        className={`sidebar-menu-item ${location.pathname === '/sat-prep' ? 'active' : ''}`}
-                    >
-                        <Book size={20} />
-                        <span>SAT Prep</span>
-                    </Link>
+                <Link 
+                    to="/dashboard/overview" 
+                    className={`sidebar-menu-item ${location.pathname === '/dashboard/overview' ? 'active' : ''}`}
+                >
+                    <BarChart2 size={20} />
+                    <span>Overview</span>
+                </Link>
+
+                <Link 
+                    to="/dashboard/analytics" 
+                    className={`sidebar-menu-item ${location.pathname === '/dashboard/analytics' ? 'active' : ''}`}
+                >
+                    <BarChart size={20} />
+                    <span>Analytics</span>
+                </Link>
+
+                <Link 
+                    to="/dashboard/ec-finder" 
+                    className={`sidebar-menu-item ${location.pathname === '/dashboard/ec-finder' ? 'active' : ''}`}
+                >
+                    <Award size={20} />
+                    <span>EC Finder</span>
+                </Link>
+
+                <Link 
+                    to="/dashboard/sat-prep" 
+                    className={`sidebar-menu-item ${location.pathname === '/dashboard/sat-prep' ? 'active' : ''}`}
+                >
+                    <Book size={20} />
+                    <span>SAT Prep</span>
+                </Link>
+
                 </div>
                 
                 <div className="sidebar-footer">
@@ -82,6 +90,7 @@ function Dashboard() {
                     </button>
                 </div>
             </aside>
+            )}
             
             <main className="main-content">
                 <header className="dashboard-header">
