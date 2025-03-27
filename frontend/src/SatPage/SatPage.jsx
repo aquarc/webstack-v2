@@ -52,6 +52,10 @@ function SATPage() {
   const calculatorRef = useRef(null);
   const calculatorInstanceRef = useRef(null);
 
+  // State for answer statistics
+  const [showAnswerStats, setShowAnswerStats] = useState(false);
+  const [answerStats, setAnswerStats] = useState([]);
+
   // automatic opening and closing
   const [isSubdomainOpen, setIsSubdomainOpen] = useState(false);
 
@@ -62,12 +66,40 @@ function SATPage() {
   // State variables for time
   const [startTime, setStartTime] = useState(null);
   const [topicTimings, setTopicTimings] = useState({});
+  // Add state for tracking correct/incorrect answers
+  const [topicAnswers, setTopicAnswers] = useState({});
 
   const userCookie = Cookies.get('user');
 
   // Toggle function for the calculator
   const toggleCalculator = () => {
     setShowCalculator((prev) => !prev);
+  };
+
+  // Toggle function for answer statistics
+  const toggleAnswerStats = () => {
+    setShowAnswerStats((prev) => {
+      if (!prev) {
+        // Fetch stats when opening
+        fetchAnswerStats();
+      }
+      return !prev;
+    });
+  };
+
+  // Function to fetch answer statistics
+  const fetchAnswerStats = async () => {
+    try {
+      const response = await fetch('/sat/get-topic-answer-stats');
+      if (!response.ok) {
+        console.error('Failed to fetch answer statistics');
+        return;
+      }
+      const data = await response.json();
+      setAnswerStats(data);
+    } catch (error) {
+      console.error('Error fetching answer statistics:', error);
+    }
   };
 
   const toggleSidebar = () => {
@@ -141,6 +173,28 @@ function SATPage() {
         }
     } catch (error) {
         console.error('Error sending timing data:', error);
+    }
+};
+
+// This function sends answer correctness data to backend
+const sendAnswerData = async (topic, isCorrect) => {
+    try {
+        const response = await fetch('/sat/record-topic-answers', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                topic: topic,
+                correct: isCorrect
+            }),
+        });
+        
+        if (!response.ok) {
+            console.error('Failed to record answer data');
+        }
+    } catch (error) {
+        console.error('Error sending answer data:', error);
     }
 };
   
@@ -428,6 +482,30 @@ function SATPage() {
                 {selectedAnswer === correctAnswer ? 'Correct!' : 'Incorrect'}
               </h4>
               <div className="rationale-content" dangerouslySetInnerHTML={{ __html: rationale }} />
+              {(() => {
+                const isCorrect = selectedAnswer === correctAnswer;
+                const currentTopic = currentQuestions[currentQuestionIndex].skill;
+                
+                // Update local tracking state (only once when answer is selected)
+                if (!topicAnswers[currentTopic] || 
+                    (topicAnswers[currentTopic].lastQuestionId !== currentQuestions[currentQuestionIndex].questionId)) {
+                  
+                  setTopicAnswers(prev => ({
+                    ...prev,
+                    [currentTopic]: {
+                      ...(prev[currentTopic] || {}),
+                      correct: (prev[currentTopic]?.correct || 0) + (isCorrect ? 1 : 0),
+                      incorrect: (prev[currentTopic]?.incorrect || 0) + (isCorrect ? 0 : 1),
+                      lastQuestionId: currentQuestions[currentQuestionIndex].questionId
+                    }
+                  }));
+                  
+                  // Send data to backend
+                  sendAnswerData(currentTopic, isCorrect);
+                }
+                
+                return null; // This is just to execute code without rendering anything
+              })()}
             </div>
           )}
           <br></br>
@@ -484,6 +562,22 @@ function SATPage() {
                         });
                       } else {
                         setSelectedAnswer(letter);
+                        // Track correct/incorrect answer and send to backend
+                        const isCorrect = letter.toLowerCase() === correctAnswer.toLowerCase();
+                        const currentTopic = currentQuestions[currentQuestionIndex].skill;
+                        
+                        // Update local tracking state
+                        setTopicAnswers(prev => ({
+                          ...prev,
+                          [currentTopic]: {
+                            ...(prev[currentTopic] || {}),
+                            correct: (prev[currentTopic]?.correct || 0) + (isCorrect ? 1 : 0),
+                            incorrect: (prev[currentTopic]?.incorrect || 0) + (isCorrect ? 0 : 1)
+                          }
+                        }));
+                        
+                        // Send data to backend
+                        sendAnswerData(currentTopic, isCorrect);
                       }
                     }}
                   >
@@ -549,6 +643,22 @@ function SATPage() {
                         });
                       } else {
                         setSelectedAnswer(letterChoice);
+                        // Track correct/incorrect answer and send to backend
+                        const isCorrect = letterChoice === correctAnswer.toLowerCase();
+                        const currentTopic = currentQuestions[currentQuestionIndex].skill;
+                        
+                        // Update local tracking state
+                        setTopicAnswers(prev => ({
+                          ...prev,
+                          [currentTopic]: {
+                            ...(prev[currentTopic] || {}),
+                            correct: (prev[currentTopic]?.correct || 0) + (isCorrect ? 1 : 0),
+                            incorrect: (prev[currentTopic]?.incorrect || 0) + (isCorrect ? 0 : 1)
+                          }
+                        }));
+                        
+                        // Send data to backend
+                        sendAnswerData(currentTopic, isCorrect);
                       }
                     }}
                   >
@@ -747,6 +857,7 @@ function SATPage() {
           </div>
 
           <PomodoroTimer />
+
           <div>
             {selectedTestSections.includes('Math') && (
               <button 
@@ -757,6 +868,12 @@ function SATPage() {
               </button>
             )}
             <button 
+              onClick={toggleAnswerStats}
+              className={`calculator-icon-button format-time`}
+            >
+              <span>Stats</span>
+            </button>
+            <button 
               onClick={toggleSidebar}
               className={`calculator-icon-button format-time`}
             >
@@ -765,6 +882,108 @@ function SATPage() {
           </div>
         </nav>
       </div>
+
+      {/* Answer Statistics Popup */}
+      {showAnswerStats && (
+        <Draggable handle=".stats-header">
+          <div className="stats-container" style={{
+            position: 'fixed',
+            zIndex: 1000,
+            top: '100px',
+            right: '20px',
+            width: '300px',
+            backgroundColor: 'white',
+            borderRadius: '8px',
+            boxShadow: '0 2px 10px rgba(0, 0, 0, 0.2)',
+            padding: '15px'
+          }}>
+            <div className="stats-header" style={{
+              cursor: 'move',
+              padding: '5px',
+              borderBottom: '1px solid #eee',
+              marginBottom: '10px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <h3 style={{margin: 0}}>Topic Performance</h3>
+              <button onClick={toggleAnswerStats} style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '18px'
+              }}>×</button>
+            </div>
+            
+            <div className="stats-content" style={{maxHeight: '400px', overflowY: 'auto'}}>
+              {answerStats.length === 0 ? (
+                <p>No data available yet. Keep practicing!</p>
+              ) : (
+                answerStats.map((stat, index) => (
+                  <div key={index} style={{
+                    marginBottom: '15px',
+                    padding: '10px',
+                    backgroundColor: '#f9f9f9',
+                    borderRadius: '4px'
+                  }}>
+                    <h4 style={{margin: '0 0 5px 0'}}>{stat.topic}</h4>
+                    <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                      <span>Correct: {stat.correctCount}</span>
+                      <span>Incorrect: {stat.incorrectCount}</span>
+                    </div>
+                    <div style={{marginTop: '8px'}}>
+                      <div style={{
+                        height: '10px',
+                        width: '100%',
+                        backgroundColor: '#e0e0e0',
+                        borderRadius: '5px',
+                        overflow: 'hidden'
+                      }}>
+                        <div style={{
+                          height: '100%',
+                          width: `${stat.correctPercentage}%`,
+                          backgroundColor: '#4CAF50'
+                        }}></div>
+                      </div>
+                      <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        fontSize: '12px',
+                        marginTop: '2px'
+                      }}>
+                        <span>Accuracy: {stat.correctPercentage.toFixed(1)}%</span>
+                        <span>Total: {stat.totalCount}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </Draggable>
+      )}
+
+      {/* Calculator Container */}
+      {showCalculator && (
+        <Draggable bounds="html" handle=".calculator-handle">
+          <div className="calculator-wrapper">
+            <div className="calculator-handle">Drag here</div>
+            <ResizableBox
+              width={600}
+              height={400}
+              minConstraints={[300, 200]}
+              maxConstraints={[800, 600]}
+              resizeHandles={['se']}
+            >
+              <div
+                id="desmos-calculator"
+                ref={calculatorRef}
+                style={{ width: '100%', height: '100%' }}
+              ></div>
+            </ResizableBox>
+          </div>
+        </Draggable>
+      )}
 
       <div className="sat-page">
 
@@ -778,26 +997,6 @@ function SATPage() {
                   </>
               )}
         </div>
-        {showCalculator && (
-          <Draggable bounds="html" handle=".calculator-handle">
-            <div className="calculator-wrapper">
-              <div className="calculator-handle">Drag here</div>
-              <ResizableBox
-                width={600}
-                height={400}
-                minConstraints={[300, 200]}
-                maxConstraints={[800, 600]}
-                resizeHandles={['se']}
-              >
-                <div
-                  id="desmos-calculator"
-                  ref={calculatorRef}
-                  style={{ width: '100%', height: '100%' }}
-                ></div>
-              </ResizableBox>
-            </div>
-          </Draggable>
-        )}
 
         <div className={`checkbox-column ${showSidebar ? '' : 'collapsed'}`}>
           {/* Search button inside sidebar header */}
