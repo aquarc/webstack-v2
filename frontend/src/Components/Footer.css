@@ -1,6 +1,10 @@
 /* Footer.css */
+.brand-name{
+  color: #bdc6d2;
+}
+
 .footer-container {
-  background-color: #ffffff;
+  background-color: #272628;
   width: 100%;
   max-width: 100vw; /* Ensure it doesn't exceed viewport width */
   overflow-x: hidden; /* Prevent horizontal scrolling */
@@ -43,7 +47,7 @@
 }
 
 .footer-description {
-  color: #666;
+  color: #7c97be;
   line-height: 1.5;
   max-width: 400px;
 }
@@ -60,6 +64,7 @@
   font-size: 18px;
   font-weight: bold;
   margin-bottom: 16px;
+  color: #bdc6d2;
 }
 
 .contact-info {

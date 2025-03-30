@@ -7,7 +7,7 @@
 
 .landing-container {
     min-height: 100vh;
-    background: rgb(243, 238, 245);
+    background: #272628;
     padding-top: 80px;
   }
 
@@ -37,11 +37,11 @@
   }
 
 .headline-text {
-    color: #1f2937;
+    color: #7c97be;
 }
 
 .highlight-text {
-    background: linear-gradient(to right, #1e3a8a, #2563eb);
+    background: linear-gradient(to right, #203674, #2563eb);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -55,12 +55,12 @@
 }
 
 .end-text {
-    color: #1f2937;
+    color: #7c97be;
 }
 
 .subheadline {
     font-size: 1.5rem;
-    color: #4b5563;
+    color: #bdc6d2;
     margin-bottom: 2rem;
     line-height: 1.5;
     text-align: center;
@@ -155,17 +155,18 @@
 
 .stat-item {
     text-align: center;
+
 }
 
 .stat-number {
     font-size: 2.5rem;
     font-weight: bold;
-    color: #1f2937;
+    color: #7c97be;
     margin-bottom: 0.5rem;
 }
 
 .stat-label {
-    color: #4b5563;
+    color: #bdc6d2;
     font-size: 1.125rem;
 }
 .SAT-section {

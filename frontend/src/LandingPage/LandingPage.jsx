@@ -121,16 +121,16 @@ const LandingPage = () => {
 
         <div className="stats">
           <div className="stat-item">
-            <div className="stat-number">5000+</div>
-            <div className="stat-label">SAT questions</div>
+            <div className="stat-number">20+</div>
+            <div className="stat-label">Analytic Types</div>
           </div>
           <div className="stat-item">
             <div className="stat-number">500+</div>
             <div className="stat-label">Active Users</div>
           </div>
           <div className="stat-item">
-            <div className="stat-number">$3.7M+</div>
-            <div className="stat-label">in scholarships</div>
+            <div className="stat-number">5000+</div>
+            <div className="stat-label">SAT questions</div>
           </div>
         </div>
       </div>
@@ -141,12 +141,14 @@ const LandingPage = () => {
             <p className="SAT-description">
               We provide you with the most recent SAT questions to help train you to get the score you want.
             </p>
+            <p className="SAT-description">
+              Make a free account today to track analytics and other recommendations to help with studying!
+            </p>
             <a href="/sat" className="cta-button">try our tool →</a>
           </div>
         </section>
-        <NewsletterSection/>
-        <ExtracurricularSection/>
 
+        
     </div>
 
   );

@@ -29,8 +29,8 @@ const Navbar = () => {
       <nav className={`nav`}>
         <div className="logo" onClick={isSatPage ? handleBack : () => navigate('/')} 
              style={{ cursor: 'pointer' }}>
-          <img src="/aquLogo.png" alt="Aquarc Logo" className="logo-image" />
-          <span>aquarc</span>
+          <img src="/darkquarc.png" alt="Aquarc Logo" className="logo-image" />
+          <span className="brand-name">aquarc</span>
         </div>
 
         <div className="nav-links">
@@ -41,7 +41,7 @@ const Navbar = () => {
         </div>
 
         <Link to="/signup" className="button">
-          Get Started →
+          Make A FREE Account! →
         </Link>
 
         {/* Mobile menu remains the same */}

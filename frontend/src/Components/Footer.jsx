@@ -11,8 +11,8 @@ const Footer = () => {
         {/* Left section */}
         <div className="footer-left">
           <div className="footer-logo">
-            <img src="aquLogo.png" alt="Aquarc Logo" className="logo-icon"/>
-            <span>Aquarc</span>
+            <img src="darkquarc.png" alt="Aquarc Logo" className="logo-icon"/>
+            <span className='brand-name'>Aquarc</span>
           </div>
           <p className="footer-description">
             Making high school navigation easier with personalized SAT prep, extracurricular tracking, and educational resources.
