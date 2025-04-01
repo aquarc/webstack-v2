@@ -1,148 +1,110 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import Cookie from 'js-cookie';
+import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
+import Cookies from 'js-cookie';
+import { BarChart, Bell, User, LogOut, Book, Award, BarChart2 } from 'lucide-react';
 import './Dashboard.css';
 
 function Dashboard() {
-    const [username, setUsername] = useState('');
     const location = useLocation();
     const navigate = useNavigate();
-
+    const [userName, setUserName] = useState('');
 
     useEffect(() => {
-        // if user is not logged in then redirect to homepage
-        if (!Cookie.get("user"))
-            return navigate("/");
-        // If username is passed through navigation state, use it
-        if (location.state?.username) {
-            setUsername(location.state.username);
+        // Check if the user cookie is present
+        const userCookie = Cookies.get('user');
+        
+        // If the cookie is not present, navigate to the landing page
+        if (!userCookie) {
+            navigate('/');
+        } else {
+            try {
+                const userData = JSON.parse(userCookie);
+                setUserName(userData.name || 'Student');
+            } catch (e) {
+                setUserName('Student');
+            }
         }
-        // Otherwise, fetch it from the server (you'll need to implement this endpoint)
-        else {
-            fetch('/sat/user-info')
-                .then(response => response.json())
-                .then(data => setUsername(data.username))
-                .catch(error => console.error('Error fetching user info:', error));
-        }
-    }, [location]);
-    const nextLessons = {
-        math: {
-            title: "Advanced Algebra Concepts",
-            duration: "45 min",
-            instructor: "Dr. Smith",
-            difficulty: "Advanced"
-        },
-        english: {
-            title: "Critical Reading Strategies",
-            duration: "40 min",
-            instructor: "Ms. Johnson",
-            difficulty: "Intermediate"
-        }
+    }, [navigate]);
+
+    const handleLogout = () => {
+        // Remove the user cookie
+        Cookies.remove('user');
+    
+        // Navigate to landing page
+        navigate('/');
     };
 
     return (
-        <div className="dashboard-wrapper">
-            <div className="dashboard-container">
-                {/* Sidebar */}
-                <aside className="sidebar">
-                    <div>
-                        <div className="logo-section">
-                            <img src="/aquLogoWhiteCircle.png" alt="Aquarc Logo" className="logo-image" />
-                            <Link to="/" style={{ textDecoration: 'none' }}>
-                                <h1>Aquarc</h1>
-                            </Link>
+        <div className="dashboard-container">
+            <aside className="sidebar">
+                <div className="sidebar-header">
+                    <img src="/aquLogo.png" alt="Aquarc Logo" className="sidebar-logo" />
+                    <h1>aquarc</h1>
+                </div>
+                
+                <div className="sidebar-menu">
+                    <Link 
+                        to="/overview" 
+                        className={`sidebar-menu-item ${location.pathname === '/overview' ? 'active' : ''}`}
+                    >
+                        <BarChart2 size={20} />
+                        <span>Overview</span>
+                    </Link>
+                    
+                    <Link 
+                        to="/analytics" 
+                        className={`sidebar-menu-item ${location.pathname === '/analytics' ? 'active' : ''}`}
+                    >
+                        <BarChart size={20} />
+                        <span>Analytics</span>
+                    </Link>
+                    
+                    <Link 
+                        to="/ec-finder" 
+                        className={`sidebar-menu-item ${location.pathname === '/ec-finder' ? 'active' : ''}`}
+                    >
+                        <Award size={20} />
+                        <span>EC Finder</span>
+                    </Link>
+                    
+                    <Link 
+                        to="/sat-prep" 
+                        className={`sidebar-menu-item ${location.pathname === '/sat-prep' ? 'active' : ''}`}
+                    >
+                        <Book size={20} />
+                        <span>SAT Prep</span>
+                    </Link>
+                </div>
+                
+                <div className="sidebar-footer">
+                    <button className="sidebar-menu-item" onClick={handleLogout}>
+                        <LogOut size={20} />
+                        <span>Logout</span>
+                    </button>
+                </div>
+            </aside>
+            
+            <main className="main-content">
+                <header className="dashboard-header">
+                    <div className="header-actions">
+                        <button className="header-action-btn">
+                            <Bell size={20} />
+                        </button>
+                        
+                        <div className="user-profile">
+                            <div className="user-avatar">
+                                <User size={20} />
+                            </div>
+                            <span className="user-name">{userName}</span>
                         </div>
-
-                        <nav className="nav-menu">
-                            <div className="nav-item active">
-                                <span>📊</span>
-                                <span>Dashboard</span>
-                            </div>
-                            <div className="nav-item">
-                                <span>🔢</span>
-                                <span>Math Practice</span>
-                            </div>
-                            <div className="nav-item">
-                                <span>📖</span>
-                                <span>English Practice</span>
-                            </div>
-                            <div className="nav-item">
-                                <span>📈</span>
-                                <span>Analytics</span>
-                            </div>
-                        </nav>
                     </div>
-
-                    <div className="bottom-nav">
-                        <div className="nav-item">
-                            <span>👤</span>
-                            <span>Profile</span>
-                        </div>
-                        <div className="nav-item">
-                            <span>🚪</span>
-                            <span>Log out</span>
-                        </div>
-                    </div>
-                </aside>
-
-                {/* Main Content */}
-                <main className="main-content">
-                    <header className="header">
-                        <div className="welcome-section">
-                            <h2>Welcome back, {username}</h2>
-                            <p>Continue your SAT preparation</p>
-                        </div>
-                        <div className="user-section">
-                            <div className="user-avatar"></div>
-                        </div>
-                    </header>
-
-                    <div className="search-container">
-                        <span className="search-icon">🔍</span>
-                        <input 
-                            type="text" 
-                            className="search-input"
-                            placeholder="Search lessons and practice tests" 
-                        />
-                    </div>
-
-                    <section className="next-lessons">
-                        <div className="section-header">
-                            <h3 className="section-title">Your next lessons</h3>
-                            <div className="navigation-arrows">
-                                <span>←</span>
-                                <span>→</span>
-                            </div>
-                        </div>
-
-                        <div className="lessons-grid">
-                            <div className="lesson-card">
-                                <p className="lesson-subject subject-math">Math</p>
-                                <h4 className="lesson-title">{nextLessons.math.title}</h4>
-                                <p className="lesson-instructor">{nextLessons.math.instructor}</p>
-                                <div className="lesson-details">
-                                    <span>{nextLessons.math.duration}</span>
-                                    <span>•</span>
-                                    <span>{nextLessons.math.difficulty}</span>
-                                </div>
-                            </div>
-
-                            <div className="lesson-card">
-                                <p className="lesson-subject subject-english">English</p>
-                                <h4 className="lesson-title">{nextLessons.english.title}</h4>
-                                <p className="lesson-instructor">{nextLessons.english.instructor}</p>
-                                <div className="lesson-details">
-                                    <span>{nextLessons.english.duration}</span>
-                                    <span>•</span>
-                                    <span>{nextLessons.english.difficulty}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-                </main>
-            </div>
+                </header>
+                
+                <div className="dashboard-content">
+                    <Outlet />
+                </div>
+            </main>
         </div>
     );
 }
-
 export default Dashboard;

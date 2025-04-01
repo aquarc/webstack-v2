@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import './NavBar.css';
-import AboutUsPage from '../AboutPage/AboutPage';
+import PomodoroTimer from '../SatPage/PomodoroTimer';
+import { ChevronLeft, Search } from 'lucide-react'; // Import back icon
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  
+  // Check if current page is SAT page
+  const isSatPage = location.pathname.startsWith('/sat');
 
   const toggleMenu = (e) => {
     e.stopPropagation();
@@ -13,66 +18,48 @@ const Navbar = () => {
     document.body.style.overflow = !isMenuOpen ? 'hidden' : '';
   };
 
-  const handleLogoClick = () => {
-    navigate('/');
+  const handleBack = () => {
+    navigate(-1); // Go back to previous page
   };
 
-  const handleLinkClick = () => {
-    setIsMenuOpen(false);
-    document.body.style.overflow = '';
-  };
-
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (isMenuOpen && !e.target.closest('.mobile-drawer') && !e.target.closest('.menu-toggle')) {
-        setIsMenuOpen(false);
-        document.body.style.overflow = '';
-      }
-    };
-
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, [isMenuOpen]);
+  // Keep existing useEffect and other handlers
 
   return (
     <div style={{ position: 'relative' }}>
-      <nav className="nav">
-        <div className="logo" onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
-          <img src="/aquLogo.png" alt="Aquarc Logo" className="logo-image" />
-          <span>Aquarc</span>
+      <nav className={`nav`}>
+        <div className="logo" onClick={isSatPage ? handleBack : () => navigate('/')} 
+             style={{ cursor: 'pointer' }}>
+          <img src="/darkquarc.png" alt="Aquarc Logo" className="logo-image" />
+          <span className="brand-name">aquarc</span>
         </div>
 
         <div className="nav-links">
           <Link to="/sat" className="link">SAT</Link>
-          {/*<Link to="/extracurricular" className="link">Extracurriculars</Link> */}
           <a href="https://aquarc.beehiiv.com" className="link">Newsletter</a>
           <Link to="/feedback" className="link">Feedback</Link>
-          {/*<Link to="/dashboard" className="link">Dashboard</Link>*/}
           <Link to="/aboutPage" className="link">About Us</Link>
         </div>
 
         <Link to="/signup" className="button">
-          Get Started →
+          Make A FREE Account! →
         </Link>
 
-        <button
-          className="menu-toggle"
-          onClick={toggleMenu}
-        >
+        {/* Mobile menu remains the same */}
+        <button className="menu-toggle" onClick={toggleMenu}>
           <span className={`menu-line top ${isMenuOpen ? 'open' : ''}`} />
           <span className={`menu-line middle ${isMenuOpen ? 'open' : ''}`} />
           <span className={`menu-line bottom ${isMenuOpen ? 'open' : ''}`} />
         </button>
       </nav>
 
+      {/* Mobile drawer - add SAT page check */}
       <div className={`mobile-drawer ${isMenuOpen ? 'open' : 'closed'}`}>
         <div className="mobile-link-container">
-          <Link to="/" className="mobile-link">Home</Link>
-          <Link to="/sat" className="mobile-link">SAT</Link>
-          <Link to="/static/ec/ec.html" className="mobile-link">Extracurriculars</Link>
-          <a href="https://aquarc.beehiiv.com" className="mobile-link">Newsletter</a>
-          <Link to="/feedback" className="mobile-link">Feedback</Link>
-          <Link to="/sat" className="button">
+          <Link to="/sat" className="link">SAT</Link>
+          <a href="https://aquarc.beehiiv.com" className="link">Newsletter</a>
+          <Link to="/feedback" className="link">Feedback</Link>
+          <Link to="/aboutPage" className="link">About Us</Link>
+          <Link to="/signup" className="button">
             Get Started →
           </Link>
         </div>

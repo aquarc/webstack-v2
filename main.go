@@ -35,6 +35,20 @@ func indexThing(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "./frontend/build/index.html")
 }
 
+// Add this to your main.go
+func serveStatic(w http.ResponseWriter, r *http.Request) {
+    path := "./frontend/build" + r.URL.Path
+    
+    // Set the correct Content-Type based on file extension
+    if strings.HasSuffix(path, ".css") {
+        w.Header().Set("Content-Type", "text/css")
+    } else if strings.HasSuffix(path, ".js") {
+        w.Header().Set("Content-Type", "application/javascript")
+    }
+    
+    http.ServeFile(w, r, path)
+}
+
 func main() {
 	// Load environment variables from .env
 	if err := godotenv.Load(); err != nil {
@@ -105,6 +119,10 @@ func main() {
 	http.HandleFunc("/signup", indexThing)
 	http.HandleFunc("/dashboard", indexThing)
 	http.HandleFunc("/login", indexThing)
+	http.HandleFunc("/overview", indexThing)
+	http.HandleFunc("/analytics", indexThing)
+	http.HandleFunc("/ec-finder", indexThing)
+	http.HandleFunc("/sat-prep", indexThing)
 
 	// Set up CORS with credentials enabled.
 	handler := cors.New(cors.Options{

@@ -1,23 +1,61 @@
+html {
+  height: 100%;
+  background-color: #ffffff;
+}
+
+.error-message {
+  color: red;
+}
+
 .sat-page {
   display: flex;
-  height: 100vh;
   width: 100%;
 }
 
+/*imported fonts*/
+@import url("https://fonts.googleapis.com/css2?family=Archivo:ital,wght@1,600&display=swap");
+
 .sat-main-content {
   flex: 1;
-  padding-left: 20px;
   position: relative;
-  background-color: #f4f4f4;
+  background-color: #ffffff;
   isolation: isolate;
   overflow-x: hidden;
+  display: flex;
+  justify-content: center;
+}
+
+.fixed-bottom-bar {
+  position: fixed;
+  z-index: 50;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  padding: 0.5rem; /* 8px if root font-size is 16px */
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  background-color: #ffffff;
+  box-shadow: 0 -8px 6px -1px rgba(0, 0, 0, 0.1);
+
+  box-sizing: border-box;
+  margin: 0;
+  height: fit-content;
+}
+
+.progress-text {
+  margin-left: 5px;
+  margin-right: 5px;
+  font-family: "Archivo", sans-serif;
+  font-weight: 600;
+  font-style: italic;
 }
 
 /* Header Styles */
 .header-container {
   position: relative;
   z-index: 10;
-  background-color: #f4f4f4;
+  background-color: #ffffff;
   padding-bottom: 20px;
   display: flex;
   flex-direction: column;
@@ -49,26 +87,25 @@
   cursor: pointer;
 }
 
-.next-button:hover {
-  background-color: #0033aa;
-}
-
-/* Calculator Icon Button */
 .calculator-icon-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px;
+  padding: 4px;
   background: none;
   border: none;
   cursor: pointer;
   color: #666;
-  transition: color 0.2s ease;
+  /* Add these new styles */
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px; /* Match icon button height */
 }
 
-.calculator-icon-button:hover,
-.calculator-icon-button.active {
-  color: #0044cc;
+/* Remove sr-only class since we want to show the text */
+.calculator-icon-button span {
+  font-size: 24px; /* Match clock icon size */
+  line-height: 1;
+  margin: 0;
+  padding: 0;
 }
 
 /* Custom Form Controls */
@@ -127,11 +164,6 @@
   transform: rotate(45deg);
 }
 
-.checkbox-group input[type="radio"]:hover,
-.checkbox-group input[type="checkbox"]:hover {
-  border-color: #0044cc;
-}
-
 .checkbox-group input[type="radio"]:focus,
 .checkbox-group input[type="checkbox"]:focus {
   outline: none;
@@ -143,48 +175,6 @@
   font-size: 14px;
   color: #333;
   user-select: none;
-}
-
-/* Media Queries */
-@media (max-width: 768px) {
-  .sat-page {
-    flex-direction: column;
-  }
-
-  .sat-main-content {
-    padding: 20px;
-  }
-
-  .header-container {
-    margin-bottom: 20px;
-  }
-
-  .header-container h1 {
-    font-size: 24px;
-  }
-
-  .question-container {
-    margin-bottom: 30px;
-  }
-
-  .checkbox-column {
-    width: 100%;
-    padding: 20px;
-    background-color: #f4f4f4;
-    order: 1;
-  }
-
-  .filter-group {
-    margin-bottom: 20px;
-  }
-
-  .search-button {
-    width: 100%;
-  }
-
-  .header-tools {
-    gap: 12px;
-  }
 }
 
 .top-section {
@@ -213,7 +203,7 @@
   margin-right: 20px;
 }
 .calculator-wrapper {
-  position: absolute;
+  position: fixed;
   z-index: 1000;
   background: white;
   border: 1px solid #ccc;
@@ -245,4 +235,343 @@
   background-origin: content-box;
   box-sizing: border-box;
   cursor: se-resize;
+}
+
+.sidebar-standalone-content {
+  padding: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.sidebar-standalone-header {
+  border-bottom: 1px solid #ccc;
+  margin-bottom: 10px;
+}
+
+.sidebar-standalone-category {
+  margin-bottom: 5px;
+}
+
+/* Sidebar container */
+.checkbox-column {
+  position: fixed;
+  right: 0;
+  top: 0;
+  width: 35%;
+  height: 100vh;
+  background-color: #f4f4f4;
+  padding: 40px 20px 20px;
+  transition: transform 0.3s ease;
+  z-index: 1000;
+  overflow-y: auto;
+}
+
+.checkbox-column.collapsed {
+  transform: translateX(100%);
+}
+
+/* Header with toggle button */
+.filter-header {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.sidebar-toggle-button {
+  position: absolute;
+  right: -50px; /* Position outside the sidebar */
+  top: 50%;
+  transform: translateY(-50%);
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 1001;
+}
+
+.checkbox-column:not(.collapsed) .sidebar-toggle-button {
+  right: 20px; /* Position inside the sidebar when open */
+}
+
+/* Transition animations */
+.checkbox-column {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-toggle-button {
+  transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Sidebar header with close button */
+.checkbox-column {
+  position: fixed;
+  right: 0;
+  top: 0;
+  height: 100vh;
+  width: 35%;
+  background: #ffffff;
+  box-shadow: -2px 0 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1000;
+  padding: 20px;
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-right: 10px;
+}
+
+.sidebar-close-button {
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  color: #666;
+  transition: all 0.2s ease;
+}
+
+.checkbox-column.collapsed {
+  transform: translateX(100%);
+}
+
+.pomodoro-modal {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 10px;
+  background-color: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  padding: 15px;
+  z-index: 1000;
+  white-space: nowrap;
+}
+
+/* Add this to your existing CSS (or JSX inline styles) */
+.input-group {
+  display: flex;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.input-group:focus-within {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 1px #6366f1;
+}
+
+.input-group-button.active {
+  background: #6366f1;
+  color: white;
+}
+/* Update these styles in your CSS */
+.input-group {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto; /* 1fr takes remaining space */
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+  width: 100%; /* Take full width of container */
+}
+
+.input-group-input {
+  width: 133px; /* Reduced from 60px */
+  min-width: 133px; /* Add minimum width */
+  grid-column: 1; /* First column */
+  border: none;
+  border-radius: 0px;
+}
+
+.input-group-button {
+  grid-column: auto; /* Subsequent columns */
+  white-space: nowrap; /* Prevent button text wrapping */
+  border: none;
+  border-left: 1px solid #e2e8f0;
+  background: white;
+  padding: 6px 10px; /* Reduced padding */
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0; /* Prevent button shrinking */
+  border-radius: 0px;
+  color: #666666;
+}
+
+.input-group-button.solo {
+  border-left: 0px;
+}
+
+.format-time {
+  transition: color 0.2s ease-in-out;
+  border: 1px solid #6366f1;
+  border-radius: 6px;
+  margin: 0px 3px;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center; /* Vertical alignment */
+  justify-content: space-between;
+  gap: 12px; /* Space between text and button */
+}
+
+.sidebar-header h2 {
+  margin: 0;
+  line-height: 1;
+  flex: 1;
+}
+
+.sidebar-close-button {
+  padding: 4px; /* Matching click area */
+  margin-top: -2px; /* Optical alignment adjustment */
+}
+
+.sidebar-close-button svg {
+  vertical-align: middle; /* Fix SVG baseline alignment */
+}
+
+/* hover states */
+@media (hover: hover) and (pointer: fine) {
+  /* Hover state when parent is hovered */
+  .format-time:hover {
+    color: #ffffff; /* pure white */
+  }
+
+  .next-button:hover {
+    background-color: #0033aa;
+  }
+
+  .calculator-icon-button:hover {
+    color: #ffffff;
+  }
+
+  .checkbox-group input[type="radio"]:hover,
+  .checkbox-group input[type="checkbox"]:hover {
+    border-color: #0044cc;
+  }
+
+  .sidebar-close-button:hover {
+    color: #ffffff;
+  }
+
+  .input-group-button:hover {
+    background: #c6cbd0;
+  }
+}
+
+/* Touch device styles (mobile/tablet) */
+@media (hover: none) and (pointer: coarse) {
+  .format-time:active,
+  .next-button:active,
+  .calculator-icon-button:active,
+  .checkbox-group input[type="radio"]:active,
+  .checkbox-group input[type="checkbox"]:active,
+  .sidebar-close-button:active,
+  .input-group-button:active {
+    transition: all 0.15s ease;
+  }
+
+  .format-time:active {
+    color: #0044cc;
+    background-color: rgba(0, 68, 204, 0.1);
+  }
+
+  .next-button:active {
+    background-color: #002288;
+    transform: scale(0.98);
+  }
+
+  .calculator-icon-button:active {
+    color: #0044cc;
+    background-color: rgba(0, 68, 204, 0.1);
+  }
+
+  .checkbox-group input[type="radio"]:active,
+  .checkbox-group input[type="checkbox"]:active {
+    border-color: #0044cc;
+    background-color: rgba(0, 68, 204, 0.1);
+  }
+
+  .sidebar-close-button:active {
+    color: #0044cc;
+    background-color: rgba(0, 68, 204, 0.1);
+  }
+
+  .input-group-button:active {
+    background: #e6f0ff;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* Media Queries */
+@media (max-width: 768px) {
+  .sidebar-toggle-button {
+    right: -40px !important;
+  }
+
+  .checkbox-column:not(.collapsed) .sidebar-toggle-button {
+    right: 20px !important;
+  }
+  .checkbox-column {
+    width: 100%;
+    padding: 15px;
+  }
+
+  .sat-page {
+    flex-direction: column;
+  }
+
+  .sat-main-content {
+    padding: 20px;
+  }
+
+  .header-container {
+    margin-bottom: 20px;
+  }
+
+  .header-container h1 {
+    font-size: 24px;
+  }
+
+  .question-container {
+    padding-top: 100px;
+    margin-bottom: 30px;
+  }
+
+  .checkbox-column {
+    width: 100%;
+    padding: 20px;
+    background-color: #f4f4f4;
+    order: 1;
+  }
+
+  .filter-group {
+    margin-bottom: 20px;
+  }
+
+  .search-button {
+    width: 100%;
+  }
+
+  .header-tools {
+    gap: 12px;
+  }
+
+  .question-container {
+    max-width: 600px;
+    padding-top: 30px;
+  }
+
+  .vertical-bar {
+    display: none;
+  }
 }

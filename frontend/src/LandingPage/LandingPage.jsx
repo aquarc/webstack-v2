@@ -119,16 +119,16 @@ const LandingPage = () => {
 
         <div className="stats">
           <div className="stat-item">
-            <div className="stat-number">5000+</div>
-            <div className="stat-label">SAT questions</div>
+            <div className="stat-number">20+</div>
+            <div className="stat-label">Analytic Types</div>
           </div>
           <div className="stat-item">
             <div className="stat-number">500+</div>
             <div className="stat-label">Active Users</div>
           </div>
           <div className="stat-item">
-            <div className="stat-number">$3.7M+</div>
-            <div className="stat-label">in scholarships</div>
+            <div className="stat-number">5000+</div>
+            <div className="stat-label">SAT questions</div>
           </div>
         </div>
       </div>
@@ -145,8 +145,6 @@ const LandingPage = () => {
           </a>
         </div>
       </section>
-      <NewsletterSection />
-      <ExtracurricularSection />
     </div>
   );
 };

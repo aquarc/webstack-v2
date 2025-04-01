@@ -60,6 +60,13 @@ type Verification struct {
 	Code  string `json:"code"`
 }
 
+// Type defintion for timing data
+type TopicTiming struct {
+	Email     string `json:"email"`
+	Topic     string `json:"topic"`
+	TimeSpent int    `json:"timeSpent"`
+}
+
 // -----------------------------
 // Global Email Dialer
 // -----------------------------
@@ -486,6 +493,18 @@ func login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Store session in database with expiration time
+	expiresAt := time.Now().Add(7 * 24 * time.Hour) // 7 days
+	_, err = db.Exec(
+		"INSERT INTO user_sessions (token, email, expires_at) VALUES ($1, $2, $3)",
+		sessionToken, data.Email, expiresAt,
+	)
+	if err != nil {
+		log.Printf("Error storing session: %v", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
 	// Set the session cookie.
 	http.SetCookie(w, &http.Cookie{
 		Name:     "session",
@@ -513,6 +532,109 @@ func login(w http.ResponseWriter, r *http.Request) {
 		"message": "User logged in successfully",
 		"email":   data.Email,
 	})
+}
+
+// Funciton for recording time for each topic
+func recordTopicTiming(w http.ResponseWriter, r *http.Request) {
+	// Get email from the session cookie
+	cookie, err := r.Cookie("session")
+	if err != nil {
+		http.Error(w, "Unauthorized: No session cookie", http.StatusUnauthorized)
+		return
+	}
+
+	sessionToken := cookie.Value
+
+	// Look up email from session token (you'll need to implement this)
+	var email string
+	err = db.QueryRow("SELECT email FROM user_sessions WHERE token = $1", sessionToken).Scan(&email)
+	if err != nil {
+		http.Error(w, "Unauthorized: Invalid session", http.StatusUnauthorized)
+		return
+	}
+
+	var timing TopicTiming
+	if err := json.NewDecoder(r.Body).Decode(&timing); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Use the email from the session
+	timing.Email = email
+
+	// Insert or update the timing record
+	_, err = db.Exec(`
+        INSERT INTO user_topic_timings (email, topic, time_spent)
+        VALUES ($1, $2, $3)
+        ON CONFLICT (email, topic) DO UPDATE
+        SET time_spent = user_topic_timings.time_spent + $3
+    `, timing.Email, timing.Topic, timing.TimeSpent)
+
+	if err != nil {
+		log.Printf("Error recording topic timing: %v", err)
+		http.Error(w, "Failed to record timing data", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+// Add this function to handle fetching practice times
+func getPracticeTimes(w http.ResponseWriter, r *http.Request) {
+	// Get email from the session cookie
+	cookie, err := r.Cookie("session")
+	if err != nil {
+		http.Error(w, "Unauthorized: No session cookie", http.StatusUnauthorized)
+		return
+	}
+
+	sessionToken := cookie.Value
+
+	// Look up email from session token
+	var email string
+	err = db.QueryRow("SELECT email FROM user_sessions WHERE token = $1", sessionToken).Scan(&email)
+	if err != nil {
+		http.Error(w, "Unauthorized: Invalid session", http.StatusUnauthorized)
+		return
+	}
+
+	// Query the database for practice times
+	rows, err := db.Query(`
+        SELECT topic, time_spent
+        FROM user_topic_timings
+        WHERE email = $1
+    `, email)
+	if err != nil {
+		log.Printf("Error querying practice times: %v", err)
+		http.Error(w, "Failed to fetch practice times", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	// Prepare the response data
+	type PracticeTime struct {
+		Topic     string `json:"topic"`
+		TimeSpent int    `json:"timeSpent"`
+	}
+	var practiceTimes []PracticeTime
+
+	for rows.Next() {
+		var topic string
+		var timeSpent int
+		if err := rows.Scan(&topic, &timeSpent); err != nil {
+			log.Printf("Error scanning practice time row: %v", err)
+			continue
+		}
+		practiceTimes = append(practiceTimes, PracticeTime{Topic: topic, TimeSpent: timeSpent})
+	}
+
+	// Return the practice times as JSON
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(practiceTimes); err != nil {
+		log.Printf("Error encoding practice times to JSON: %v", err)
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		return
+	}
 }
 
 // -----------------------------
@@ -588,6 +710,27 @@ func initializeSat(db *sql.DB) {
 		log.Fatal(err)
 	}
 
+	// Create table for topic timings
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS user_topic_timings (
+        email TEXT,
+        topic TEXT,
+        time_spent INTEGER DEFAULT 0,
+        PRIMARY KEY (email, topic)
+    )`)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Create table for user sessions if you don't have one
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS user_sessions (
+	token TEXT PRIMARY KEY,
+	email TEXT,
+	expires_at TIMESTAMP
+)`)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	// Register SAT-related HTTP handlers.
 	http.HandleFunc("/sat/test", ServeForm)
 	http.HandleFunc("/sat/find-questions", FindQuestionsHandler)
@@ -595,6 +738,8 @@ func initializeSat(db *sql.DB) {
 	http.HandleFunc("/sat/register", register)
 	http.HandleFunc("/sat/verifyRegistration", registerVerificationCode)
 	http.HandleFunc("/sat/login", login)
+	http.HandleFunc("/sat/record-topic-timing", recordTopicTiming)
+	http.HandleFunc("/sat/get-practice-times", getPracticeTimes)
 
 	// If you have legacy SAT initialization, call it here.
 	initializeLegacySat(db)
