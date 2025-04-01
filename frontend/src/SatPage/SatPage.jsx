@@ -47,6 +47,17 @@ function SATPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showSidebar, setShowSidebar] = useState(true);
+  // Add this state declaration near other useState hooks
+  const [selectedTestSections, setSelectedTestSections] = useState([]);
+
+  // Add this function definition (placeholder implementation)
+  const sendClickEvent = (eventName) => {
+    // Implement actual analytics tracking here
+    console.log(`Event tracked: ${eventName}`);
+  };
+
+  // Add this state declaration for topic timings if needed
+  const [topicTimings, setTopicTimings] = useState({}); // Replace the existing line
 
   // State and refs for managing the integrated Desmos calculator
   const [showCalculator, setShowCalculator] = useState(false);
@@ -62,7 +73,6 @@ function SATPage() {
 
   // State variables for time
   const [startTime, setStartTime] = useState(null);
-  const [setTopicTimings] = useState({});
 
   const userCookie = Cookies.get("user");
 
@@ -77,6 +87,11 @@ function SATPage() {
         return true;
       }
     });
+  };
+  
+  // Toggle function for the calculator
+  const toggleCalculator = () => {
+    setShowCalculator((prev) => !prev);
   };
 
   // Initialize and cleanup the Desmos calculator when showCalculator changes
