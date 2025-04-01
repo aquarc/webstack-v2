@@ -1,38 +1,41 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import './LandingPage.css';
-import './NewsletterSection/NewsLetterSection'
-import NewsImage from '../Assets/news.jpg'
-import NewsletterSection from './NewsletterSection/NewsLetterSection';
-import ExtracurricularSection from './ECSection/ECSection';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import "./LandingPage.css";
+import "./NewsletterSection/NewsLetterSection";
+import NewsImage from "../Assets/news.jpg";
+import NewsletterSection from "./NewsletterSection/NewsLetterSection";
+import ExtracurricularSection from "./ECSection/ECSection";
 
-const headlines = [
-  {
-    main: 'Better SAT ',
-    highlight: '2 clicks ',
-    end: ' away.'
-  },
-  {
-    main: 'Find your dream ',
-    highlight: 'programs',
-    end: '.',
-    specialLayout: true
-  },
-  {
-    main: 'Get your',
-    highlight: 'internships',
-    end: {
-      line2: ' weekly,',
-      line3: 'for free.'
-    },
-    specialLayout3Lines: true
-  },
-  {
-    main: 'Make the ',
-    highlight: 'most ',
-    end: ' of high school.'
-  }
-];
+const headlines = {
+  0: (
+    <div className="headline">
+      <span className="highlight-text">Higher SAT</span>
+      <br />
+      <span className="headline-text">2 clicks away</span>
+    </div>
+  ),
+  1: (
+    <div className="headline">
+      <span className="highlight-text">Dream Summer Programs</span>
+      <br />
+      <span className="headline-text">become a reality</span>
+    </div>
+  ),
+  2: (
+    <div className="headline">
+      <span className="highlight-text">Internship Opportunities</span>
+      <br />
+      <span className="headline-text">discovered weekly</span>
+    </div>
+  ),
+  3: (
+    <div className="headline">
+      <span className="highlight-text">Maximize your</span>
+      <br />
+      <span className="headline-text">high school experience</span>
+    </div>
+  ),
+};
 
 const LandingPage = () => {
   const [currentHeadline, setCurrentHeadline] = useState(0);
@@ -100,21 +103,16 @@ const LandingPage = () => {
   return (
     <div className="landing-container">
       <div className="main-content">
-        <div className={`headline-container ${fadeOut ? 'fade' : ''}`}>
-          {renderHeadline(headlines[currentHeadline])}
+        <div className={`headline-container ${fadeOut ? "fade" : ""}`}>
+          {headlines[currentHeadline]}
         </div>
 
         <div className="subheadline">
-          Navigating high school has
-          <br />
-          never been easier.
+          Spend less time studying and score higher for free.
         </div>
 
         <div className="sat-button">
-          <button
-            onClick={() => navigate('/sat')}
-            className="cta-button"
-          >
+          <button onClick={() => navigate("/sat")} className="cta-button">
             your 1600 starts here →
           </button>
         </div>
@@ -136,19 +134,20 @@ const LandingPage = () => {
       </div>
 
       <section className="SAT-section">
-          <div className="SAT-content">
-            <h2 className="SAT-title">Improve your SAT score</h2>
-            <p className="SAT-description">
-              We provide you with the most recent SAT questions to help train you to get the score you want.
-            </p>
-            <a href="/sat" className="cta-button">try our tool →</a>
-          </div>
-        </section>
-        <NewsletterSection/>
-        <ExtracurricularSection/>
-
+        <div className="SAT-content">
+          <h2 className="SAT-title">Improve your SAT score</h2>
+          <p className="SAT-description">
+            We provide you with the most recent SAT questions to help train you
+            to get the score you want.
+          </p>
+          <a href="/sat" className="cta-button">
+            try our tool →
+          </a>
+        </div>
+      </section>
+      <NewsletterSection />
+      <ExtracurricularSection />
     </div>
-
   );
 };
 

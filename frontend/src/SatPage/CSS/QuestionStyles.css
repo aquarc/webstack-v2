@@ -180,3 +180,8 @@
 .multiple-choice-container {
     margin-bottom: 20px;
 }
+
+/* supposed to be image alts */
+.sr-only {
+    display: none;
+}

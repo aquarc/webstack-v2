@@ -1,5 +1,5 @@
-import { MathSubdomains, EnglishSubdomains } from './SatSubdomains';
-import { endpoints } from '../config';
+import { MathSubdomains, EnglishSubdomains } from "./SatSubdomains";
+import { endpoints } from "../config";
 
 // Consolidated search payload generation
 export function getSearchPayload(state) {
@@ -20,18 +20,18 @@ export function getSearchPayload(state) {
 
   return {
     test: selectedTest,
-    subdomain: subdomain.length > 0 ? subdomain : [''],
-    difficulty: difficulty.length > 0 ? difficulty : [''],
+    subdomain: subdomain.length > 0 ? subdomain : [""],
+    difficulty: difficulty.length > 0 ? difficulty : [""],
   };
 }
 
 // Fetch questions from the server
 export async function fetchQuestions(searchPayload) {
   try {
-    const response = await fetch('/sat/find-questions-v2', {
-      method: 'POST',
+    const response = await fetch("/sat/find-questions-v2", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(searchPayload),
     });
@@ -49,7 +49,7 @@ export async function fetchQuestions(searchPayload) {
 
     return await response.json();
   } catch (error) {
-    console.error('Error fetching questions:', error);
+    console.error("Error fetching questions:", error);
     throw error;
   }
 }
@@ -58,10 +58,10 @@ export async function fetchQuestions(searchPayload) {
 export function prepareSubdomains(
   selectedTestSection,
   selectedSubdomains,
-  handleSubdomainChange
+  handleSubdomainChange,
 ) {
   const subdomainConfig =
-    selectedTestSection === 'Math' ? MathSubdomains : EnglishSubdomains;
+    selectedTestSection === "Math" ? MathSubdomains : EnglishSubdomains;
 
   return Object.entries(subdomainConfig).map(([category, subdomains]) => ({
     category,
@@ -74,26 +74,26 @@ export function prepareSubdomains(
 }
 
 export function decodeText(text) {
-  if (!text) return '';
-  
+  if (!text) return "";
+
   // Handle HTML content differently
   const containsHTML = /<[a-z][\s\S]*>/i.test(text);
-  
+
   if (containsHTML) {
     // For HTML content, we need to be careful with replacements
     // Replace only text content while preserving tags
     const replacements = [
-      [/\bcomma\b/g, ','],
-      [/\bnegative\b/g, '-'],
-      [/\bminus\b/g, '-'],
-      [/\bdivided by\b/g, '/'],
-      [/\btimes\b/g, '×']
+      [/\bcomma\b/g, ","],
+      [/\bnegative\b/g, "-"],
+      [/\bminus\b/g, "-"],
+      [/\bdivided by\b/g, "/"],
+      [/\btimes\b/g, "×"],
     ];
-    
+
     // Create a DOM parser to work with the HTML
     const parser = new DOMParser();
-    const doc = parser.parseFromString(text, 'text/html');
-    
+    const doc = parser.parseFromString(text, "text/html");
+
     // Function to recursively process text nodes
     function processTextNodes(node) {
       if (node.nodeType === Node.TEXT_NODE) {
@@ -106,18 +106,21 @@ export function decodeText(text) {
         Array.from(node.childNodes).forEach(processTextNodes);
       }
     }
-    
+
     processTextNodes(doc.body);
     return doc.body.innerHTML;
   } else {
     // Simple text replacement for non-HTML content
     let decodedText = text;
-    decodedText = decodedText.replace(/\bcomma\b/gi, ',');
-    decodedText = decodedText.replace(/\bnegative\b/gi, '-');
-    decodedText = decodedText.replace(/\bminus\b/gi, '-');
-    decodedText = decodedText.replace(/\bdivided by\b/gi, '/');
-    decodedText = decodedText.replace(/\btimes\b/gi, '×');
-    decodedText = decodedText.replace(/\*\{stroke-linecap:butt;stroke-linejoin:round;\}/g, '');
+    decodedText = decodedText.replace(/\bcomma\b/gi, ",");
+    decodedText = decodedText.replace(/\bnegative\b/gi, "-");
+    decodedText = decodedText.replace(/\bminus\b/gi, "-");
+    decodedText = decodedText.replace(/\bdivided by\b/gi, "/");
+    decodedText = decodedText.replace(/\btimes\b/gi, "×");
+    decodedText = decodedText.replace(
+      /\*\{stroke-linecap:butt;stroke-linejoin:round;\}/g,
+      "",
+    );
     return decodedText;
   }
 }
@@ -130,43 +133,50 @@ export function renderQuestionDisplay(
   currentQuestions,
   currentQuestionIndex,
   handleNavigatePrevious,
-  handleNavigateNext
+  handleNavigateNext,
 ) {
   if (isLoading) {
-    return { type: 'loading', content: 'Loading questions...' };
+    return { type: "loading", content: "Loading questions..." };
   }
 
   if (error) {
-    return { type: 'error', content: error };
+    return { type: "error", content: error };
   }
 
   if (currentQuestions.length > 0) {
     const currentQuestion = currentQuestions[currentQuestionIndex];
-    
+
     // Process the content without transforming HTML
-    let questionText = currentQuestion.question || '';
-    let additionalDetails = currentQuestion.details || '';
-    
+    let questionText = currentQuestion.question || "";
+    let additionalDetails = currentQuestion.details || "";
+
     // Check if content contains SVG or graph elements
-    const hasGraphContent = currentQuestion.hasGraph || 
-                           /svg|graph|plot|chart|figure|<\/?(svg|path|g|rect|circle)/i.test(questionText + additionalDetails);
-    
+    const hasGraphContent =
+      currentQuestion.hasGraph ||
+      /svg|graph|plot|chart|figure|<\/?(svg|path|g|rect|circle)/i.test(
+        questionText + additionalDetails,
+      );
+
     // Only run text replacements (like "comma" to ",") but preserve HTML structure
     if (!hasGraphContent) {
       questionText = decodeText(questionText);
       additionalDetails = decodeText(additionalDetails);
     } else {
-      if (questionText.includes('comma') || questionText.includes('negative')) {
+      if (questionText.includes("comma") || questionText.includes("negative")) {
         questionText = decodeText(questionText);
       }
-      
-      if (additionalDetails && (additionalDetails.includes('comma') || additionalDetails.includes('negative'))) {
+
+      if (
+        additionalDetails &&
+        (additionalDetails.includes("comma") ||
+          additionalDetails.includes("negative"))
+      ) {
         additionalDetails = decodeText(additionalDetails);
       }
     }
 
     return {
-      type: 'question',
+      type: "question",
       content: {
         questionDetails: {
           ...currentQuestion,
@@ -174,7 +184,9 @@ export function renderQuestionDisplay(
           details: additionalDetails,
           hasGraph: hasGraphContent,
           // Flag to indicate if content should be treated as HTML
-          isHtml: /<[a-z][\s\S]*>/i.test(questionText) || /<[a-z][\s\S]*>/i.test(additionalDetails)
+          isHtml:
+            /<[a-z][\s\S]*>/i.test(questionText) ||
+            /<[a-z][\s\S]*>/i.test(additionalDetails),
         },
         navigation: {
           hasPrevious: currentQuestionIndex > 0,
@@ -185,29 +197,32 @@ export function renderQuestionDisplay(
       },
     };
   }
-  return { type: 'empty', content: null };
+  return { type: "empty", content: null };
 }
 
 export function renderAnswerChoices(
-  answerChoices, 
-  selectedAnswer, 
-  onAnswerSelect
+  answerChoices,
+  selectedAnswer,
+  onAnswerSelect,
 ) {
   // If no answer choices are available, return null
   if (!answerChoices) return null;
 
   // Split the answer choices (assuming they're comma-separated or newline-separated)
-  const choices = answerChoices.split(/[,\n]/).map(choice => choice.trim()).filter(Boolean);
+  const choices = answerChoices
+    .split(/[,\n]/)
+    .map((choice) => choice.trim())
+    .filter(Boolean);
 
   // Generate answer choice elements with selection handling
   return choices.map((choice, index) => {
     const choiceLetter = String.fromCharCode(65 + index); // A, B, C, D, etc.
-    
+
     return {
       letter: choiceLetter,
       text: choice,
       isSelected: selectedAnswer === choiceLetter,
-      onSelect: () => onAnswerSelect(choiceLetter)
+      onSelect: () => onAnswerSelect(choiceLetter),
     };
   });
 }

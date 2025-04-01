@@ -263,10 +263,16 @@ func register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var existingEmail string
-	err := db.QueryRow("SELECT email FROM users WHERE email = $1", data.Email).Scan(&existingEmail)
+	var isVerified bool
+	err := db.QueryRow("SELECT email, verified FROM users WHERE email = $1", data.Email).Scan(&existingEmail, &isVerified)
 	if err != sql.ErrNoRows {
 		if err == nil {
-			http.Error(w, "Email already registered", http.StatusConflict)
+			if isVerified {
+				http.Error(w, "Email already registered", http.StatusConflict)
+				return
+			} else {
+				_, _ = db.Exec("DELETE FROM verification_codes WHERE email = $1", data.Email)
+			}
 		} else {
 			log.Printf("Database error checking email: %v", err)
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
@@ -279,7 +285,7 @@ func register(w http.ResponseWriter, r *http.Request) {
 	_, err = rand.Read(generatedSalt)
 	if err != nil {
 		log.Printf("Error generating salt: %v", err)
-		http.Error(w, "Internal Error", http.StatusInternalServerError)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 	saltedPassword := make([]byte, len(generatedSalt)+len(data.Password))
@@ -405,6 +411,8 @@ func registerVerificationCode(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if time.Now().Unix()-timestamp > 10*60 {
+		log.Println(timestamp)
+		log.Println(time.Now().Unix())
 		http.Error(w, "Verification Code has Expired", http.StatusNotFound)
 		return
 	}
@@ -573,7 +581,7 @@ func initializeSat(db *sql.DB) {
 
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS verification_codes (
 		code TEXT PRIMARY KEY,
-		email TEXT,
+		email TEXT REFERENCES users(email),
 		timestamp BIGINT
 	)`)
 	if err != nil {
