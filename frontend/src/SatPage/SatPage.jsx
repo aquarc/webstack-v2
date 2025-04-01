@@ -11,7 +11,7 @@ import {
   renderQuestionDisplay
 } from './SatPageFunctions';
 import Desmos from 'desmos';
-import { Bookmark, Calculator, ListFilter, X } from 'lucide-react';
+import { Bookmark, Calculator, ListFilter, Search, X } from 'lucide-react';
 import PomodoroTimer from './PomodoroTimer';
 import Collapsible from '../Components/Collapsible';
 import Draggable from 'react-draggable';
@@ -252,10 +252,10 @@ function SATPage() {
       return null;
     }
     return Object.entries(subdomainData).map(([sectionName, section]) => (
-      <Collapsible 
-        title={sectionName}
-        key={sectionName}
-      >
+
+          <div class="sidebar-standalone-content">
+            <h2 class="sidebar-standalone-header">
+        {sectionName}</h2>
         {section.map(({ category, subdomains }) => (
           <React.Fragment key={category}>
             <h4>{category}</h4>
@@ -272,7 +272,7 @@ function SATPage() {
             ))}
           </React.Fragment>
         ))}
-      </Collapsible>
+        </div>
     ));
   };
 
@@ -747,13 +747,16 @@ function SATPage() {
             </div>
           )}
           <div className="button-group">
-            <button
-              className="search-button"
-              onClick={handleSearch}
-              disabled={isLoading}
-            >
-              {isLoading ? 'Searching...' : 'Search Questions'}
-            </button>
+
+      <button
+        onClick={handleSearch}
+        className="calculator-icon-button bg-white/90 backdrop-blur-sm border border-gray-200 rounded-lg p-2 shadow-sm hover:bg-gray-50 transition-colors format-time"
+      >
+        <Search size={16} />
+              {isLoading ? 'Searching...' : 'Search'}
+        
+      </button>
+
           </div>
         </div>
       </div>
