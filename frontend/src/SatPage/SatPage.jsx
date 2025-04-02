@@ -18,6 +18,7 @@ import Draggable from "react-draggable";
 import { ResizableBox } from "react-resizable";
 import "react-resizable/css/styles.css";
 import Cookies from "js-cookie";
+import { sendClickEvent } from "../App";
 
 function SATPage() {
   // navbar
@@ -88,7 +89,7 @@ function SATPage() {
       }
     });
   };
-  
+
   // Toggle function for the calculator
   const toggleCalculator = () => {
     setShowCalculator((prev) => !prev);
@@ -774,7 +775,7 @@ function SATPage() {
           <div>
             {questionDisplay.content?.questionDetails?.category == "Math" && (
               <button
-                onClick={toggleCalculator}
+                onClick={setShowCalculator((prev) => !prev)}
                 className={`calculator-icon-button format-time`}
               >
                 <Calculator size={24} />

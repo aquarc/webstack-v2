@@ -2,9 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./LandingPage.css";
 import "./NewsletterSection/NewsLetterSection";
-import NewsImage from "../Assets/news.jpg";
-import NewsletterSection from "./NewsletterSection/NewsLetterSection";
-import ExtracurricularSection from "./ECSection/ECSection";
 
 const headlines = {
   0: (
@@ -16,23 +13,16 @@ const headlines = {
   ),
   1: (
     <div className="headline">
-      <span className="highlight-text">Dream Summer Programs</span>
+      <span className="highlight-text">Maximize your</span>
       <br />
-      <span className="headline-text">become a reality</span>
+      <span className="headline-text">high school experience</span>
     </div>
   ),
   2: (
     <div className="headline">
-      <span className="highlight-text">Internship Opportunities</span>
+      <span className="highlight-text">Pinpoint your</span>
       <br />
-      <span className="headline-text">discovered weekly</span>
-    </div>
-  ),
-  3: (
-    <div className="headline">
-      <span className="highlight-text">Maximize your</span>
-      <br />
-      <span className="headline-text">high school experience</span>
+      <span className="headline-text">mistakes</span>
     </div>
   ),
 };
@@ -43,10 +33,11 @@ const LandingPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const headlineKeys = Object.keys(headlines);
     const interval = setInterval(() => {
       setFadeOut(true);
       setTimeout(() => {
-        setCurrentHeadline((prev) => (prev + 1) % headlines.length);
+        setCurrentHeadline((prev) => (prev + 1) % headlineKeys.length);
         setFadeOut(false);
       }, 500);
     }, 4000);
@@ -54,57 +45,11 @@ const LandingPage = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const renderHeadline = (headline) => {
-    if (headline.specialLayout3Lines) {
-      return (
-        <div className="headline">
-          <div>
-            <span className="headline-text">{headline.main}</span>
-          </div>
-          <div>
-            <span className="highlight-text">{headline.highlight}</span>
-            <span className="end-text">{headline.end.line2}</span>
-          </div>
-          <div>
-            <span className="end-text">{headline.end.line3}</span>
-          </div>
-        </div>
-      );
-    }
-
-    if (headline.specialLayout) {
-      return (
-        <div className="headline">
-          <div>
-            <span className="headline-text">{headline.main}</span>
-          </div>
-          <div>
-            <span className="headline-text">summer </span>
-            <span className="highlight-text">{headline.highlight}</span>
-            <span className="end-text">{headline.end}</span>
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <div className="headline">
-        <div>
-          <span className="headline-text">{headline.main}</span>
-        </div>
-        <div>
-          <span className="highlight-text">{headline.highlight}</span>
-          <span className="end-text">{headline.end}</span>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="landing-container">
       <div className="main-content">
         <div className={`headline-container ${fadeOut ? "fade" : ""}`}>
-          {headlines[currentHeadline]}
+          {headlines[`${currentHeadline}`]}
         </div>
 
         <div className="subheadline">
