@@ -49,7 +49,7 @@ const LandingPage = () => {
     <div className="landing-container">
       <div className="main-content">
         <div className={`headline-container ${fadeOut ? "fade" : ""}`}>
-          {headlines[currentHeadline]}
+          {headlines[`${currentHeadline}`]}
         </div>
 
         <div className="subheadline">

@@ -33,7 +33,6 @@ function SATPage() {
 
   // State variables for managing the SAT question interface
   const [selectedTest, setSelectedTest] = useState("SAT");
-  const [selectedTestSections, setSelectedTestSections] = useState([]);
   const selectedRef = useRef([]);
   let selectedRefLength = 0;
   const [selectedSubdomains, setSelectedSubdomains] = useState({});
@@ -90,7 +89,7 @@ function SATPage() {
       }
     });
   };
-  
+
   // Toggle function for the calculator
   const toggleCalculator = () => {
     setShowCalculator((prev) => !prev);
