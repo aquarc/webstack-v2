@@ -130,10 +130,6 @@
         gap: 1.5rem;
     }
 
-    .headline-container {
-        padding: 0 1rem; /* Add padding to the container */
-    }
-
     /* Ensure the button doesn't touch edges */
     .sat-button {
         margin: 2rem 1rem;

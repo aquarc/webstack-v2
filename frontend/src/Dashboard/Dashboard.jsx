@@ -37,7 +37,7 @@ function Dashboard() {
     return (
         <div className="dashboard-container">
             <aside className="sidebar">
-                <div className="sidebar-header">
+                <div className="dashboard-sidebar-header">
                     <img src="/aquLogo.png" alt="Aquarc Logo" className="sidebar-logo" />
                     <h1>aquarc</h1>
                 </div>
