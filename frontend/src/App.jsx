@@ -22,6 +22,15 @@ import Analytics from "./Dashboard/Analytics";
 import EcFinder from "./Dashboard/EcFinder";
 import SatPrep from "./Dashboard/SatPrep";
 
+export function sendClickEvent(eventName, eventCategory = "") {
+  if (!window.gtag) return;
+
+  window.gtag("event", "click", {
+    event_label: eventName,
+    event_category: eventCategory,
+  });
+}
+
 // Wrapper component to handle conditional NavBar rendering
 const AppContent = () => {
   const location = useLocation();

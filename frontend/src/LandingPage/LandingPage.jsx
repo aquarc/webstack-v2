@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import "./LandingPage.css";
 import "./NewsletterSection/NewsLetterSection";
 
-
 const headlines = {
   0: (
     <div className="headline">
@@ -46,57 +45,11 @@ const LandingPage = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const renderHeadline = (headline) => {
-    if (headline.specialLayout3Lines) {
-      return (
-        <div className="headline">
-          <div>
-            <span className="headline-text">{headline.main}</span>
-          </div>
-          <div>
-            <span className="highlight-text">{headline.highlight}</span>
-            <span className="end-text">{headline.end.line2}</span>
-          </div>
-          <div>
-            <span className="end-text">{headline.end.line3}</span>
-          </div>
-        </div>
-      );
-    }
-
-    if (headline.specialLayout) {
-      return (
-        <div className="headline">
-          <div>
-            <span className="headline-text">{headline.main}</span>
-          </div>
-          <div>
-            <span className="headline-text">summer </span>
-            <span className="highlight-text">{headline.highlight}</span>
-            <span className="end-text">{headline.end}</span>
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <div className="headline">
-        <div>
-          <span className="headline-text">{headline.main}</span>
-        </div>
-        <div>
-          <span className="highlight-text">{headline.highlight}</span>
-          <span className="end-text">{headline.end}</span>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="landing-container">
       <div className="main-content">
         <div className={`headline-container ${fadeOut ? "fade" : ""}`}>
-          {headlines[currentHeadline]}
+          {headlines[`${currentHeadline}`]}
         </div>
 
         <div className="subheadline">
