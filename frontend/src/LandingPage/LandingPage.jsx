@@ -14,23 +14,16 @@ const headlines = {
   ),
   1: (
     <div className="headline">
-      <span className="highlight-text">Dream Summer Programs</span>
+      <span className="highlight-text">Maximize your</span>
       <br />
-      <span className="headline-text">become a reality</span>
+      <span className="headline-text">high school experience</span>
     </div>
   ),
   2: (
     <div className="headline">
-      <span className="highlight-text">Internship Opportunities</span>
+      <span className="highlight-text">Pinpoint your</span>
       <br />
-      <span className="headline-text">discovered weekly</span>
-    </div>
-  ),
-  3: (
-    <div className="headline">
-      <span className="highlight-text">Maximize your</span>
-      <br />
-      <span className="headline-text">high school experience</span>
+      <span className="headline-text">mistakes</span>
     </div>
   ),
 };
@@ -49,7 +42,7 @@ const LandingPage = () => {
         setFadeOut(false);
       }, 500);
     }, 4000);
-  
+
     return () => clearInterval(interval);
   }, []);
 
