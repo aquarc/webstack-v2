@@ -178,7 +178,6 @@ const PomodoroTimer = () => {
       }
     }
     setIsActive(!isActive);
-    sendClickEvent("toggle-timer");
   };
 
   const resetTimer = () => {

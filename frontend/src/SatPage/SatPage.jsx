@@ -18,6 +18,7 @@ import Draggable from "react-draggable";
 import { ResizableBox } from "react-resizable";
 import "react-resizable/css/styles.css";
 import Cookies from "js-cookie";
+import { sendClickEvent } from "../App";
 
 function SATPage() {
   // navbar
@@ -32,6 +33,7 @@ function SATPage() {
 
   // State variables for managing the SAT question interface
   const [selectedTest, setSelectedTest] = useState("SAT");
+  const [selectedTestSections, setSelectedTestSections] = useState([]);
   const selectedRef = useRef([]);
   let selectedRefLength = 0;
   const [selectedSubdomains, setSelectedSubdomains] = useState({});
@@ -759,7 +761,7 @@ function SATPage() {
           <div>
             {questionDisplay.content?.questionDetails?.category == "Math" && (
               <button
-                onClick={toggleCalculator}
+                onClick={setShowCalculator((prev) => !prev)}
                 className={`calculator-icon-button format-time`}
               >
                 <Calculator size={24} />
