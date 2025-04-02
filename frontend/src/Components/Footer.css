@@ -89,20 +89,28 @@
 
 .social-icons {
   display: flex;
-  gap: 16px;
+  gap: 1.5rem;
+  justify-content: flex-end;
 }
 
-.social-icons a {
-  display: flex;
+.social-icon {
+  transition: all 0.3s ease;
+  cursor: pointer;
 }
 
-.social-icons img {
-  width: 24px;
-  height: 24px;
-  transition: opacity 0.2s;
+.social-icon:hover {
+  stroke: #00b4d8;
+  transform: translateY(-2px);
 }
 
-.social-icons img:hover {
-  opacity: 0.8;
+/* If you need to adjust mobile sizing */
+@media (max-width: 768px) {
+  .social-icons {
+    justify-content: center;
+    gap: 1rem;
+  }
+  
+  .social-icon {
+    size: 20px;
+  }
 }
-

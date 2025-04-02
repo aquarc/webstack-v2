@@ -8,7 +8,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  
+
   // Check if current page is SAT page
   const isSatPage = location.pathname.startsWith('/sat');
 
@@ -27,17 +27,18 @@ const Navbar = () => {
   return (
     <div style={{ position: 'relative' }}>
       <nav className={`nav`}>
-        <div className="logo" onClick={isSatPage ? handleBack : () => navigate('/')} 
-             style={{ cursor: 'pointer' }}>
+        <div className="logo" onClick={isSatPage ? handleBack : () => navigate('/')}
+          style={{ cursor: 'pointer' }}>
           <img src="/darkquarc.png" alt="Aquarc Logo" className="logo-image" />
           <span className="brand-name">aquarc</span>
         </div>
 
         <div className="nav-links">
           <Link to="/sat" className="link">SAT</Link>
-          <a href="https://aquarc.beehiiv.com" className="link">Newsletter</a>
+          {/*<a href="https://aquarc.beehiiv.com" className="link">Newsletter</a>*/}
           <Link to="/feedback" className="link">Feedback</Link>
-          <Link to="/aboutPage" className="link">About Us</Link>
+          <Link to="/feedback" className="link">Blog</Link>
+          {/*<Link to="/aboutPage" className="link">About Us</Link>*/}
         </div>
 
         <Link to="/signup" className="button">
@@ -56,9 +57,11 @@ const Navbar = () => {
       <div className={`mobile-drawer ${isMenuOpen ? 'open' : 'closed'}`}>
         <div className="mobile-link-container">
           <Link to="/sat" className="link">SAT</Link>
-          <a href="https://aquarc.beehiiv.com" className="link">Newsletter</a>
+          {/*<a href="https://aquarc.beehiiv.com" className="link">Newsletter</a>*/}
           <Link to="/feedback" className="link">Feedback</Link>
-          <Link to="/aboutPage" className="link">About Us</Link>
+          <Link to="/feedback" className="link">Blog</Link>
+
+          {/*<Link to="/aboutPage" className="link">About Us</Link>*/}
           <Link to="/signup" className="button">
             Get Started →
           </Link>
