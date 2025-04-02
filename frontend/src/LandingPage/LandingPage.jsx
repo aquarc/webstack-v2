@@ -2,9 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./LandingPage.css";
 import "./NewsletterSection/NewsLetterSection";
-import NewsImage from "../Assets/news.jpg";
-import NewsletterSection from "./NewsletterSection/NewsLetterSection";
-import ExtracurricularSection from "./ECSection/ECSection";
+
 
 const headlines = {
   0: (
@@ -43,14 +41,15 @@ const LandingPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const headlineKeys = Object.keys(headlines);
     const interval = setInterval(() => {
       setFadeOut(true);
       setTimeout(() => {
-        setCurrentHeadline((prev) => (prev + 1) % headlines.length);
+        setCurrentHeadline((prev) => (prev + 1) % headlineKeys.length);
         setFadeOut(false);
       }, 500);
     }, 4000);
-
+  
     return () => clearInterval(interval);
   }, []);
 

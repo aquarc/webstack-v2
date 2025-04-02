@@ -318,11 +318,6 @@
     margin-bottom: 20px;
 }
 
-<<<<<<< HEAD
-/* supposed to be image alts */
-.sr-only {
-    display: none;
-=======
 @media (max-width: 768px) {
     .question-container {
         flex-direction: column;
@@ -339,5 +334,4 @@
     .question-right-side {
         overflow: visible;
     }
->>>>>>> 1b4282f6ed694bbf175ce3e5e73a0e434077b08e
 }
