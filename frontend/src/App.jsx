@@ -17,7 +17,6 @@ import Dashboard from "./Dashboard/Dashboard";
 import AboutUsPage from "./AboutPage/AboutPage";
 import LoginPage from "./Authentication/Login/Login";
 import AuthRedirect from "./Components/AuthRedirect";
-import Cookie from "js-cookie";
 import Overview from "./Dashboard/Overview";
 import Analytics from "./Dashboard/Analytics";
 import EcFinder from "./Dashboard/EcFinder";

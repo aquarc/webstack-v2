@@ -331,6 +331,7 @@
 .sr-only {
   display: none;
 }
+
 @media (max-width: 768px) {
   .question-container {
     flex-direction: column;
