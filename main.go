@@ -113,7 +113,7 @@ func main() {
 
 	// Register static file handlers.
 	http.HandleFunc("/sat", indexThing)
-	http.HandleFunc("/extracurricular", indexThing)
+	//http.HandleFunc("/extracurricular", indexThing)
 	http.HandleFunc("/feedback", indexThing)
 	http.HandleFunc("/", index)
 	http.HandleFunc("/signup", indexThing)

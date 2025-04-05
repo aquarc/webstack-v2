@@ -46,7 +46,14 @@
   color: #e5e2ec;
   font-size: 0.95rem;
   font-weight: bold;
-  transition: color 0.3s ease;
+  transition: all 0.3s ease;
+  position: relative;
+  display: inline-block;
+  /* Added for transform */
+}
+
+.link:hover {
+  transform: translateY(-2px);
 }
 
 .button {
@@ -56,9 +63,17 @@
   color: white;
   text-decoration: none;
   font-size: 0.9rem;
-  transition: transform 0.3s ease;
+  transition: all 0.3s ease;
   border: none;
   cursor: pointer;
+  transform: translateY(0);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.button:hover {
+  background: linear-gradient(to right, #1a2d5f, #1e4ab5);
+  transform: translateY(-4px);
+  box-shadow: 0 6px 12px rgba(38, 71, 163, 0.25);
 }
 
 .menu-toggle {
@@ -142,11 +157,13 @@
   .menu-toggle {
     display: flex;
   }
+
   .button {
     width: fit-content;
     border-radius: 15px;
   }
 }
+
 /* SAT Page specific styles */
 .sat-nav {
   background: #ffffff;
@@ -174,3 +191,4 @@
     display: none;
   }
 }
+

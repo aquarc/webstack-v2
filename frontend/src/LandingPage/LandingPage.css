@@ -89,12 +89,16 @@
   font-weight: 600;
   border: none;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
   text-decoration: none;
+  transform: translateY(0);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .cta-button:hover {
-  background-color: #1d4ed8;
+  background: linear-gradient(to right, #1d3a8a, #1e40af);
+  transform: translateY(-6px);
+  box-shadow: 0 6px 12px rgba(38, 71, 163, 0.25);
 }
 
 .stats {

@@ -70,7 +70,7 @@ html, body {
   z-index: 10;
 }
 
-.sidebar-header {
+.dashboard-sidebar-header {
   display: flex;
   justify-content: center;
   border-bottom: 1px solid var(--mid-gray);
@@ -966,7 +966,7 @@ html, body {
     padding: 0.5rem;
   }
   
-  .sidebar-header, .sidebar-footer {
+  .dashboard-sidebar-header, .sidebar-footer {
     display: none;
   }
   
