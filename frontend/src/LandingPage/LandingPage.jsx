@@ -6,23 +6,23 @@ import "./NewsletterSection/NewsLetterSection";
 const headlines = {
   0: (
     <div className="headline">
-      <span className="highlight-text">Higher SAT</span>
+      <span className="highlight-text">Start scoring higher</span>
       <br />
-      <span className="headline-text">2 clicks away</span>
+      <span className="headline-text">in 2 clicks.</span>
     </div>
   ),
   1: (
     <div className="headline">
-      <span className="highlight-text">Maximize your</span>
+      <span className="highlight-text">Your mistakes</span>
       <br />
-      <span className="headline-text">high school experience</span>
+      <span className="headline-text">in clear sight.</span>
     </div>
   ),
   2: (
     <div className="headline">
-      <span className="highlight-text">Pinpoint your</span>
+      <span className="highlight-text">Learn with</span>
       <br />
-      <span className="headline-text">mistakes</span>
+      <span className="headline-text">AI-powered feedback.</span>
     </div>
   ),
 };
@@ -58,7 +58,7 @@ const LandingPage = () => {
 
         <div className="sat-button">
           <button onClick={() => navigate("/sat")} className="cta-button">
-            your 1600 starts here →
+            Practice SAT Questions →
           </button>
         </div>
 

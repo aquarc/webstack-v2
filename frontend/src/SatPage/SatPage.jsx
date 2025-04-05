@@ -292,7 +292,6 @@ function SATPage() {
     selectedSubdomains,
     handleSubdomainChange,
   );
-  console.log("subdomainData:", subdomainData);
 
   const questionDisplay = renderQuestionDisplay(
     isLoading,

@@ -41,7 +41,7 @@ const Navbar = () => {
         </div>
 
         <Link to="/signup" className="button">
-          Make A FREE Account! →
+          Your 1600 starts here →
         </Link>
 
         {/* Mobile menu remains the same */}
