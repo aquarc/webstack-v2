@@ -39,11 +39,6 @@ const PomodoroTimer = () => {
     { label: "15", value: 15 * 60 },
     { label: "20", value: 20 * 60 },
   ];
-  // Add this function definition (placeholder implementation)
-  const sendClickEvent = (eventName) => {
-    // Implement actual analytics tracking here
-    console.log(`Event tracked: ${eventName}`);
-  };
 
   // reset timer when mode is changed
   useEffect(() => {

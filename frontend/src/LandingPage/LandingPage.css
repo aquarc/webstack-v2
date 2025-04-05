@@ -1,234 +1,234 @@
 * {
-    margin: 0;
-    box-sizing: border-box;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    max-width: 100%;
+  margin: 0;
+  box-sizing: border-box;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  max-width: 100%;
 }
 
 .landing-container {
-    min-height: 100vh;
-    background: #272628;
-    padding-top: 80px;
-  }
-
+  min-height: 100vh;
+  background: #272628;
+  padding-top: 80px;
+}
 
 .headline-container {
-    text-align: center;
-    transition: opacity 0.5s ease;
-    padding-top: 50px;
+  text-align: center;
+  transition: opacity 0.5s ease;
+  padding-top: 50px;
 }
 
 .headline-container.fade {
-    opacity: 0;
+  opacity: 0;
 }
 
 .headline {
-    font-size: 5rem;
-    font-weight: bold;
-    margin-bottom: 1.5rem;
-    line-height: 1.2;
+  font-size: 5rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  line-height: 1.2;
 }
 
 @media (min-width: 1200px) {
-    .main-content {
-      max-width: 1200px;
-      margin: 0 auto;
-    }
+  .main-content {
+    max-width: 1200px;
+    margin: 0 auto;
   }
+}
 
 .headline-text {
-    color: #7c97be;
+  color: #e5e2ec;
 }
 
 .highlight-text {
-    background: linear-gradient(to right, #203674, #2563eb);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    display: inline-block;
+  background: linear-gradient(to right, #203674, #2563eb);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  display: inline-block;
 }
 
 .highlight-text br {
-    line-height: 1.2;
-    display: block;
-    margin-bottom: 0.2rem;
+  line-height: 1.2;
+  display: block;
+  margin-bottom: 0.2rem;
 }
 
 .end-text {
-    color: #7c97be;
+  color: #e5e2ec;
 }
 
 .subheadline {
-    font-size: 1.5rem;
-    color: #bdc6d2;
-    margin-bottom: 2rem;
-    line-height: 1.5;
-    text-align: center;
+  font-size: 1.5rem;
+  color: #bdc6d2;
+  margin-bottom: 2rem;
+  line-height: 1.5;
+  text-align: center;
 }
 
 /* Add a specific class for the second line */
 .subheadline-second-line {
-    display: block;
-    margin-top: 0.2rem;
-    margin-left: 2rem; /* Adjust this value to control the indentation amount */
-
+  display: block;
+  margin-top: 0.2rem;
+  margin-left: 2rem; /* Adjust this value to control the indentation amount */
 }
 .sat-button {
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-top: 2rem;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 2rem;
 }
 
 .cta-button {
-    background: linear-gradient(to right, #2647a3, #2563eb);
-    color: white;
-    padding: 1rem 2rem;
-    border-radius: 9999px;
-    font-size: 1.125rem;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    text-decoration: none;
+  background: linear-gradient(to right, #2647a3, #2563eb);
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 9999px;
+  font-size: 1.125rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  text-decoration: none;
 }
 
 .cta-button:hover {
-    background-color: #1d4ed8;
+  background-color: #1d4ed8;
 }
 
 .stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 2rem;
-    margin-top: 5rem;
-    padding-bottom: 100px;
-
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  margin-top: 5rem;
+  padding-bottom: 100px;
 }
 
 @media (max-width: 768px) {
-    .headline {
-        font-size: 3.5rem; /* Reduce font size for better mobile display */
-        padding: 0 1rem; /* Add padding on both sides */
-    }
+  .headline {
+    font-size: 3.5rem; /* Reduce font size for better mobile display */
+    padding: 0 1rem; /* Add padding on both sides */
+  }
 
-    .subheadline {
-        font-size: 1.25rem;
-        padding: 0 1.5rem; /* Add padding on both sides */
+  .subheadline {
+    font-size: 1.25rem;
+    padding: 0 1.5rem; /* Add padding on both sides */
 
-        margin-bottom: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
 
-    }
+  .subheadline-second-line {
+    margin-left: 0; /* Remove left margin on mobile */
+  }
 
-    .subheadline-second-line {
-        margin-left: 0; /* Remove left margin on mobile */
-    }
+  .stats {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
 
-    .stats {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
-    }
+  .headline-container {
+    padding: 0 1rem; /* Add padding to the container */
+  }
 
-    .headline-container {
-        padding: 0 1rem; /* Add padding to the container */
-    }
+  /* Ensure the button doesn't touch edges */
+  .sat-button {
+    margin: 2rem 1rem;
+  }
+  .SAT-content {
+    padding: 2rem;
+    margin: 0 1rem;
+  }
 
-    /* Ensure the button doesn't touch edges */
-    .sat-button {
-        margin: 2rem 1rem;
-    }
-          .SAT-content {
-          padding: 2rem;
-          margin: 0 1rem;
-      }
+  .SAT-title {
+    font-size: 2.5rem;
+  }
 
-      .SAT-title {
-          font-size: 2.5rem;
-      }
-
-      .SAT-description {
-          font-size: 1.1rem;
-      }
-
+  .SAT-description {
+    font-size: 1.1rem;
+  }
 }
 
 .stat-item {
-    text-align: center;
-
+  text-align: center;
 }
 
 .stat-number {
-    font-size: 2.5rem;
-    font-weight: bold;
-    color: #7c97be;
-    margin-bottom: 0.5rem;
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #e5e2ec;
+  margin-bottom: 0.5rem;
 }
 
 .stat-label {
-    color: #bdc6d2;
-    font-size: 1.125rem;
+  color: #bdc6d2;
+  font-size: 1.125rem;
 }
 .SAT-section {
-    position: relative;
-    height: 600px;
-    width: 100%;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    text-align: center;
-    background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
-    url('../Assets/students.jpg');
-    background-size: cover;
-    background-position: center;
+  position: relative;
+  height: 600px;
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  text-align: center;
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+    url("../Assets/students.jpg");
+  background-size: cover;
+  background-position: center;
+}
+
+.SAT-content {
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  max-width: 800px;
+  padding: 3rem;
+  z-index: 1;
+  background: rgba(255, 255, 255, 0.243);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.SAT-title {
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 3.5rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  letter-spacing: 0.5px;
+}
+
+.SAT-description {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Fallback for browsers that don't support backdrop-filter */
+@supports not (
+  (backdrop-filter: blur(10px)) or (-webkit-backdrop-filter: blur(10px))
+) {
+  .SAT-content {
+    background: rgba(30, 30, 30, 0.9);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .SAT-content {
+    padding: 2rem;
+    margin: 0 1rem;
   }
 
-    .SAT-content {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      max-width: 800px;
-      padding: 3rem;
-      z-index: 1;
-      background: rgba(255, 255, 255, 0.243);
-      backdrop-filter: blur(10px);
-      border-radius: 16px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-    .SAT-title {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      font-size: 3.5rem;
-      font-weight: bold;
-      margin-bottom: 1.5rem;
-      letter-spacing: 0.5px;
-    }
+  .SAT-title {
+    font-size: 2.5rem;
+  }
 
-    .SAT-description {
-      font-size: 1.2rem;
-      margin-bottom: 2rem;
-      line-height: 1.6;
-      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
-    }
-
-    /* Fallback for browsers that don't support backdrop-filter */
-    @supports not ((backdrop-filter: blur(10px)) or (-webkit-backdrop-filter: blur(10px))) {
-      .SAT-content {
-          background: rgba(30, 30, 30, 0.9);
-      }
-    }
-
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
-      .SAT-content {
-          padding: 2rem;
-          margin: 0 1rem;
-      }
-
-      .SAT-title {
-          font-size: 2.5rem;
-      }
-
-      .SAT-description {
-          font-size: 1.1rem;
-      }
-    }
+  .SAT-description {
+    font-size: 1.1rem;
+  }
+}
