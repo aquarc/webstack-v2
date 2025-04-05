@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Archivo:ital,wght@1,600&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Archivo:ital,wght@1,600&display=swap");
 
 .brand-name {
   font-style: italic, bold;
@@ -15,7 +15,7 @@
   left: 0;
   right: 0;
   z-index: 1000;
-  color: #7c97be;
+  color: #e5e2ec;
   font-weight: bold;
   background: #1f1f20;
   backdrop-filter: blur(10px);
@@ -43,7 +43,7 @@
 
 .link {
   text-decoration: none;
-  color: #7c97be;
+  color: #e5e2ec;
   font-size: 0.95rem;
   font-weight: bold;
   transition: all 0.3s ease;
@@ -95,7 +95,6 @@
 }
 
 .mobile-drawer {
-
   position: fixed;
   top: 72px;
   left: 0;
@@ -121,7 +120,7 @@
 
 .mobile-link {
   text-decoration: none;
-  color: #7c97be;
+  color: #e5e2ec;
   font-size: 1.2rem;
   font-weight: bold;
   padding: 0.5rem 0;
@@ -192,3 +191,4 @@
     display: none;
   }
 }
+
