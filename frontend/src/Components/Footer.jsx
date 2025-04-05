@@ -1,8 +1,6 @@
 import React from 'react';
 import './Footer.css';
-import youtubeIcon from '../Assets/youtube.png';
-import instaIcon from '../Assets/instagram.png';
-import linkedinIcon from '../Assets/linkedin.png';
+import { Youtube, Instagram, Linkedin } from 'lucide-react';
 
 const Footer = () => {
   return (
@@ -11,8 +9,8 @@ const Footer = () => {
         {/* Left section */}
         <div className="footer-left">
           <div className="footer-logo">
-            <img src="aquLogo.png" alt="Aquarc Logo" className="logo-icon"/>
-            <span>Aquarc</span>
+            <img src="darkquarc.png" alt="Aquarc Logo" className="logo-icon"/>
+            <span className='brand-name'>Aquarc</span>
           </div>
           <p className="footer-description">
             Making high school navigation easier with personalized SAT prep, extracurricular tracking, and educational resources.
@@ -31,13 +29,13 @@ const Footer = () => {
         <div className="footer-right">
           <div className="social-icons">
             <a href="https://www.youtube.com/@aquarc_co" target="_blank" rel="noopener noreferrer">
-              <img src={youtubeIcon} alt="YouTube"/>
+              <Youtube className="social-icon" stroke="white" size={24} />
             </a>
             <a href="https://www.instagram.com/_aquarc_/" target="_blank" rel="noopener noreferrer">
-              <img src={instaIcon} alt="Instagram"/>
+              <Instagram className="social-icon" stroke="white" size={24} />
             </a>
             <a href="https://www.linkedin.com/company/aquarc/" target="_blank" rel="noopener noreferrer">
-              <img src={linkedinIcon} alt="LinkedIn"/>
+              <Linkedin className="social-icon" stroke="white" size={24} />
             </a>
           </div>
         </div>

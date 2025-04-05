@@ -3,11 +3,13 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"github.com/joho/godotenv"
-	_ "github.com/lib/pq"
 	"log"
 	"net/http"
 	"os"
+	"strings"
+
+	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
 
 	"github.com/rs/cors"
 )
@@ -33,10 +35,57 @@ func indexThing(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "./frontend/build/index.html")
 }
 
+// Add this to your main.go
+func serveStatic(w http.ResponseWriter, r *http.Request) {
+    path := "./frontend/build" + r.URL.Path
+    
+    // Set the correct Content-Type based on file extension
+    if strings.HasSuffix(path, ".css") {
+        w.Header().Set("Content-Type", "text/css")
+    } else if strings.HasSuffix(path, ".js") {
+        w.Header().Set("Content-Type", "application/javascript")
+    }
+    
+    http.ServeFile(w, r, path)
+}
+
 func main() {
 	// Load environment variables from .env
 	if err := godotenv.Load(); err != nil {
 		log.Fatal("Error loading .env file")
+	}
+
+	var connectionSB strings.Builder
+	user := os.Getenv("DB_USER")
+	password := os.Getenv("DB_PASSWORD")
+	host := os.Getenv("DB_HOST")
+	port := os.Getenv("DB_PORT")
+	name := os.Getenv("DB_NAME")
+	sslmode := os.Getenv("DB_SSLMODE")
+
+	if len(user) != 0 {
+		connectionSB.WriteString("user=")
+		connectionSB.WriteString(user)
+	}
+	if len(password) != 0 {
+		connectionSB.WriteString(" password=")
+		connectionSB.WriteString(password)
+	}
+	if len(host) != 0 {
+		connectionSB.WriteString(" host=")
+		connectionSB.WriteString(host)
+	}
+	if len(port) != 0 {
+		connectionSB.WriteString(" port=")
+		connectionSB.WriteString(port)
+	}
+	if len(name) != 0 {
+		connectionSB.WriteString(" dbname=")
+		connectionSB.WriteString(name)
+	}
+	if len(sslmode) != 0 {
+		connectionSB.WriteString(" sslmode=")
+		connectionSB.WriteString(sslmode)
 	}
 
 	// Build the PostgreSQL connection string.
@@ -48,6 +97,7 @@ func main() {
 		os.Getenv("DB_NAME"),
 		os.Getenv("DB_SSLMODE"),
 	)
+
 	log.Println("DB Connection String:", connectionString)
 
 	var err error
@@ -63,12 +113,16 @@ func main() {
 
 	// Register static file handlers.
 	http.HandleFunc("/sat", indexThing)
-	http.HandleFunc("/extracurricular", indexThing)
+	//http.HandleFunc("/extracurricular", indexThing)
 	http.HandleFunc("/feedback", indexThing)
 	http.HandleFunc("/", index)
 	http.HandleFunc("/signup", indexThing)
 	http.HandleFunc("/dashboard", indexThing)
 	http.HandleFunc("/login", indexThing)
+	http.HandleFunc("/overview", indexThing)
+	http.HandleFunc("/analytics", indexThing)
+	http.HandleFunc("/ec-finder", indexThing)
+	http.HandleFunc("/sat-prep", indexThing)
 
 	// Set up CORS with credentials enabled.
 	handler := cors.New(cors.Options{

@@ -1,6 +1,5 @@
 * {
     margin: 0;
-    padding-top: 0px;
     box-sizing: border-box;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     max-width: 100%;
@@ -8,20 +7,15 @@
 
 .landing-container {
     min-height: 100vh;
-    background: rgb(243, 238, 245);
+    background: #272628;
     padding-top: 80px;
   }
 
-  .main-content {
-    background: rgb(123, 28, 160);
-    max-width: 100%;
-    padding: 0rem;
-    
-  }
 
 .headline-container {
     text-align: center;
     transition: opacity 0.5s ease;
+    padding-top: 50px;
 }
 
 .headline-container.fade {
@@ -43,11 +37,11 @@
   }
 
 .headline-text {
-    color: #1f2937;
+    color: #7c97be;
 }
 
 .highlight-text {
-    background: linear-gradient(to right, #1e3a8a, #2563eb);
+    background: linear-gradient(to right, #203674, #2563eb);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -61,12 +55,12 @@
 }
 
 .end-text {
-    color: #1f2937;
+    color: #7c97be;
 }
 
 .subheadline {
     font-size: 1.5rem;
-    color: #4b5563;
+    color: #bdc6d2;
     margin-bottom: 2rem;
     line-height: 1.5;
     text-align: center;
@@ -96,12 +90,16 @@
     font-weight: 600;
     border: none;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: all 0.3s ease;
     text-decoration: none;
+    transform: translateY(0);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .cta-button:hover {
-    background-color: #1d4ed8;
+    background: linear-gradient(to right, #1d3a8a, #1e40af);
+    transform: translateY(-6px);
+    box-shadow: 0 6px 12px rgba(38, 71, 163, 0.25);
 }
 
 .stats {
@@ -136,10 +134,6 @@
         gap: 1.5rem;
     }
 
-    .headline-container {
-        padding: 0 1rem; /* Add padding to the container */
-    }
-
     /* Ensure the button doesn't touch edges */
     .sat-button {
         margin: 2rem 1rem;
@@ -161,17 +155,18 @@
 
 .stat-item {
     text-align: center;
+
 }
 
 .stat-number {
     font-size: 2.5rem;
     font-weight: bold;
-    color: #1f2937;
+    color: #7c97be;
     margin-bottom: 0.5rem;
 }
 
 .stat-label {
-    color: #4b5563;
+    color: #bdc6d2;
     font-size: 1.125rem;
 }
 .SAT-section {
