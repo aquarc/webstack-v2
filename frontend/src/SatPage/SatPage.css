@@ -575,3 +575,23 @@ html {
     display: none;
   }
 }
+.attempts-counter {
+  margin: 10px 0;
+  font-weight: bold;
+  color: #666;
+}
+
+.submit-button {
+  margin-top: 15px;
+  padding: 8px 20px;
+  background-color: #6366F1;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.submit-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}

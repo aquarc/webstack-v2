@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import {useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import "./SatPage.css";
 import "./CSS/Filter.css";
 import "./CSS/QuestionStyles.css";
@@ -30,6 +30,7 @@ function SATPage() {
   // State variables for managing the SAT question interface
   const [selectedTest, setSelectedTest] = useState("SAT");
   const selectedRef = useRef([]);
+  let selectedRefLength = 0;
   const [selectedSubdomains, setSelectedSubdomains] = useState({});
   const [selectedDifficulties, setSelectedDifficulties] = useState({
     Easy: false,
@@ -60,6 +61,8 @@ function SATPage() {
   // cross out mode for answer choices
   const [isCrossOutMode, setIsCrossOutMode] = useState(false);
   const [crossedOutAnswers, setCrossedOutAnswers] = useState({});
+
+  const [attempts, setAttempts] = useState({});
 
   const toggleSidebar = () => {
     setShowSidebar((prev) => {
@@ -125,6 +128,7 @@ function SATPage() {
   useEffect(() => {
     setCrossedOutAnswers({});
     setIsCrossOutMode(false);
+    setAttempts({});
   }, [currentQuestions]);
 
   // Event handlers for selection changes
@@ -193,11 +197,45 @@ function SATPage() {
 
   const handleSubmitAnswer = () => {
     if (tempAnswer.trim()) {
+      const currentQuestion = currentQuestions[currentQuestionIndex];
+      const correctAnswer = currentQuestion.answer;
+      let isCorrect = false;
+
+      // Handle fraction input
       if (tempAnswer.includes("/")) {
-        let [numerator, denominator] = tempAnswer.split("/");
-        setSelectedAnswer((numerator / denominator).toFixed(4)); // 5 max characters including decimal place, 4 max without decimal place
+        const [numerator, denominator] = tempAnswer.split("/");
+        const numericAnswer = (numerator / denominator).toFixed(4);
+        isCorrect = numericAnswer === correctAnswer;
+      } else {
+        isCorrect = tempAnswer === correctAnswer;
       }
-      setSelectedAnswer(tempAnswer);
+
+      if (isCorrect) {
+        setSelectedAnswer(tempAnswer);
+        // Reset attempts on correct answer
+        setAttempts(prev => {
+          const newAttempts = { ...prev };
+          delete newAttempts[currentQuestionIndex];
+          return newAttempts;
+        });
+      } else {
+        const currentAttempts = attempts[currentQuestionIndex] || 0;
+        if (currentAttempts < 1) {
+          // First wrong attempt
+          setAttempts(prev => ({
+            ...prev,
+            [currentQuestionIndex]: currentAttempts + 1,
+          }));
+          setSelectedAnswer(null); // Allow another attempt
+        } else {
+          // Second wrong attempt, show rationale
+          setAttempts(prev => ({
+            ...prev,
+            [currentQuestionIndex]: currentAttempts + 1,
+          }));
+          setSelectedAnswer(tempAnswer);
+        }
+      }
     }
 
     sendClickEvent("submit-answer");
@@ -260,6 +298,7 @@ function SATPage() {
     selectedSubdomains,
     handleSubdomainChange,
   );
+  console.log("subdomainData:", subdomainData);
 
   const questionDisplay = renderQuestionDisplay(
     isLoading,
@@ -311,12 +350,15 @@ function SATPage() {
   };
 
   const renderAnswerChoices = (
+    
     choices,
     correctAnswer,
     rationale,
     questionType,
     externalId,
   ) => {
+    const currentAttempts = attempts[currentQuestionIndex] || 0;
+
     if (shouldShowFreeResponse(choices)) {
       const handleKeyPress = (e) => {
         if (e.key === "Enter") {
@@ -332,13 +374,12 @@ function SATPage() {
             value={tempAnswer}
             onChange={(e) => setTempAnswer(e.target.value)}
             onKeyPress={handleKeyPress}
-            className={`flex-1 p-2 border rounded-md ${
-              selectedAnswer
-                ? selectedAnswer === correctAnswer
-                  ? "correct-answer"
-                  : "incorrect-answer"
-                : ""
-            }`}
+            className={`flex-1 p-2 border rounded-md ${selectedAnswer
+              ? selectedAnswer === correctAnswer
+                ? "correct-answer"
+                : "incorrect-answer"
+              : ""
+              }`}
             placeholder="Enter your answer..."
           />
           <br></br>
@@ -351,7 +392,7 @@ function SATPage() {
             Submit
           </button>
           <br></br>
-          {selectedAnswer && (
+          {(selectedAnswer && (selectedAnswer === correctAnswer || currentAttempts >= 3)) && (
             <div
               className={`rationale-container ${selectedAnswer === correctAnswer ? "correct" : "incorrect"}`}
             >
@@ -425,6 +466,18 @@ function SATPage() {
                           });
                         } else {
                           setSelectedAnswer(letter);
+                          if (letter.toLowerCase() !== correctAnswer.toLowerCase()) {
+                            setAttempts(prev => ({
+                              ...prev,
+                              [currentQuestionIndex]: (prev[currentQuestionIndex] || 0) + 1,
+                            }));
+                          } else {
+                            setAttempts(prev => {
+                              const newAttempts = { ...prev };
+                              delete newAttempts[currentQuestionIndex];
+                              return newAttempts;
+                            });
+                          }
                         }
                       }}
                     >
@@ -444,7 +497,7 @@ function SATPage() {
                 })
                 .filter(Boolean)}
             </div>
-            {selectedAnswer && (
+            {(selectedAnswer && (selectedAnswer.toLowerCase() === correctAnswer.toLowerCase() || currentAttempts >= 3)) && (
               <div
                 className={`rationale-container ${selectedAnswer.toLowerCase() === correctAnswer.toLowerCase() ? "correct" : "incorrect"}`}
               >
@@ -510,6 +563,18 @@ function SATPage() {
                         });
                       } else {
                         setSelectedAnswer(letterChoice);
+                        if (letterChoice !== correctAnswer.toLowerCase()) {
+                          setAttempts(prev => ({
+                            ...prev,
+                            [currentQuestionIndex]: (prev[currentQuestionIndex] || 0) + 1,
+                          }));
+                        } else {
+                          setAttempts(prev => {
+                            const newAttempts = { ...prev };
+                            delete newAttempts[currentQuestionIndex];
+                            return newAttempts;
+                          });
+                        }
                       }
                     }}
                   >
@@ -528,7 +593,7 @@ function SATPage() {
                 );
               })}
             </div>
-            {selectedAnswer && (
+            {(selectedAnswer && (selectedAnswer === correctAnswer.toLowerCase() || currentAttempts >= 3)) && (
               <div
                 className={`rationale-container ${selectedAnswer === correctAnswer.toLowerCase() ? "correct" : "incorrect"}`}
               >
@@ -706,14 +771,14 @@ function SATPage() {
         const { questionDetails, navigation } = questionDisplay.content;
 
         return (
-          <div className="fixed-bottom-bar">
+          <div class="fixed-bottom-bar">
             <button
               onClick={handleNavigatePrevious}
               disabled={!navigation.hasPrevious}
             >
               Previous
             </button>
-            <span className="progress-text">
+            <span class="progress-text">
               {`${navigation.currentIndex} / ${navigation.totalQuestions}`}
             </span>
             <button onClick={handleNavigateNext} disabled={!navigation.hasNext}>
@@ -742,7 +807,7 @@ function SATPage() {
           <div>
             {questionDisplay.content?.questionDetails?.category == "Math" && (
               <button
-                onClick={toggleCalculator}
+                onClick={setShowCalculator((prev) => !prev)}
                 className={`calculator-icon-button format-time`}
               >
                 <Calculator size={24} />
@@ -766,7 +831,7 @@ function SATPage() {
             renderQuestionView()
           ) : (
             <>
-              <div className="question-container">Please filter questions.</div>
+              <div class="question-container">Please filter questions.</div>
             </>
           )}
         </div>
@@ -817,8 +882,8 @@ function SATPage() {
 
           {renderSubdomainInputs()}
 
-          <div className="sidebar-standalone-content">
-            <h2 className="sidebar-standalone-header">Difficulty</h2>
+          <div class="sidebar-standalone-content">
+            <h2 class="sidebar-standalone-header">Difficulty</h2>
             {["Easy", "Medium", "Hard"].map((difficulty) => (
               <div key={difficulty} className="checkbox-group">
                 <input
