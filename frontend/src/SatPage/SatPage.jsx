@@ -260,7 +260,6 @@ function SATPage() {
     selectedSubdomains,
     handleSubdomainChange,
   );
-  console.log("subdomainData:", subdomainData);
 
   const questionDisplay = renderQuestionDisplay(
     isLoading,
@@ -707,14 +706,14 @@ function SATPage() {
         const { questionDetails, navigation } = questionDisplay.content;
 
         return (
-          <div class="fixed-bottom-bar">
+          <div className="fixed-bottom-bar">
             <button
               onClick={handleNavigatePrevious}
               disabled={!navigation.hasPrevious}
             >
               Previous
             </button>
-            <span class="progress-text">
+            <span className="progress-text">
               {`${navigation.currentIndex} / ${navigation.totalQuestions}`}
             </span>
             <button onClick={handleNavigateNext} disabled={!navigation.hasNext}>
@@ -743,7 +742,7 @@ function SATPage() {
           <div>
             {questionDisplay.content?.questionDetails?.category == "Math" && (
               <button
-                onClick={setShowCalculator((prev) => !prev)}
+                onClick={toggleCalculator}
                 className={`calculator-icon-button format-time`}
               >
                 <Calculator size={24} />
@@ -767,7 +766,7 @@ function SATPage() {
             renderQuestionView()
           ) : (
             <>
-              <div class="question-container">Please filter questions.</div>
+              <div className="question-container">Please filter questions.</div>
             </>
           )}
         </div>
@@ -818,8 +817,8 @@ function SATPage() {
 
           {renderSubdomainInputs()}
 
-          <div class="sidebar-standalone-content">
-            <h2 class="sidebar-standalone-header">Difficulty</h2>
+          <div className="sidebar-standalone-content">
+            <h2 className="sidebar-standalone-header">Difficulty</h2>
             {["Easy", "Medium", "Hard"].map((difficulty) => (
               <div key={difficulty} className="checkbox-group">
                 <input
