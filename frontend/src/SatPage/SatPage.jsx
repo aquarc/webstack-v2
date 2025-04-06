@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import { MathSubdomains, EnglishSubdomains } from "./SatSubdomains";
+import {useNavigate } from "react-router-dom";
 import "./SatPage.css";
 import "./CSS/Filter.css";
 import "./CSS/QuestionStyles.css";
@@ -17,13 +16,10 @@ import Collapsible from "../Components/Collapsible";
 import Draggable from "react-draggable";
 import { ResizableBox } from "react-resizable";
 import "react-resizable/css/styles.css";
-import Cookies from "js-cookie";
-import { sendClickEvent } from "../App";
 
 function SATPage() {
   // navbar
   const navigate = useNavigate();
-  const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const toggleMenu = (e) => {
     e.stopPropagation();
@@ -34,7 +30,6 @@ function SATPage() {
   // State variables for managing the SAT question interface
   const [selectedTest, setSelectedTest] = useState("SAT");
   const selectedRef = useRef([]);
-  let selectedRefLength = 0;
   const [selectedSubdomains, setSelectedSubdomains] = useState({});
   const [selectedDifficulties, setSelectedDifficulties] = useState({
     Easy: false,
@@ -57,25 +52,14 @@ function SATPage() {
     console.log(`Event tracked: ${eventName}`);
   };
 
-  // Add this state declaration for topic timings if needed
-  const [topicTimings, setTopicTimings] = useState({}); // Replace the existing line
-
   // State and refs for managing the integrated Desmos calculator
   const [showCalculator, setShowCalculator] = useState(false);
   const calculatorRef = useRef(null);
   const calculatorInstanceRef = useRef(null);
 
-  // automatic opening and closing
-  const [isSubdomainOpen, setIsSubdomainOpen] = useState(false);
-
   // cross out mode for answer choices
   const [isCrossOutMode, setIsCrossOutMode] = useState(false);
   const [crossedOutAnswers, setCrossedOutAnswers] = useState({});
-
-  // State variables for time
-  const [startTime, setStartTime] = useState(null);
-
-  const userCookie = Cookies.get("user");
 
   const toggleSidebar = () => {
     setShowSidebar((prev) => {
@@ -229,22 +213,6 @@ function SATPage() {
     if (true /*selectedSubdomains.length > 0*/) {
       // for each ref in selectedRef, console.log it
       console.log("eeee:", selectedRef);
-
-      // TODO: this code does not work anymore and will never work
-      /*
-      for (const key in MathSubdomains) {
-        const skills = MathSubdomains[key];
-        for (let i = 0; i < skills.length; i++) {
-          selectedSubdomains[skills[i]['value']] = true;
-        }
-      }
-      for (const key in EnglishSubdomains) {
-        const skills = EnglishSubdomains[key];
-        for (let i = 0; i < skills.length; i++) {
-          selectedSubdomains[skills[i]['value']] = true;
-        }
-      }
-      */
     } else {
       console.log("TODO: insert real error");
     }

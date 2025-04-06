@@ -13,14 +13,9 @@ import FeedBackPage from "./LandingPage/FeedBackPage/FeedBack";
 import SatPage from "./SatPage/SatPage";
 import ECPage from "./ECPage/ECPage";
 import SignUpPage from "./Authentication/SignUp/SignUp";
-import Dashboard from "./Dashboard/Dashboard";
 import AboutUsPage from "./AboutPage/AboutPage";
 import LoginPage from "./Authentication/Login/Login";
 import AuthRedirect from "./Components/AuthRedirect";
-import Overview from "./Dashboard/Overview";
-import Analytics from "./Dashboard/Analytics";
-import EcFinder from "./Dashboard/EcFinder";
-import SatPrep from "./Dashboard/SatPrep";
 
 export function sendClickEvent(eventName, eventCategory = "") {
   if (!window.gtag) return;
@@ -61,19 +56,7 @@ const AppContent = () => {
         <Route path="/aboutPage" element={<AboutUsPage />} />
         <Route path="/login" element={<LoginPage />} />
 
-        {/* Dashboard routes - nested structure */}
-        <Route path="/" element={<Dashboard />}>
-          <Route
-            path="dashboard"
-            element={<Navigate to="/overview" replace />}
-          />
-          <Route path="overview" element={<Overview />} />
-          <Route path="analytics" element={<Analytics />} />
-          <Route path="ec-finder" element={<EcFinder />} />
-          <Route path="sat-prep" element={<SatPrep />} />
-        </Route>
 
-        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       {/* Use location to conditionally render footer */}
       <Routes>
