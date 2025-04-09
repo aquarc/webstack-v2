@@ -67,6 +67,13 @@ type TopicTiming struct {
 	TimeSpent int    `json:"timeSpent"`
 }
 
+type AttemptLog struct {
+    QuestionID  string   `json:"questionId"`
+    Attempts    []string `json:"attempts"`
+    Timestamps  []int64  `json:"timestamps"`
+    Correct     bool     `json:"correct"`
+}
+
 // -----------------------------
 // Global Email Dialer
 // -----------------------------
@@ -637,6 +644,44 @@ func getPracticeTimes(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func logQuestionAttempt(w http.ResponseWriter, r *http.Request) {
+    var attempt AttemptLog
+    if err := json.NewDecoder(r.Body).Decode(&attempt); err != nil {
+        log.Printf("Error decoding attempt data: %v", err)
+        http.Error(w, "Invalid request body", http.StatusBadRequest)
+        return
+    }
+
+    // Add user identification if available (optional)
+    userID := "anonymous"
+    cookie, err := r.Cookie("session")
+    if err == nil {
+        // If we have a session cookie, try to get the email
+        var email string
+        err = db.QueryRow("SELECT email FROM user_sessions WHERE token = $1", cookie.Value).Scan(&email)
+        if err == nil {
+            userID = email
+        }
+    }
+    
+    log.Printf("Logging attempt for question %s by %s: %v", attempt.QuestionID, userID, attempt.Attempts)
+
+    // Insert the attempt with the user ID
+	_, err = db.Exec(`
+	INSERT INTO question_attempt_logs 
+	(question_id, user_id, attempts, timestamps, correct, log_time)
+	VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP)`,
+	attempt.QuestionID,
+	userID,
+	pq.Array(attempt.Attempts),  // Already using pq.Array for multiple attempts
+	pq.Array(attempt.Timestamps),
+	attempt.Correct,
+	)
+
+    w.WriteHeader(http.StatusOK)
+    w.Write([]byte(`{"success":true}`))
+}
+
 // -----------------------------
 // Initialization Function
 // -----------------------------
@@ -731,6 +776,19 @@ func initializeSat(db *sql.DB) {
 		log.Fatal(err)
 	}
 
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS question_attempt_logs (
+		id SERIAL PRIMARY KEY,
+		question_id TEXT NOT NULL,
+		user_id TEXT DEFAULT 'anonymous',
+		attempts TEXT[],
+		timestamps BIGINT[],
+		correct BOOLEAN,
+		log_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	)`)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	// Register SAT-related HTTP handlers.
 	http.HandleFunc("/sat/test", ServeForm)
 	http.HandleFunc("/sat/find-questions", FindQuestionsHandler)
@@ -740,6 +798,7 @@ func initializeSat(db *sql.DB) {
 	http.HandleFunc("/sat/login", login)
 	http.HandleFunc("/sat/record-topic-timing", recordTopicTiming)
 	http.HandleFunc("/sat/get-practice-times", getPracticeTimes)
+	http.HandleFunc("/sat/log-attempt", logQuestionAttempt)
 
 	// If you have legacy SAT initialization, call it here.
 	initializeLegacySat(db)

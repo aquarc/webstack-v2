@@ -63,6 +63,9 @@ function SATPage() {
   const [crossedOutAnswers, setCrossedOutAnswers] = useState({});
 
   const [attempts, setAttempts] = useState({});
+  const [attemptLogs, setAttemptLogs] = useState({});
+  const [currentQuestionAttempts, setCurrentQuestionAttempts] = useState([]);
+
 
   const toggleSidebar = () => {
     setShowSidebar((prev) => {
@@ -124,12 +127,21 @@ function SATPage() {
     }
   }, [currentQuestions.length]);
 
+  useEffect(() => {
+    document.title = "Aquarc - SAT Practice";
+    return () => {
+      document.title = "Aquarc"; // Optional: Reset title when leaving the page
+    };
+  }, []);
+
   // Reset crossedOutAnswers and isCrossOutMode when currentQuestions changes
   useEffect(() => {
     setCrossedOutAnswers({});
     setIsCrossOutMode(false);
     setAttempts({});
+    setCurrentQuestionAttempts([]);
   }, [currentQuestions]);
+
 
   // Event handlers for selection changes
   const handleTestChange = (test) => {
@@ -174,10 +186,40 @@ function SATPage() {
     }));
   };
 
+  const sendAttemptsToBackend = (questionId, attempts) => {
+    if (attempts.length === 0) return;
+
+    // Extract all attempt data
+    const attemptsList = attempts.map(a => a.answer);
+    const timestamps = attempts.map(a => a.timestamp);
+    const correctFlags = attempts.map(a => a.correct); // Store each attempt's correctness
+    const correct = attempts.some(a => a.correct); // Overall question correctness
+
+    fetch('/sat/log-attempt', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        questionId: questionId,
+        attempts: attemptsList,  // Array of all attempts like [b, a, c]
+        timestamps: timestamps,  // Array of timestamps for each attempt
+        correctFlags: correctFlags, // Array of boolean flags for each attempt [false, false, true]
+        correct: correct,        // Overall question correctness (true if any attempt was correct)
+      }),
+    });
+  };
+
   const handleNavigateNext = () => {
-    if (currentQuestionIndex < currentQuestions.length - 1)
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-    else setCurrentQuestionIndex(0);
+    if (currentQuestions.length === 0) return;
+
+    // Send accumulated attempts for current question
+    sendAttemptsToBackend(
+      currentQuestions[currentQuestionIndex].questionId,
+      currentQuestionAttempts,
+    );
+
+    // Reset attempts and navigate
+    setCurrentQuestionAttempts([]);
+    setCurrentQuestionIndex(prev => (prev < currentQuestions.length - 1 ? prev + 1 : 0));
     clearChanges();
   };
 
@@ -200,19 +242,38 @@ function SATPage() {
       const currentQuestion = currentQuestions[currentQuestionIndex];
       const correctAnswer = currentQuestion.answer;
       let isCorrect = false;
+      let finalAnswer = tempAnswer;
 
       // Handle fraction input
       if (tempAnswer.includes("/")) {
         const [numerator, denominator] = tempAnswer.split("/");
-        const numericAnswer = (numerator / denominator).toFixed(4);
-        isCorrect = numericAnswer === correctAnswer;
+        finalAnswer = (numerator / denominator).toFixed(4);
+        isCorrect = finalAnswer === correctAnswer;
       } else {
         isCorrect = tempAnswer === correctAnswer;
       }
 
+      // Log the attempt to our local state
+      const timestamp = Date.now();
+      const newAttempt = {
+        answer: finalAnswer,
+        timestamp: timestamp,
+        correct: isCorrect,
+      };
+      setCurrentQuestionAttempts(prev => [...prev, newAttempt]);
+
+      // Update local logs - keep this for backwards compatibility
+      setAttemptLogs(prev => ({
+        ...prev,
+        [currentQuestion.questionId]: [
+          ...(prev[currentQuestion.questionId] || []),
+          { answer: finalAnswer, timestamp }
+        ]
+      }));
+
+      // Update UI state based on answer correctness
       if (isCorrect) {
         setSelectedAnswer(tempAnswer);
-        // Reset attempts on correct answer
         setAttempts(prev => {
           const newAttempts = { ...prev };
           delete newAttempts[currentQuestionIndex];
@@ -221,14 +282,11 @@ function SATPage() {
       } else {
         const currentAttempts = attempts[currentQuestionIndex] || 0;
         if (currentAttempts < 1) {
-          // First wrong attempt
           setAttempts(prev => ({
             ...prev,
             [currentQuestionIndex]: currentAttempts + 1,
           }));
-          setSelectedAnswer(null); // Allow another attempt
         } else {
-          // Second wrong attempt, show rationale
           setAttempts(prev => ({
             ...prev,
             [currentQuestionIndex]: currentAttempts + 1,
@@ -237,7 +295,6 @@ function SATPage() {
         }
       }
     }
-
     sendClickEvent("submit-answer");
   };
 
@@ -350,7 +407,6 @@ function SATPage() {
   };
 
   const renderAnswerChoices = (
-    
     choices,
     correctAnswer,
     rationale,
@@ -424,18 +480,16 @@ function SATPage() {
           <>
             <div className="multiple-choice-container">
               {["a", "b", "c", "d"]
-                .map((letter) => {
-                  if (!parsedChoices[letter]) return null;
+                .map((letterChoice, index) => { // Added index parameter here
+                  if (!parsedChoices[letterChoice]) return null;
 
                   const content =
-                    parsedChoices[letter].body || parsedChoices[letter];
-                  const choiceKey = `choice-${letter}`;
-                  const isSelected = selectedAnswer === letter;
+                    parsedChoices[letterChoice].body || parsedChoices[letterChoice];
+                  const choiceKey = `choice-${letterChoice}`;
+                  const isSelected = selectedAnswer === letterChoice;
                   const isCorrect =
                     isSelected &&
-                    letter.toLowerCase() === correctAnswer.toLowerCase();
-
-                  let answerClass = "answer-choice";
+                    letterChoice.toLowerCase() === correctAnswer.toLowerCase();
 
                   const isCrossedOut =
                     crossedOutAnswers[currentQuestionIndex]?.has(choiceKey);
@@ -446,6 +500,7 @@ function SATPage() {
                       className={`answer-choice ${isCrossedOut ? "crossed-out" : ""}`}
                       onClick={(e) => {
                         if (isCrossOutMode) {
+                          // Cross out logic
                           setCrossedOutAnswers((prev) => {
                             const currentCrossouts = new Set(
                               prev[currentQuestionIndex] || [],
@@ -454,7 +509,7 @@ function SATPage() {
                             if (currentCrossouts.has(choiceKey)) {
                               currentCrossouts.delete(choiceKey);
                             } else {
-                              if (selectedAnswer == letter)
+                              if (selectedAnswer === letterChoice)
                                 setSelectedAnswer(null);
                               currentCrossouts.add(choiceKey);
                             }
@@ -465,19 +520,36 @@ function SATPage() {
                             };
                           });
                         } else {
-                          setSelectedAnswer(letter);
-                          if (letter.toLowerCase() !== correctAnswer.toLowerCase()) {
+                          // Selection logic - fixed to use letterChoice directly
+                          setSelectedAnswer(letterChoice);
+
+                          // Log this attempt
+                          const timestamp = Date.now();
+                          const isCorrect = letterChoice.toLowerCase() === correctAnswer.toLowerCase();
+
+                          // Add to current question attempts
+                          setCurrentQuestionAttempts(prev => [...prev, {
+                            answer: letterChoice,
+                            timestamp: timestamp,
+                            correct: isCorrect
+                          }]);
+
+                          // Update attempt counter for UI display
+                          if (!isCorrect) {
                             setAttempts(prev => ({
                               ...prev,
                               [currentQuestionIndex]: (prev[currentQuestionIndex] || 0) + 1,
                             }));
-                          } else {
-                            setAttempts(prev => {
-                              const newAttempts = { ...prev };
-                              delete newAttempts[currentQuestionIndex];
-                              return newAttempts;
-                            });
                           }
+
+                          // Keep legacy logging for backward compatibility
+                          setAttemptLogs(prev => ({
+                            ...prev,
+                            [currentQuestions[currentQuestionIndex]?.questionId]: [
+                              ...(prev[currentQuestions[currentQuestionIndex]?.questionId] || []),
+                              { answer: letterChoice, timestamp: timestamp }
+                            ]
+                          }));
                         }
                       }}
                     >
@@ -563,18 +635,34 @@ function SATPage() {
                         });
                       } else {
                         setSelectedAnswer(letterChoice);
-                        if (letterChoice !== correctAnswer.toLowerCase()) {
+
+                        // Log this attempt
+                        const timestamp = Date.now();
+                        const isCorrect = letterChoice.toLowerCase() === correctAnswer.toLowerCase();
+
+                        // Add to current question attempts
+                        setCurrentQuestionAttempts(prev => [...prev, {
+                          answer: letterChoice,
+                          timestamp: timestamp,
+                          correct: isCorrect
+                        }]);
+
+                        // Update attempt counter for UI display
+                        if (!isCorrect) {
                           setAttempts(prev => ({
                             ...prev,
                             [currentQuestionIndex]: (prev[currentQuestionIndex] || 0) + 1,
                           }));
-                        } else {
-                          setAttempts(prev => {
-                            const newAttempts = { ...prev };
-                            delete newAttempts[currentQuestionIndex];
-                            return newAttempts;
-                          });
                         }
+
+                        // Keep legacy logging for backward compatibility
+                        setAttemptLogs(prev => ({
+                          ...prev,
+                          [currentQuestions[currentQuestionIndex]?.questionId]: [
+                            ...(prev[currentQuestions[currentQuestionIndex]?.questionId] || []),
+                            { answer: letterChoice, timestamp: timestamp }
+                          ]
+                        }));
                       }
                     }}
                   >
@@ -630,6 +718,7 @@ function SATPage() {
       externalId,
     );
   };
+
 
   // Update the renderQuestionView function
   const renderQuestionView = () => {
@@ -807,7 +896,7 @@ function SATPage() {
           <div>
             {questionDisplay.content?.questionDetails?.category == "Math" && (
               <button
-                onClick={setShowCalculator((prev) => !prev)}
+                onClick={() => toggleCalculator()} // Fixed: Call toggleCalculator function when clicked
                 className={`calculator-icon-button format-time`}
               >
                 <Calculator size={24} />
