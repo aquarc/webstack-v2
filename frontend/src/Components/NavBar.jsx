@@ -34,7 +34,7 @@ const Navbar = () => {
         </div>
 
         <div className="nav-links">
-          <Link to="/sat" className="link">SAT</Link>
+          <Link to="/sat" className="link">SAT Practice</Link>
           {/*<a href="https://aquarc.beehiiv.com" className="link">Newsletter</a>*/}
           <Link to="/feedback" className="link">Feedback</Link>
           <Link to="/feedback" className="link">Blog</Link>
@@ -56,7 +56,7 @@ const Navbar = () => {
       {/* Mobile drawer - add SAT page check */}
       <div className={`mobile-drawer ${isMenuOpen ? 'open' : 'closed'}`}>
         <div className="mobile-link-container">
-          <Link to="/sat" className="link">SAT</Link>
+          <Link to="/sat" className="link">SAT Practice </Link>
           {/*<a href="https://aquarc.beehiiv.com" className="link">Newsletter</a>*/}
           <Link to="/feedback" className="link">Feedback</Link>
           <Link to="/feedback" className="link">Blog</Link>
