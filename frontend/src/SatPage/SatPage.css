@@ -595,3 +595,28 @@ html {
   background-color: #ccc;
   cursor: not-allowed;
 }
+
+.sidebar-tab {
+  position: fixed;
+  top: 50%;
+  right: 0; /* Position on the right edge instead of left */
+  transform: translateY(-50%);
+  background-color: #6366F1;
+  padding: 12px 8px;
+  border-radius: 8px 0 0 8px; /* Reverse border radius for right side */
+  cursor: pointer;
+  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1); /* Shadow on left side */
+  transition: all 0.3s ease;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  color: white;
+}
+
+.sidebar-tab:hover {
+  background-color: #4F46E5;
+}
+
+.sidebar-tab.hidden {
+  right: 500px; /* Adjust based on your sidebar width */
+}

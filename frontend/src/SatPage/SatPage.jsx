@@ -63,21 +63,12 @@ function SATPage() {
   const [crossedOutAnswers, setCrossedOutAnswers] = useState({});
 
   const [attempts, setAttempts] = useState({});
-  const [attemptLogs, setAttemptLogs] = useState({});
+  const [setAttemptLogs] = useState({});
   const [currentQuestionAttempts, setCurrentQuestionAttempts] = useState([]);
 
 
   const toggleSidebar = () => {
-    setShowSidebar((prev) => {
-      if (prev) {
-        // set .checkbox-column width to 0%
-        document.querySelector(".checkbox-column").style.display = "none";
-        return false;
-      } else {
-        document.querySelector(".checkbox-column").style.display = "flex";
-        return true;
-      }
-    });
+    setShowSidebar(prev => !prev);
   };
 
   // Toggle function for the calculator
@@ -902,14 +893,16 @@ function SATPage() {
                 <Calculator size={24} />
               </button>
             )}
-            <button
-              onClick={toggleSidebar}
-              className={`calculator-icon-button format-time`}
-            >
-              <ListFilter size={24} />
-            </button>
+            
           </div>
         </nav>
+      </div>
+
+      <div 
+        className={`sidebar-tab ${showSidebar ? 'hidden' : ''}`}
+        onClick={toggleSidebar}
+      >
+        <ListFilter size={20} />
       </div>
 
       <div className="sat-page">
@@ -948,9 +941,7 @@ function SATPage() {
           {/* Search button inside sidebar header */}
           <div className="sidebar-header">
             <h2>Assessment</h2>
-            <button onClick={toggleSidebar} className="sidebar-close-button">
-              <X size={20} />
-            </button>
+            
           </div>
 
           {/* Existing filter content */}
