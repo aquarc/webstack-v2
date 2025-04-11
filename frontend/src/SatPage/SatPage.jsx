@@ -20,12 +20,6 @@ import "react-resizable/css/styles.css";
 function SATPage() {
   // navbar
   const navigate = useNavigate();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const toggleMenu = (e) => {
-    e.stopPropagation();
-    setIsMenuOpen(!isMenuOpen);
-    document.body.style.overflow = !isMenuOpen ? "hidden" : "";
-  };
 
   // State variables for managing the SAT question interface
   const [selectedTest, setSelectedTest] = useState("SAT");
@@ -65,6 +59,9 @@ function SATPage() {
   const [attempts, setAttempts] = useState({});
   const [setAttemptLogs] = useState({});
   const [currentQuestionAttempts, setCurrentQuestionAttempts] = useState([]);
+
+  const [activeFilterTab, setActiveFilterTab] = useState("assessment");
+
 
 
   const toggleSidebar = () => {
@@ -893,12 +890,12 @@ function SATPage() {
                 <Calculator size={24} />
               </button>
             )}
-            
+
           </div>
         </nav>
       </div>
 
-      <div 
+      <div
         className={`sidebar-tab ${showSidebar ? 'hidden' : ''}`}
         onClick={toggleSidebar}
       >
@@ -940,54 +937,79 @@ function SATPage() {
         <div className={`checkbox-column ${showSidebar ? "" : "collapsed"}`}>
           {/* Search button inside sidebar header */}
           <div className="sidebar-header">
-            <h2>Assessment</h2>
-            
+            <div className="filter-tabs">
+              <button
+                className={`filter-tab ${activeFilterTab === 'assessment' ? 'active' : ''}`}
+                onClick={() => setActiveFilterTab('assessment')}
+              >
+                Assessment
+              </button>
+              <button
+                className={`filter-tab ${activeFilterTab === 'analytics' ? 'active' : ''}`}
+                onClick={() => setActiveFilterTab('analytics')}
+              >
+                Analytics
+              </button>
+            </div>
+
           </div>
 
-          {/* Existing filter content */}
-          <div className="filter-group">
-            {["SAT", "PSAT 10/11", "PSAT 8/9"].map((test) => (
-              <div key={test} className="checkbox-group">
-                <input
-                  type="radio"
-                  id={test}
-                  name="assessment"
-                  onChange={() => handleTestChange(test)}
-                  checked={selectedTest === test}
-                />
-                <label htmlFor={test}>{test}</label>
-              </div>
-            ))}
-          </div>
-
-          {renderSubdomainInputs()}
-
-          <div class="sidebar-standalone-content">
-            <h2 class="sidebar-standalone-header">Difficulty</h2>
-            {["Easy", "Medium", "Hard"].map((difficulty) => (
-              <div key={difficulty} className="checkbox-group">
-                <input
-                  type="checkbox"
-                  id={difficulty.toLowerCase()}
-                  checked={selectedDifficulties[difficulty]}
-                  onChange={() => handleDifficultyChange(difficulty)}
-                />
-                <label htmlFor={difficulty.toLowerCase()}>{difficulty}</label>
-              </div>
-            ))}
-          </div>
-          {questionDisplay.type === "error" && (
-            <div className="error-message">{questionDisplay.content}</div>
+          {activeFilterTab === 'analytics' && (
+            <div className="analytics-tab-content">
+              <h3>Question Analytics</h3>
+              <p>Coming soon! Track your progress over time.</p>
+              <div className="placeholder-chart"></div>
+            </div>
           )}
-          <div className="button-group">
-            <button
-              className="search-button"
-              onClick={handleSearch}
-              disabled={isLoading}
-            >
-              {isLoading ? "Searching..." : "Search Questions"}
-            </button>
-          </div>
+
+          {activeFilterTab === 'assessment' && (
+            <>
+              <div className="filter-group">
+                {["SAT", "PSAT 10/11", "PSAT 8/9"].map((test) => (
+                  <div key={test} className="checkbox-group">
+                    <input
+                      type="radio"
+                      id={test}
+                      name="assessment"
+                      onChange={() => handleTestChange(test)}
+                      checked={selectedTest === test}
+                    />
+                    <label htmlFor={test}>{test}</label>
+                  </div>
+                ))}
+              </div>
+
+              {renderSubdomainInputs()}
+
+              <div class="sidebar-standalone-content">
+                <h2 class="sidebar-standalone-header">Difficulty</h2>
+                {["Easy", "Medium", "Hard"].map((difficulty) => (
+                  <div key={difficulty} className="checkbox-group">
+                    <input
+                      type="checkbox"
+                      id={difficulty.toLowerCase()}
+                      checked={selectedDifficulties[difficulty]}
+                      onChange={() => handleDifficultyChange(difficulty)}
+                    />
+                    <label htmlFor={difficulty.toLowerCase()}>{difficulty}</label>
+                  </div>
+                ))}
+              </div>
+
+              {questionDisplay.type === "error" && (
+                <div className="error-message">{questionDisplay.content}</div>
+              )}
+              <div className="button-group">
+                <button
+                  className="search-button"
+                  onClick={handleSearch}
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Searching..." : "Search Questions"}
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </div>
       {currentQuestions.length > 0 && renderNavigationView()}

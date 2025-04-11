@@ -620,3 +620,53 @@ html {
 .sidebar-tab.hidden {
   right: 500px; /* Adjust based on your sidebar width */
 }
+.filter-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 1rem;
+}
+
+.filter-tab {
+  padding: 8px 16px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-weight: 500;
+  color: #666;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.filter-tab.active {
+  color: #6366F1;
+}
+
+.filter-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: #6366F1;
+}
+
+.filter-tab:hover {
+  color: #4F46E5;
+}
+
+/* Analytics placeholder */
+.analytics-tab-content {
+  padding: 1rem;
+}
+
+.placeholder-chart {
+  height: 200px;
+  background: #f0f0f0;
+  border-radius: 8px;
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+}
