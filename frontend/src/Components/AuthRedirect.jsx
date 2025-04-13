@@ -1,3 +1,4 @@
+// Replace the entire file with:
 import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Cookies from 'js-cookie';
@@ -8,27 +9,17 @@ const AuthRedirect = () => {
     
     useEffect(() => {
         const user = Cookies.get('user');
-        const publicRoutes = ['/', '/login', '/signup', '/feedback', '/aboutPage', '/extracurricular', '/sat'];
-        const isDashboardRoute = location.pathname === '/dashboard';
-        const isDashboardSubRoute = location.pathname.startsWith('/overview') || 
-                                   location.pathname.startsWith('/analytics') || 
-                                   location.pathname.startsWith('/ec-finder') || 
-                                   location.pathname.startsWith('/sat-prep');
+        const publicRoutes = ['/', '/login', '/signup', '/feedback', '/aboutPage', '/extracurricular'];
         const currentPath = location.pathname;
         
-        // Redirect authenticated users from public routes to overview
+        // Redirect authenticated users from public routes to SAT page
         if (user && publicRoutes.includes(currentPath)) {
-            navigate('/overview');
+            navigate('/sat');
         }
         
         // Redirect unauthenticated users from protected routes to landing page
-        if (!user && !publicRoutes.includes(currentPath)) {
+        if (!user && !publicRoutes.includes(currentPath) && currentPath !== '/sat') {
             navigate('/');
-        }
-
-        // Redirect from /dashboard to /overview
-        if (user && isDashboardRoute) {
-            navigate('/overview');
         }
     }, [navigate, location]);
 

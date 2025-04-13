@@ -16,6 +16,8 @@ import Collapsible from "../Components/Collapsible";
 import Draggable from "react-draggable";
 import { ResizableBox } from "react-resizable";
 import "react-resizable/css/styles.css";
+import Cookies from 'js-cookie';
+
 
 function SATPage() {
   // navbar
@@ -62,7 +64,10 @@ function SATPage() {
 
   const [activeFilterTab, setActiveFilterTab] = useState("assessment");
 
-
+  const [userEmail, setUserEmail] = useState(() => {
+    const user = Cookies.get('user');
+    return user ? JSON.parse(user).email : null;
+  });
 
   const toggleSidebar = () => {
     setShowSidebar(prev => !prev);
@@ -957,8 +962,53 @@ function SATPage() {
           {activeFilterTab === 'analytics' && (
             <div className="analytics-tab-content">
               <h3>Question Analytics</h3>
-              <p>Coming soon! Track your progress over time.</p>
-              <div className="placeholder-chart"></div>
+
+              {userEmail ? (
+                <>
+                  <div className="user-info">
+                    <span className="user-email">{userEmail}</span>
+                    <button
+                      className="auth-button auth-button-secondary"
+                      onClick={() => {
+                        Cookies.remove('user');
+                        setUserEmail(null);
+                      }}
+                    >
+                      Log Out
+                    </button>
+                  </div>
+                  <div className="analytics-placeholder">
+                    <p>Your practice statistics will appear here after completing questions.</p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="analytics-message">
+                    Track your progress, see performance trends, and get personalized recommendations by signing in.
+                  </p>
+
+                  <div className="auth-buttons-container">
+                    <button
+                      className="auth-button auth-button-primary"
+                      onClick={() => navigate('/signup')}
+                    >
+                      Create Account
+                    </button>
+                    <button
+                      className="auth-button auth-button-secondary"
+                      onClick={() => navigate('/login')}
+                    >
+                      Sign In
+                    </button>
+                  </div>
+
+                  <div className="auth-divider">or</div>
+
+                  <p className="analytics-message text-center" style={{ marginTop: '1rem' }}>
+                    Continue practicing without saving your progress.
+                  </p>
+                </>
+              )}
             </div>
           )}
 

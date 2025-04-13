@@ -41,11 +41,7 @@ const AppContent = () => {
   return (
     <>
       {/* Routes that will not render the nav bar */}
-      {!location.pathname.startsWith("/overview") &&
-        !location.pathname.startsWith("/analytics") &&
-        !location.pathname.startsWith("/ec-finder") &&
-        !location.pathname.startsWith("/sat-prep") &&
-        location.pathname !== "/sat" && <NavBar />}
+      {location.pathname !== "/sat" && <NavBar />}
 
       <Routes>
         <Route path="/" element={<LandingPage />} />

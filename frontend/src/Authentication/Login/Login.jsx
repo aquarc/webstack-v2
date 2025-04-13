@@ -59,8 +59,8 @@ const LoginPage = () => {
             }
             const userData = await response.json();
             Cookies.set('user', JSON.stringify(userData), { expires: 7 }); // Set cookie for 7 days
-            // On successful login, navigate to dashboard
-            navigate('/dashboard');
+            // On successful login, navigate to sat page
+            navigate('/sat');
             
         } catch (error) {
             console.error('Login error:', error);

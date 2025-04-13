@@ -10,7 +10,7 @@ export const PublicRouteGuard = () => {
         const user = Cookies.get('user');
         if (user) {
             // Redirect to dashboard ONLY if trying to access public routes
-            navigate('/dashboard');
+            navigate('/sat');
         }
     }, [navigate]);
 

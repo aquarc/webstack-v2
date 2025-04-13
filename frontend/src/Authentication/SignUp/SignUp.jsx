@@ -96,8 +96,8 @@ const SignUpPage = () => {
                 return;
             }
 
-            // After successful verification, navigate to dashboard
-            navigate('/dashboard', { state: { username: formData.username } });
+            // After successful verification, navigate to sat page
+            navigate('/sat', { state: { username: formData.username } });
             
         } catch (error) {
             console.error('Verification error:', error);
