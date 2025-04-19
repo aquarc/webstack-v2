@@ -10,9 +10,8 @@ import {
   renderQuestionDisplay,
 } from "./SatPageFunctions";
 import Desmos from "desmos";
-import { Bookmark, Calculator, ListFilter, X } from "lucide-react";
+import { Bookmark, Calculator, ListFilter, X, HelpCircle } from "lucide-react";
 import PomodoroTimer from "./PomodoroTimer";
-import Collapsible from "../Components/Collapsible";
 import Draggable from "react-draggable";
 import { ResizableBox } from "react-resizable";
 import "react-resizable/css/styles.css";
@@ -68,6 +67,12 @@ function SATPage() {
     const user = Cookies.get('user');
     return user ? JSON.parse(user).email : null;
   });
+
+  const [hasSelectedAnswer, setHasSelectedAnswer] = useState(false);
+
+  const [showChat, setShowChat] = useState(false);
+  const [messages, setMessages] = useState([]);
+  const [inputMessage, setInputMessage] = useState('');
 
   const toggleSidebar = () => {
     setShowSidebar(prev => !prev);
@@ -127,12 +132,17 @@ function SATPage() {
     };
   }, []);
 
+  useEffect(() => {
+    setHasSelectedAnswer(false);
+  }, [currentQuestionIndex]);
+
   // Reset crossedOutAnswers and isCrossOutMode when currentQuestions changes
   useEffect(() => {
     setCrossedOutAnswers({});
     setIsCrossOutMode(false);
     setAttempts({});
     setCurrentQuestionAttempts([]);
+    setHasSelectedAnswer(false); // Add this line
   }, [currentQuestions]);
 
 
@@ -267,6 +277,7 @@ function SATPage() {
       // Update UI state based on answer correctness
       if (isCorrect) {
         setSelectedAnswer(tempAnswer);
+        setHasSelectedAnswer(true);
         setAttempts(prev => {
           const newAttempts = { ...prev };
           delete newAttempts[currentQuestionIndex];
@@ -518,6 +529,7 @@ function SATPage() {
                         } else {
                           // Selection logic - fixed to use letterChoice directly
                           setSelectedAnswer(letterChoice);
+                          setHasSelectedAnswer(true);
 
                           // Log this attempt
                           const timestamp = Date.now();
@@ -631,6 +643,7 @@ function SATPage() {
                         });
                       } else {
                         setSelectedAnswer(letterChoice);
+                        setHasSelectedAnswer(true);
 
                         // Log this attempt
                         const timestamp = Date.now();
@@ -734,14 +747,24 @@ function SATPage() {
                       <span>Coming Soon</span>
                     </button>
                     {!shouldShowFreeResponse(questionDetails.answerChoices) && (
-                      <button
-                        className={`control-button eliminate-button 
-                            ${isCrossOutMode ? "active" : ""}`}
-                        onClick={() => setIsCrossOutMode(!isCrossOutMode)}
-                      >
-                        <X size={18} />
-                        <span>Eliminate Answer</span>
-                      </button>
+                      <>
+                        <button
+                          className={`control-button eliminate-button ${isCrossOutMode ? "active" : ""}`}
+                          onClick={() => setIsCrossOutMode(!isCrossOutMode)}
+                        >
+                          <X size={18} />
+                          <span>Eliminate Answer</span>
+                        </button>
+                        {hasSelectedAnswer && (
+                          <button
+                            className="control-button ai-help-button"
+                            onClick={() => handleAIHelp()}
+                          >
+                            <HelpCircle size={18} />
+                            <span>AI Help</span>
+                          </button>
+                        )}
+                      </>
                     )}
                   </div>
                   <div
@@ -760,14 +783,24 @@ function SATPage() {
                       <span>Coming Soon</span>
                     </button>
                     {!shouldShowFreeResponse(questionDetails.answerChoices) && (
-                      <button
-                        className={`control-button eliminate-button 
-                            ${isCrossOutMode ? "active" : ""}`}
-                        onClick={() => setIsCrossOutMode(!isCrossOutMode)}
-                      >
-                        <X size={18} />
-                        <span>Eliminate Answer</span>
-                      </button>
+                      <>
+                        <button
+                          className={`control-button eliminate-button ${isCrossOutMode ? "active" : ""}`}
+                          onClick={() => setIsCrossOutMode(!isCrossOutMode)}
+                        >
+                          <X size={18} />
+                          <span>Eliminate Answer</span>
+                        </button>
+                        {hasSelectedAnswer && (
+                          <button
+                            className="control-button ai-help-button"
+                            onClick={() => handleAIHelp()}
+                          >
+                            <HelpCircle size={18} />
+                            <span>AI Help</span>
+                          </button>
+                        )}
+                      </>
                     )}
                   </div>
                 )}
@@ -876,6 +909,40 @@ function SATPage() {
     }
   };
 
+  const handleAIHelp = () => {
+    if (!showChat) {
+      // Add initial instructions when opening the chat
+      setMessages([
+        {
+          text: "Hi! I'm your SAT AI Tutor. Ask me anything about this question!",
+          isAI: true
+        }
+      ]);
+    }
+    setShowChat(!showChat);
+  };
+
+  const handleChatSubmit = (e) => {
+    e.preventDefault();
+    if (!inputMessage.trim()) return;
+
+    // Add user message
+    setMessages(prev => [...prev, { text: inputMessage, isAI: false }]);
+
+    // Simulate AI response (replace with actual API call)
+    setTimeout(() => {
+      setMessages(prev => [
+        ...prev,
+        {
+          text: "I'm analyzing the question... Here's some guidance: [Simulated response]",
+          isAI: true
+        }
+      ]);
+    }, 1000);
+
+    setInputMessage('');
+  };
+
   return (
     <>
       <div style={{ position: "relative" }}>
@@ -904,7 +971,8 @@ function SATPage() {
       </div>
 
       <div
-        className={`sidebar-tab ${showSidebar ? 'hidden' : ''}`}
+        className="sidebar-tab"
+        style={{ right: showSidebar ? '35%' : '0' }}
         onClick={toggleSidebar}
       >
         <ListFilter size={20} />
@@ -1070,6 +1138,33 @@ function SATPage() {
         </div>
       </div>
       {currentQuestions.length > 0 && renderNavigationView()}
+      {showChat && (
+        <div className="ai-chat-container">
+          <div className="ai-chat-header">SAT AI Tutor</div>
+          <div className="ai-chat-messages">
+            {messages.map((message, index) => (
+              <div
+                key={index}
+                className={message.isAI ? "ai-message" : "user-message"}
+              >
+                {message.text}
+              </div>
+            ))}
+          </div>
+          <form onSubmit={handleChatSubmit} className="ai-chat-input-container">
+            <input
+              type="text"
+              className="ai-chat-input"
+              value={inputMessage}
+              onChange={(e) => setInputMessage(e.target.value)}
+              placeholder="Ask a question..."
+            />
+            <button type="submit" className="ai-chat-button">
+              Send
+            </button>
+          </form>
+        </div>
+      )}
     </>
   );
 }
