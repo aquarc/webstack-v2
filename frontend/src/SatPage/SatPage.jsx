@@ -767,14 +767,14 @@ function SATPage() {
                     )}
                     {/* Show Ask AI button for all question types after incorrect attempt */}
                     {hasSelectedAnswer && (
-                          <button
-                            className="control-button ai-help-button"
-                            onClick={() => handleAIHelp()}
-                          >
-                            <HelpCircle size={18} />
-                            <span>Ask AI</span>
-                          </button>
-                        )}
+                      <button
+                        className="control-button ai-help-button"
+                        onClick={() => handleAIHelp()}
+                      >
+                        <HelpCircle size={18} />
+                        <span>Ask AI</span>
+                      </button>
+                    )}
                   </div>
                   <div
                     className="question-additional-details"
@@ -855,12 +855,22 @@ function SATPage() {
                   </button>
                   <button
                     className={`control-button eliminate-button 
-                        ${isCrossOutMode ? "active" : ""}`}
+        ${isCrossOutMode ? "active" : ""}`}
                     onClick={() => setIsCrossOutMode(!isCrossOutMode)}
                   >
                     <X size={18} />
                     <span>Eliminate Answer</span>
                   </button>
+                  {/* Add AI Help button for English */}
+                  {hasSelectedAnswer && (
+                    <button
+                      className="control-button ai-help-button"
+                      onClick={() => handleAIHelp()}
+                    >
+                      <HelpCircle size={18} />
+                      <span>Ask AI</span>
+                    </button>
+                  )}
                 </div>
                 <div className="question-text">
                   <div
