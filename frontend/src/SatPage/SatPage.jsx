@@ -363,8 +363,11 @@ function SATPage() {
     if (subdomainData.length <= 0) {
       return null;
     }
+
+
     return Object.entries(subdomainData).map(([sectionName, section]) => (
-      <Collapsible title={sectionName} key={sectionName}>
+      <div class="sidebar-standalone-content">
+        <h2 class="sidebar-standalone-header">{sectionName}</h2>
         {section.map(({ category, subdomains }) => (
           <React.Fragment key={category}>
             <h4>{category}</h4>
@@ -381,7 +384,7 @@ function SATPage() {
             ))}
           </React.Fragment>
         ))}
-      </Collapsible>
+      </div>
     ));
   };
 
