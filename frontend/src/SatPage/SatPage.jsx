@@ -903,6 +903,7 @@ function SATPage() {
               Next
             </button>
           </div>
+
         );
       default:
         return null;
@@ -956,6 +957,7 @@ function SATPage() {
           </div>
 
           <PomodoroTimer />
+          
           <div>
             {questionDisplay.content?.questionDetails?.category == "Math" && (
               <button
@@ -1139,7 +1141,7 @@ function SATPage() {
       </div>
       {currentQuestions.length > 0 && renderNavigationView()}
       {showChat && (
-        <div className="ai-chat-container">
+        <div className="ai-chat-sidebar">
           <div className="ai-chat-header">SAT AI Tutor</div>
           <div className="ai-chat-messages">
             {messages.map((message, index) => (
@@ -1160,7 +1162,7 @@ function SATPage() {
               placeholder="Ask a question..."
             />
             <button type="submit" className="ai-chat-button">
-              Send
+              Send Message
             </button>
           </form>
         </div>

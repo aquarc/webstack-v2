@@ -175,6 +175,11 @@
 .sat-nav {
   background: #ffffff;
   box-shadow: 0 2px 3px #8587fb;
+  height: 80px;
+  position: fixed;
+  width: 100%;
+  top: 0;
+  z-index: 1100;
 }
 
 .sat-nav .logo {
