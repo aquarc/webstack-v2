@@ -25,3 +25,6 @@ main.db
 
 serve
 serve.exe
+
+venv
+__pycache__
