@@ -766,15 +766,15 @@ function SATPage() {
                       </button>
                     )}
                     {/* Show Ask AI button for all question types after incorrect attempt */}
-                    {(attempts[currentQuestionIndex] > 0) && (
-                      <button
-                        className="control-button ai-help-button"
-                        onClick={() => handleAIHelp()}
-                      >
-                        <HelpCircle size={18} />
-                        <span>Ask AI</span>
-                      </button>
-                    )}
+                    {hasSelectedAnswer && (
+                          <button
+                            className="control-button ai-help-button"
+                            onClick={() => handleAIHelp()}
+                          >
+                            <HelpCircle size={18} />
+                            <span>Ask AI</span>
+                          </button>
+                        )}
                   </div>
                   <div
                     className="question-additional-details"
@@ -923,7 +923,7 @@ function SATPage() {
       // Add initial instructions when opening the chat
       setMessages([
         {
-          text: "Hi! I'm your SAT AI Tutor. Ask me anything about this question!",
+          text: "Why did you select the answer " + selectedAnswer?.toUpperCase() + "?",
           isAI: true
         }
       ]);
