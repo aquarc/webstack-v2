@@ -1,0 +1,241 @@
+package main
+
+import (
+	"database/sql"
+	"fmt"
+	"log"
+	"net/http"
+    "os"
+    "io"
+    "encoding/json"
+
+	"github.com/google/generative-ai-go/genai"
+	"google.golang.org/api/option"
+
+	_ "github.com/joho/godotenv/autoload"
+)
+
+
+// Conversation struct for JSON handling
+type ConversationRequest struct {
+	History    []genai.Content `json:"history"`  
+	NewMessage string          `json:"message"`
+}
+
+var client *genai.Client
+var model *genai.GenerativeModel
+var em *genai.EmbeddingModel
+var systemPrompt = `
+You are an expert SAT tutor and answer analyst with two core capabilities:
+
+1. **Answer Evaluation Mode** (Triggered by answer comparison requests):
+- Evaluate both correct and student answers
+- Present strongest arguments FOR and AGAINST the student's answer
+- Explain why the correct answer is superior with textual evidence
+
+2. **Cognitive Analysis Mode** (Triggered by student mistake analysis requests):
+- Analyze SAT questions with official rationales
+- Identify cognitive biases in student thinking
+- Generate multiple plausible thinking processes
+- Output JSON array of thought pathways
+
+Always maintain capacity for:
+- Contextual follow-up questions
+- Additional analysis layers on existing content
+- Seamless switching between modes based on query type
+`
+
+// SimilarQuestionRequest struct for JSON handling
+type SimilarQuestionRequest struct {
+	Query string `json:"query"`
+}
+
+func printResponse(resp *genai.GenerateContentResponse) string {
+	var result string
+	for _, cand := range resp.Candidates {
+		if cand.Content != nil {
+			for _, part := range cand.Content.Parts {
+				result += fmt.Sprintf("%v", part)
+			}
+		}
+	}
+	return result
+}
+
+func AIRegularChatHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	w.Header().Set("Content-Type", "application/json")
+
+	body, _ := io.ReadAll(r.Body)
+	defer r.Body.Close()
+
+	var convReq ConversationRequest
+	if err := json.Unmarshal(body, &convReq); err != nil {
+		http.Error(w, `{"error": "Invalid JSON format"}`, http.StatusBadRequest)
+		return
+	}
+
+	// Convert to pointer slice
+	historyPointers := make([]*genai.Content, len(convReq.History))
+	for i := range convReq.History {
+		historyPointers[i] = &convReq.History[i]
+	}
+
+	// Create chat session with history
+	cs := model.StartChat()
+	cs.History = historyPointers
+
+	// Send message with context
+	resp, err := cs.SendMessage(ctx, genai.Text(convReq.NewMessage))
+	if err != nil {
+		log.Printf("Error generating content: %v", err)
+		http.Error(w, `{"error": "AI service unavailable"}`, http.StatusInternalServerError)
+		return
+	}
+
+	// Get formatted response
+	aiResponse := printResponse(resp)
+	
+	// Return updated history in response
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"response": aiResponse,
+		"history":  cs.History,
+	})
+}
+
+// Initialize function remains the same
+
+func AIThinkingProcessHandler(w http.ResponseWriter, r *http.Request) {
+    ctx := r.Context()
+    resp, err := model.GenerateContent(ctx, genai.Text("I am thinking about how AI works in a few words"))
+    if err != nil {
+        log.Fatal(err)
+    }
+    
+    printResponse(resp)
+}
+
+func FindSimilarQuestionsHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	ctx := r.Context()
+
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, `{"error": "Failed to read request body"}`, http.StatusBadRequest)
+		return
+	}
+	defer r.Body.Close()
+
+	var req SimilarQuestionRequest
+	if err := json.Unmarshal(body, &req); err != nil {
+		http.Error(w, `{"error": "Invalid JSON format"}`, http.StatusBadRequest)
+		return
+	}
+
+	conv := converter.NewConverter(
+		converter.WithPlugins(
+			base.NewBasePlugin(),
+			commonmark.NewCommonmarkPlugin(),
+		),
+	)
+	// Perform simple string replacements for <u> and </u>
+    markdown := strings.ReplaceAll(req.Query, "<u>", "[UNDERLINE]")
+	markdown = strings.ReplaceAll(markdown, "</u>", "[END]")
+
+    markdown, err := conv.ConvertString(markdown)
+	if err != nil {
+		log.Fatal(err)
+	}
+	// 1. Generate embedding for the query
+	resp, err := em.EmbedContent(ctx, genai.Text(markdown))
+	if err != nil {
+		log.Printf("Error generating embedding for query: %v", err)
+		http.Error(w, `{"error": "Failed to generate embedding for the query"}`, http.StatusInternalServerError)
+		return
+	}
+
+	queryEmbedding := resp.Embedding.Values
+
+    // 2. Convert the float32 slice to a PostgreSQL vector string format
+	var vectorString string
+	if len(queryEmbedding) > 0 {
+		vectorString = fmt.Sprintf("[%f", queryEmbedding[0]) // Start with the first element
+		for _, val := range queryEmbedding[1:] {
+			vectorString += fmt.Sprintf(",%f", val) // Add comma before subsequent elements
+		}
+		vectorString += "]" // Close the brackets
+	} else {
+		vectorString = "[]" // Handle empty embedding case
+	}
+
+	// 3. Find similar questions using the database
+	n := 5
+	similarQuestions, err := findSimilarQuestions(vectorString, n) // Pass the string
+	if err != nil {
+		log.Printf("Error finding similar questions: %v", err)
+		http.Error(w, `{"error": "Failed to find similar questions"}`, http.StatusInternalServerError)
+		return
+	}
+
+	// 4. Return the similar questions as JSON
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"similar_questions": similarQuestions,
+	})
+}
+
+func findSimilarQuestions(queryVector string, n int) ([]QuestionDetails, error) {
+	rows, err := db.Query(`
+		SELECT questionid, id, test, category, domain, skill, difficulty, details, question, answer_choices, answer, rationale
+		FROM vec_sat_questions
+		ORDER BY embedding <-> $1::vector
+		LIMIT $2;
+	`, queryVector, n) // Now $1 is a string that PostgreSQL will cast to vector
+	if err != nil {
+		return nil, fmt.Errorf("error querying similar questions: %w", err)
+	}
+	defer rows.Close()
+
+	var similarQuestions []QuestionDetails
+	for rows.Next() {
+		var sq QuestionDetails
+		if err := rows.Scan(&sq.QuestionID, &sq.ID, &sq.Test, 
+            &sq.Category, &sq.Domain, &sq.Skill, 
+            &sq.Difficulty, &sq.Details, &sq.Question, 
+            &sq.AnswerChoices, &sq.Answer, &sq.Rationale); err != nil {
+			return nil, fmt.Errorf("error scanning similar question row: %w", err)
+		}
+		similarQuestions = append(similarQuestions, sq)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error during similar question rows iteration: %w", err)
+	}
+
+	return similarQuestions, nil
+}
+
+func initializeAI(db *sql.DB) {
+    c, err := genai.NewClient(nil, option.WithAPIKey(os.Getenv("GOOGLE_API_KEY")))
+    if err != nil {
+        log.Fatal(err)
+    }
+    client = c
+
+    model = client.GenerativeModel("gemini-2.0-flash")
+
+    // Initialize model with system prompt
+    model.SystemInstruction = &genai.Content{
+        Parts: []genai.Part{
+            genai.Text(systemPrompt),
+        },
+    }
+
+    em = client.EmbeddingModel("text-embedding-004")
+
+    //TODO: check if the pgvector is enabled
+
+    // TODO: Create a new ServeMux
+	http.HandleFunc("/ai/chat", AIRegularChatHandler)
+	http.HandleFunc("/ai/think", AIThinkingProcessHandler)
+    http.HandleFunc("/ai/similarquestions", FindSimilarQuestionsHandler)
+}

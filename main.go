@@ -110,6 +110,7 @@ func main() {
 	// Initialize additional modules.
 	initializeEc(db)
 	initializeSat(db)
+    initializeAI(db)
 
 	// Register static file handlers.
 	http.HandleFunc("/sat", indexThing)
