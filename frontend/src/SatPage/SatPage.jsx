@@ -879,7 +879,7 @@ function SATPage() {
         <nav className={`nav sat-nav`}>
           <div
             className="logo"
-            onClick={() => navigate("/")}
+            onClick={() => navigate('/')}
             style={{ cursor: "pointer" }}
           >
             <img src="/aquLogo.png" alt="Aquarc Logo" className="logo-image" />
@@ -972,6 +972,10 @@ function SATPage() {
                       onClick={() => {
                         Cookies.remove('user');
                         setUserEmail(null);
+                        // Instead of navigating immediately, let the user stay on current page
+                        if (window.location.pathname === '/sat') {
+                          navigate('/');
+                        }
                       }}
                     >
                       Log Out

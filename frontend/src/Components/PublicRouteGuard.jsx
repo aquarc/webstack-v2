@@ -2,32 +2,17 @@ import React, { useEffect } from 'react';
 import { useNavigate, Outlet } from 'react-router-dom';
 import Cookies from 'js-cookie';
 
-// Use this for public routes (login, landing page, etc.)
+// Update PublicRouteGuard component
 export const PublicRouteGuard = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
         const user = Cookies.get('user');
-        if (user) {
-            // Redirect to dashboard ONLY if trying to access public routes
+        // Only redirect from auth pages if logged in
+        if (user && ['/login', '/signup'].includes(location.pathname)) {
             navigate('/sat');
         }
-    }, [navigate]);
-
-    return <Outlet />;
-};
-
-// Use this for protected routes (dashboard, sat, etc.)
-export const ProtectedRouteGuard = () => {
-    const navigate = useNavigate();
-
-    useEffect(() => {
-        const user = Cookies.get('user');
-        if (!user) {
-            // Redirect to landing page if not authenticated
-            navigate('/');
-        }
-    }, [navigate]);
+    }, [navigate, location]);
 
     return <Outlet />;
 };
