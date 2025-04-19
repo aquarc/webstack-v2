@@ -58,7 +58,7 @@ function SATPage() {
   const [crossedOutAnswers, setCrossedOutAnswers] = useState({});
 
   const [attempts, setAttempts] = useState({});
-  const [setAttemptLogs] = useState({});
+  const [attemptLogs, setAttemptLogs] = useState({});
   const [currentQuestionAttempts, setCurrentQuestionAttempts] = useState([]);
 
   const [activeFilterTab, setActiveFilterTab] = useState("assessment");
@@ -82,6 +82,15 @@ function SATPage() {
   const toggleCalculator = () => {
     setShowCalculator((prev) => !prev);
   };
+
+  // Add near other useEffect hooks
+  useEffect(() => {
+    console.log("Attempts updated:", attempts);
+  }, [attempts]);
+
+  useEffect(() => {
+    console.log("Current question index:", currentQuestionIndex);
+  }, [currentQuestionIndex]);
 
   // Initialize and cleanup the Desmos calculator when showCalculator changes
   useEffect(() => {
@@ -747,24 +756,23 @@ function SATPage() {
                       <span>Coming Soon</span>
                     </button>
                     {!shouldShowFreeResponse(questionDetails.answerChoices) && (
-                      <>
-                        <button
-                          className={`control-button eliminate-button ${isCrossOutMode ? "active" : ""}`}
-                          onClick={() => setIsCrossOutMode(!isCrossOutMode)}
-                        >
-                          <X size={18} />
-                          <span>Eliminate Answer</span>
-                        </button>
-                        {hasSelectedAnswer && (
-                          <button
-                            className="control-button ai-help-button"
-                            onClick={() => handleAIHelp()}
-                          >
-                            <HelpCircle size={18} />
-                            <span>AI Help</span>
-                          </button>
-                        )}
-                      </>
+                      <button
+                        className={`control-button eliminate-button ${isCrossOutMode ? "active" : ""}`}
+                        onClick={() => setIsCrossOutMode(!isCrossOutMode)}
+                      >
+                        <X size={18} />
+                        <span>Eliminate Answer</span>
+                      </button>
+                    )}
+                    {/* Show Ask AI button for all question types after incorrect attempt */}
+                    {(attempts[currentQuestionIndex] > 0) && (
+                      <button
+                        className="control-button ai-help-button"
+                        onClick={() => handleAIHelp()}
+                      >
+                        <HelpCircle size={18} />
+                        <span>Ask AI</span>
+                      </button>
                     )}
                   </div>
                   <div
