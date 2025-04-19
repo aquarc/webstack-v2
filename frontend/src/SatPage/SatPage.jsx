@@ -273,6 +273,7 @@ function SATPage() {
         correct: isCorrect,
       };
       setCurrentQuestionAttempts(prev => [...prev, newAttempt]);
+      setHasSelectedAnswer(true);
 
       // Update local logs - keep this for backwards compatibility
       setAttemptLogs(prev => ({
@@ -445,7 +446,7 @@ function SATPage() {
             id="free-response-input"
             value={tempAnswer}
             onChange={(e) => setTempAnswer(e.target.value)}
-            onKeyPress={handleKeyPress}
+            onKeyDown={handleKeyPress}
             className={`flex-1 p-2 border rounded-md ${selectedAnswer
               ? selectedAnswer === correctAnswer
                 ? "correct-answer"
@@ -791,24 +792,23 @@ function SATPage() {
                       <span>Coming Soon</span>
                     </button>
                     {!shouldShowFreeResponse(questionDetails.answerChoices) && (
-                      <>
-                        <button
-                          className={`control-button eliminate-button ${isCrossOutMode ? "active" : ""}`}
-                          onClick={() => setIsCrossOutMode(!isCrossOutMode)}
-                        >
-                          <X size={18} />
-                          <span>Eliminate Answer</span>
-                        </button>
-                        {hasSelectedAnswer && (
-                          <button
-                            className="control-button ai-help-button"
-                            onClick={() => handleAIHelp()}
-                          >
-                            <HelpCircle size={18} />
-                            <span>AI Help</span>
-                          </button>
-                        )}
-                      </>
+                      <button
+                        className={`control-button eliminate-button ${isCrossOutMode ? "active" : ""}`}
+                        onClick={() => setIsCrossOutMode(!isCrossOutMode)}
+                      >
+                        <X size={18} />
+                        <span>Eliminate Answer</span>
+                      </button>
+                    )}
+                    {/* Show AI button after any attempt */}
+                    {(attempts[currentQuestionIndex] > 0) && (
+                      <button
+                        className="control-button ai-help-button"
+                        onClick={() => handleAIHelp()}
+                      >
+                        <HelpCircle size={18} />
+                        <span>Ask AI</span>
+                      </button>
                     )}
                   </div>
                 )}
@@ -965,7 +965,7 @@ function SATPage() {
           </div>
 
           <PomodoroTimer />
-          
+
           <div>
             {questionDisplay.content?.questionDetails?.category == "Math" && (
               <button
