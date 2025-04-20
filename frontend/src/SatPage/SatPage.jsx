@@ -10,13 +10,14 @@ import {
   renderQuestionDisplay,
 } from "./SatPageFunctions";
 import Desmos from "desmos";
+import Collapsible from "../Components/Collapsible";
 import { Bookmark, Calculator, ListFilter, X, HelpCircle } from "lucide-react";
 import PomodoroTimer from "./PomodoroTimer";
 import Draggable from "react-draggable";
 import { ResizableBox } from "react-resizable";
 import "react-resizable/css/styles.css";
 import Cookies from 'js-cookie';
-
+import Markdown from 'react-markdown'
 
 function SATPage() {
   // navbar
@@ -73,6 +74,8 @@ function SATPage() {
   const [showChat, setShowChat] = useState(false);
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
+
+  const [fetchedSimilarQuestions, setFetchedSimilarQuestions] = useState(new Set());
 
   const toggleSidebar = () => {
     setShowSidebar(prev => !prev);
@@ -223,6 +226,8 @@ function SATPage() {
   const handleNavigateNext = () => {
     if (currentQuestions.length === 0) return;
 
+    setShowChat(false);
+
     // Send accumulated attempts for current question
     sendAttemptsToBackend(
       currentQuestions[currentQuestionIndex].questionId,
@@ -239,6 +244,9 @@ function SATPage() {
     if (currentQuestionIndex > 0)
       setCurrentQuestionIndex(currentQuestionIndex - 1);
     else setCurrentQuestionIndex(currentQuestions.length - 1);
+
+
+    setShowChat(false);
     clearChanges();
   };
 
@@ -368,7 +376,6 @@ function SATPage() {
     selectedSubdomains,
     handleSubdomainChange,
   );
-  console.log("subdomainData:", subdomainData);
 
   const questionDisplay = renderQuestionDisplay(
     isLoading,
@@ -805,7 +812,7 @@ function SATPage() {
                             onClick={() => handleAIHelp()}
                           >
                             <HelpCircle size={18} />
-                            <span>AI Help</span>
+                            <span>Ask AI</span>
                           </button>
                         )}
                       </>
@@ -923,34 +930,293 @@ function SATPage() {
       // Add initial instructions when opening the chat
       setMessages([
         {
-          text: "Why did you select the answer " + selectedAnswer?.toUpperCase() + "?",
-          isAI: true
+          parts: ["Why did you select the answer " + selectedAnswer?.toUpperCase() + "?"],
+          role: "model"
         }
       ]);
     }
     setShowChat(!showChat);
   };
 
-  const handleChatSubmit = (e) => {
+  const handleChatSubmit = async (e) => {
     e.preventDefault();
     if (!inputMessage.trim()) return;
 
-    // Add user message
-    setMessages(prev => [...prev, { text: inputMessage, isAI: false }]);
+    try {
+      // Add user message immediately
+      const newMessages = [...messages, { parts: [inputMessage], role: "user" }];
+      setMessages(newMessages);
+      setInputMessage('');
 
-    // Simulate AI response (replace with actual API call)
-    setTimeout(() => {
-      setMessages(prev => [
-        ...prev,
-        {
-          text: "I'm analyzing the question... Here's some guidance: [Simulated response]",
-          isAI: true
+      // Get current question data
+      const currentQuestion = currentQuestions[currentQuestionIndex];
+      
+      // Check if this is the first response to the initial question
+      const isFirstResponse = messages.length === 1 && messages[0].role == "model";
+
+      // Prepare the payload based on context
+      const apiPayload = isFirstResponse ? {
+        history: [],
+        message: `Evaluate my answer choice for this SAT question:
+        
+        Question: ${currentQuestion.question}
+        My Answer: ${selectedAnswer?.toUpperCase()}
+        My Reasoning: ${inputMessage}
+        Correct Answer: ${currentQuestion.answer}
+        Official Rationale: ${currentQuestion.rationale}
+        
+        Please:
+        1. Present the strongest argument FOR my answer
+        2. Present the strongest argument AGAINST my answer
+        3. Explain why the correct answer is better
+
+        And use only markdown in your answer! Even if it is math. No HTML. No LaTeX. Nothing.`
+      } : {
+        history: messages,
+        message: inputMessage
+      };
+
+        // API call
+        const response = await fetch('/ai/chat', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(apiPayload)
+        });
+
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+        const data = await response.json();
+        
+        // Add AI response
+        setMessages(prev => [
+          ...prev,
+          { parts: [data.response], role: "model" },
+        ]);
+
+      } catch (error) {
+        console.error("Chat error:", error);
+        setMessages(prev => [
+          ...prev,
+          { parts: ["Sorry, there was an error processing your request"], role: "model" },
+        ]);
+      }
+    };
+
+
+    // Implement the handler function
+    const handleApproaches = async () => {
+//      try {
+        // Convert messages to the required format
+
+        const requestBody: ThinkingConversationRequest = { "history": messages};
+
+        setMessages(prev => [
+          ...prev,
+          { parts: ["Generate Alternative Approaches"], role: "user"},
+        ]);
+        console.log(requestBody);
+
+        const response = await fetch('/ai/think', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(requestBody)
+        });
+
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+        const data = await response.json();
+
+        console.log(data.response);
+        
+        // Update state with the AI response
+        setMessages(prev => [
+          ...prev,
+          { 
+            parts: [data.response],
+            role: "model",
+          }
+        ]);
+
+/*      } catch (error) {
+        console.error("Error getting thinking process:", error);
+        setMessages(prev => [
+          ...prev,
+          { parts: ["Generate Alternative Approaches"], role: "model"},
+          { 
+            text: "Sorry, I couldn't generate the thinking process right now",
+            isAI: true 
+          }
+        ]);
+      } */
+    };
+
+    // Add this function to check if a message contains thinking processes
+    const isThinking = (text) => {
+      try {
+        console.log(text);
+        const data = JSON.parse(text);
+        return Array.isArray(data) && data.every(item => 
+          'leads_to' in item && 'thinking_process' in item
+        );
+      } catch {
+        return false;
+      }
+      
+    };
+
+    const renderThinking = (message) => {
+      console.log("Message is: " + message);
+      console.log(typeof message);
+
+      const data = JSON.parse(message);
+      return (
+        <div>
+          {data.map((item: any, index: number) =>  {
+            console.log(item.thinking_process);
+            return  (
+            <Collapsible key={item.leads_to} title={item.leads_to == "user" ? "Your Answer" : "Correct Answer"}>
+              <Markdown>{item.thinking_process}</Markdown>
+            </Collapsible>);
+          }
+          )}
+        </div>
+      );
+    };
+
+    /*
+    const handleSimilarQuestions = async () => {
+      try {
+        const currentQuestion = currentQuestions[currentQuestionIndex];
+        
+        // Prepare the request payload using the current question text
+        const requestBody = {
+          query: currentQuestion.question
+        };
+
+        // Show loading state in chat
+        setMessages(prev => [
+          ...prev,
+          { parts: ["Searching for similar questions..."], role: "model" }
+        ]);
+
+        // Call the similar questions endpoint
+        const response = await fetch('/ai/similarquestions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(requestBody)
+        });
+
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+
+        // Process the similar questions
+        if (data.similar_questions && data.similar_questions.length > 0) {
+          // Insert new questions after current index
+          const updatedQuestions = [...currentQuestions];
+          updatedQuestions.splice(currentQuestionIndex + 1, 0, ...data.similar_questions);
+          
+          // Update state with new questions
+          setCurrentQuestions(updatedQuestions);
+          setAttempts({});
+          setCurrentQuestionAttempts([]);
+
+          // Show success message
+          setMessages(prev => [
+            ...prev,
+            { 
+              parts: [`Found ${data.similar_questions.length} similar questions. They've been inserted after this one!`], 
+              role: "model" 
+            }
+          ]);
+        } else {
+          setMessages(prev => [
+            ...prev,
+            { parts: ["No similar questions found"], role: "model" }
+          ]);
         }
-      ]);
-    }, 1000);
+      } catch (error) {
+        console.error("Error finding similar questions:", error);
+        setMessages(prev => [
+          ...prev,
+          { 
+            parts: ["Failed to retrieve similar questions. Please try again later."], 
+            role: "model" 
+          }
+        ]);
+      }
+    };
+    */
 
-    setInputMessage('');
-  };
+    const handleSimilarQuestions = async () => {
+      try {
+        const currentQuestion = currentQuestions[currentQuestionIndex];
+        
+        // Disable button immediately
+        setFetchedSimilarQuestions(prev => new Set([...prev, currentQuestionIndex]));
+
+        // Rest of the function remains the same...
+        const requestBody = {
+          query: currentQuestion.question
+        };
+
+        setMessages(prev => [
+          ...prev,
+          { parts: ["Searching for similar questions..."], role: "model" }
+        ]);
+
+        const response = await fetch('/ai/similarquestions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(requestBody)
+        });
+
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+
+        if (data.similar_questions?.length > 0) {
+          const updatedQuestions = [...currentQuestions];
+          updatedQuestions.splice(currentQuestionIndex + 1, 0, ...data.similar_questions);
+          setCurrentQuestions(updatedQuestions);
+          setAttempts({});
+          setCurrentQuestionAttempts([]);
+
+          setMessages(prev => [
+            ...prev,
+            { 
+              parts: [`Found ${data.similar_questions.length} similar questions. They've been inserted after this one!`], 
+              role: "model" 
+            }
+          ]);
+        } else {
+          setMessages(prev => [
+            ...prev,
+            { parts: ["No similar questions found"], role: "model" }
+          ]);
+          // Re-enable button if no questions found
+          setFetchedSimilarQuestions(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(currentQuestionIndex);
+            return newSet;
+          });
+        }
+      } catch (error) {
+        console.error("Error finding similar questions:", error);
+        setMessages(prev => [
+          ...prev,
+          { 
+            parts: ["Failed to retrieve similar questions. Please try again later."], 
+            role: "model" 
+          }
+        ]);
+        // Re-enable button on error
+        setFetchedSimilarQuestions(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(currentQuestionIndex);
+          return newSet;
+        });
+      }
+    };
 
   return (
     <>
@@ -1035,6 +1301,12 @@ function SATPage() {
                 onClick={() => setActiveFilterTab('analytics')}
               >
                 Analytics
+              </button>
+              <button 
+                className="close-sidebar-button"
+                onClick={toggleSidebar}
+              >
+                <X size={18} />
               </button>
             </div>
 
@@ -1155,23 +1427,52 @@ function SATPage() {
             {messages.map((message, index) => (
               <div
                 key={index}
-                className={message.isAI ? "ai-message" : "user-message"}
+                className={message.role == "model" ? "ai-message" : "user-message"}
               >
-                {message.text}
+                {message.role == "model" ? 
+                  (isThinking(message.parts[0]) ? 
+                    renderThinking(message.parts[0])
+                    :
+                    <Markdown>{message.parts[0]}</Markdown>)
+                  : 
+                  message.parts[0]}
               </div>
             ))}
           </div>
           <form onSubmit={handleChatSubmit} className="ai-chat-input-container">
-            <input
-              type="text"
-              className="ai-chat-input"
-              value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              placeholder="Ask a question..."
-            />
-            <button type="submit" className="ai-chat-button">
-              Send Message
-            </button>
+            {/* Approach buttons row */}
+            <div className="approach-buttons">
+              <button
+                type="button"
+                className="approach-button"
+                onClick={() => handleApproaches()}
+                disabled={messages.length <= 1}
+              >
+                Approaches 
+              </button>
+              <button
+                type="button"
+                className="approach-button"
+                onClick={() => handleSimilarQuestions()}
+                disabled={fetchedSimilarQuestions.has(currentQuestionIndex) || !currentQuestions.length}
+              >
+                Get Similar Questions
+              </button>
+            </div>
+
+            {/* Input row */}
+            <div className="input-row">
+              <input
+                type="text"
+                className="ai-chat-input"
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                placeholder="Ask a question..."
+              />
+              <button type="submit" className="ai-chat-button">
+                Send
+              </button>
+            </div>
           </form>
         </div>
       )}

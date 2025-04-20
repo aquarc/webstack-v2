@@ -882,3 +882,8 @@ html {
   margin-bottom: 8px;
   text-align: right;
 }
+
+.approach-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+} 
