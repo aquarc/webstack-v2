@@ -191,8 +191,8 @@ const LandingPage = () => {
             </p>
           </div>
         </div>
-      */}
       </div>
+      */}
     </div>
   );
 };
