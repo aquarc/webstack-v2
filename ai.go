@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"crypto/tls"
     "os"
     "io"
     "encoding/json"
     "strings"
     "time"
+
 
 	"github.com/google/generative-ai-go/genai"
 	"google.golang.org/api/option"
@@ -19,6 +21,7 @@ import (
 	"github.com/JohannesKaufmann/html-to-markdown/v2/plugin/commonmark"
 
 	_ "github.com/joho/godotenv/autoload"
+	"gopkg.in/gomail.v2"
 )
 
 // Part struct to match the inner structure of history items in JSON
@@ -183,6 +186,23 @@ func getLoggedIn(r *http.Request) string {
     return username
 }
 
+func handleAIError(err string) {
+    log.Println(err)
+	emailMessage := gomail.NewMessage()
+	emailMessage.SetHeader("From", "contact@aquarc.org")
+	emailMessage.SetHeader("To", "rahejaom@outlook.com")
+	emailMessage.SetHeader("Subject", "AI Cooked")
+    emailMessage.SetBody("text/plain", fmt.Sprintf(`AI Error: %s`, err))
+
+	dialer := gomail.NewDialer("mail.privateemail.com", 587, "contact@aquarc.org", os.Getenv("PASSWORD"))
+	dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+	if err := dialer.DialAndSend(emailMessage); err != nil {
+		log.Printf("Error sending email: %v", err)
+		return
+	}
+}
+
 func AIRegularChatHandler(w http.ResponseWriter, r *http.Request) {
     ctx := r.Context()
     w.Header().Set("Content-Type", "application/json")
@@ -232,7 +252,7 @@ func AIRegularChatHandler(w http.ResponseWriter, r *http.Request) {
 	// Send message with context
 	resp, err := cs.SendMessage(ctx, genai.Text(convReq.NewMessage))
 	if err != nil {
-		log.Printf("Error generating content: %v", err)
+        handleAIError(fmt.Sprintf("Error generating content: %v", err))
 		http.Error(w, `{"error": "AI service unavailable"}`, 
             http.StatusInternalServerError)
 		return
@@ -291,7 +311,7 @@ func AIThinkingProcessHandler(w http.ResponseWriter, r *http.Request) {
 
     resp, err := cs.SendMessage(ctx, genai.Text(thinkingPrompt))
     if err != nil {
-        log.Printf("Error generating content: %v", err)
+        handleAIError(fmt.Sprintf("Error generating content: %v", err))
         statusCode = http.StatusInternalServerError
         response = map[string]string{"error": "AI service unavailable"}
         json.NewEncoder(w).Encode(response)
@@ -351,7 +371,7 @@ func FindSimilarQuestionsHandler(w http.ResponseWriter, r *http.Request) {
 
     resp, err := em.EmbedContent(ctx, genai.Text(markdown))
     if err != nil {
-        log.Printf("Error generating embedding: %v", err)
+        handleAIError(fmt.Sprintf("Error generating embedding: %v", err))
         statusCode = http.StatusInternalServerError
         response = map[string]string{"error": "Failed to generate embedding"}
         json.NewEncoder(w).Encode(response)
