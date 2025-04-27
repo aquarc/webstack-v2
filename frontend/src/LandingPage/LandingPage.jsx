@@ -121,6 +121,9 @@ const LandingPage = () => {
         </div>
       </section>
 
+
+      {/*
+
       <div className="info-mission">
 
         <div className="mission-statement">
@@ -188,6 +191,7 @@ const LandingPage = () => {
             </p>
           </div>
         </div>
+      */}
       </div>
     </div>
   );
