@@ -46,15 +46,13 @@ const AppContent = () => {
 
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        <Route path="/ap" element={<ApPage />} />
+        <Route path="/notes" element={<ApPage />} />
         <Route path="/feedback" element={<FeedBackPage />} />
         <Route path="/sat" element={<SatPage />} />
         <Route path="/extracurricular" element={<ECPage />} />
         <Route path="/signup" element={<SignUpPage />} />
         <Route path="/aboutPage" element={<AboutUsPage />} />
         <Route path="/login" element={<LoginPage />} />
-
-
       </Routes>
       {/* Use location to conditionally render footer */}
       <Routes>
