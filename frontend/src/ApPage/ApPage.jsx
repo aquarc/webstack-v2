@@ -15,7 +15,7 @@ function ApPage() {
             </section>
 
             {/* SAT Section */}
-            <section className="main-content">
+            <section className="ap-main-content">
                 <div className="section-content">
                     <h2 className="section-title">SAT Mathematics</h2>
                     <div className="notes-grid">
