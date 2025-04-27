@@ -12,6 +12,7 @@ import LPFooter from "./Components/Footer";
 import FeedBackPage from "./LandingPage/FeedBackPage/FeedBack";
 import SatPage from "./SatPage/SatPage";
 import ECPage from "./ECPage/ECPage";
+import ApPage from "./ApPage/ApPage";
 import SignUpPage from "./Authentication/SignUp/SignUp";
 import AboutUsPage from "./AboutPage/AboutPage";
 import LoginPage from "./Authentication/Login/Login";
@@ -45,6 +46,7 @@ const AppContent = () => {
 
       <Routes>
         <Route path="/" element={<LandingPage />} />
+        <Route path="/ap" element={<ApPage />} />
         <Route path="/feedback" element={<FeedBackPage />} />
         <Route path="/sat" element={<SatPage />} />
         <Route path="/extracurricular" element={<ECPage />} />

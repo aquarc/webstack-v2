@@ -35,6 +35,7 @@ const Navbar = () => {
 
         <div className="nav-links">
           <Link to="/sat" className="link">SAT Practice</Link>
+          <Link to="/ap" className="link">AP Notes</Link>
           {/*<a href="https://aquarc.beehiiv.com" className="link">Newsletter</a>*/}
           <Link to="/feedback" className="link">Feedback</Link>
           <Link to="/feedback" className="link">Blog</Link>
@@ -57,13 +58,14 @@ const Navbar = () => {
       <div className={`mobile-drawer ${isMenuOpen ? 'open' : 'closed'}`}>
         <div className="mobile-link-container">
           <Link to="/sat" className="link">SAT Practice </Link>
+          <Link to="/ap" className="link">AP Notes</Link>
           {/*<a href="https://aquarc.beehiiv.com" className="link">Newsletter</a>*/}
           <Link to="/feedback" className="link">Feedback</Link>
           <Link to="/feedback" className="link">Blog</Link>
 
           {/*<Link to="/aboutPage" className="link">About Us</Link>*/}
           <Link to="/signup" className="button">
-            Get Started →
+            Your 1600 starts here →
           </Link>
         </div>
       </div>
