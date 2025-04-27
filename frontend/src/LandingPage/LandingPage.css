@@ -10,6 +10,7 @@
   min-height: 100vh;
   background: #272628;
   padding-top: 80px;
+  padding-bottom: 0px;
 }
 
 .headline-container {
@@ -101,18 +102,184 @@
   box-shadow: 0 6px 12px rgba(38, 71, 163, 0.25);
 }
 
+.info {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3.5rem;
+  margin-top: 5rem;
+  padding-bottom: 100px;
+  margin-right: 2.5rem;
+  margin-left: 2.5rem;
+}
+
+.info-mission{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3.5rem;
+  margin-top: 5rem;
+  margin-right: 2.5rem;
+  margin-left: 2.5rem;
+}
+
+.info-analytics {
+  display: grid;
+  padding-bottom: 100px;
+  margin-right: 2.5rem;
+  margin-left: 2.5rem;
+}
+
 .stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 2rem;
   margin-top: 5rem;
   padding-bottom: 100px;
+
 }
+
+.mission-statement {
+  max-width: 900px;
+  min-width: 300px;
+  padding: 1.5rem;
+  background: rgba(0, 0, 0, 0.1);
+  border: none;
+  border-radius: 16px;
+  backdrop-filter: blur(8px);
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+  min-height: 300px;
+  overflow: hidden;
+  flex-grow: 1;
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; 
+}
+
+.mission-statement:hover {
+  transform: translateY(-5px); 
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.7); 
+}
+
+.mission-title h1 {
+  font-size: 3.5rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  color: #ffffff;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+  transition: color 0.3s ease-in-out; 
+}
+
+.mission-statement:hover .mission-title h1 {
+  color: #2563eb; 
+}
+
+.mission-text p {
+  font-size: 1.25rem;
+  line-height: 1.7;
+  color: #bdc6d2;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+  transition: color 0.3s ease-in-out; 
+}
+
+@keyframes floatIn {
+  0% {
+    opacity: 0;
+    transform: translateY(50px) scale(0.95);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-10px) scale(1.02);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes floating {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.analytics {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(to right, #2647a3, #2563eb);
+  border-radius: 2rem;
+  padding: 3rem 2rem;
+  margin: 4rem 2rem 0 2rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  gap: 2rem;
+  opacity: 0;
+  transform: translateY(200px);
+  transition: opacity 0.5s ease, transform 0.5s ease-out;
+}
+
+.analytics.animate {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.analytics-image {
+  flex: 1;
+  max-width: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.analytics-image img {
+  width: 100%;
+  max-width: 400px;
+  border: none;
+}
+
+.analytics-content {
+  flex: 1;
+  max-width: 50%;
+}
+
+.analytics:hover .analytics-content h1,
+.analytics:hover .analytics-content p {
+  color: #ffffff; 
+  transition: color 0.3s ease-in-out;
+}
+
+.analytics-content h1 {
+  font-size: 2.5rem;
+  color: #b1b1b9;
+  margin-bottom: 1rem;
+}
+
+.analytics-content p {
+  font-size: 1.2rem;
+  line-height: 1.6;
+  color: #ffffff;
+  max-width: 90%;
+}
+
+.analytics:hover {
+  transform: scale(1.025);
+  color:#1d3a8a;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+}
+
+
+
+
+.mission-statement:hover .mission-text p {
+  color: #ffffff; 
+}
+
+
 
 @media (max-width: 768px) {
   .headline {
-    font-size: 3.5rem; /* Reduce font size for better mobile display */
-    padding: 0 1rem; /* Add padding on both sides */
+    font-size: 3.5rem; 
+    padding: 0 1rem;
   }
 
   .subheadline {
@@ -122,11 +289,32 @@
     margin-bottom: 1.5rem;
   }
 
+  .mission-title h1 {
+    font-size: 2.25rem;
+  }
+
+  .mission-text p {
+    font-size: 1.1rem;
+    padding: 0 1rem;
+  }
+
+  .mission-statement {
+    margin: 2.5rem 1rem;
+    padding: 1.5rem;
+    min-height: 200px;
+    overflow: hidden;
+  }
+
   .subheadline-second-line {
     margin-left: 0; /* Remove left margin on mobile */
   }
 
   .stats {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .info {
     grid-template-columns: 1fr;
     gap: 1.5rem;
   }
