@@ -193,6 +193,7 @@ func handleAIError(err string) {
 	emailMessage.SetHeader("To", "rahejaom@outlook.com")
 	emailMessage.SetHeader("Subject", "AI Cooked")
     emailMessage.SetBody("text/plain", fmt.Sprintf(`AI Error: %s`, err))
+    emailMessage.SetHeader("Cc", "ronithneelam1429@gmail.com", "dhanya.velkur@gmail.com")
 
 	dialer := gomail.NewDialer("mail.privateemail.com", 587, "contact@aquarc.org", os.Getenv("PASSWORD"))
 	dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
