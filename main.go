@@ -37,16 +37,16 @@ func indexThing(w http.ResponseWriter, r *http.Request) {
 
 // Add this to your main.go
 func serveStatic(w http.ResponseWriter, r *http.Request) {
-    path := "./frontend/build" + r.URL.Path
-    
-    // Set the correct Content-Type based on file extension
-    if strings.HasSuffix(path, ".css") {
-        w.Header().Set("Content-Type", "text/css")
-    } else if strings.HasSuffix(path, ".js") {
-        w.Header().Set("Content-Type", "application/javascript")
-    }
-    
-    http.ServeFile(w, r, path)
+	path := "./frontend/build" + r.URL.Path
+
+	// Set the correct Content-Type based on file extension
+	if strings.HasSuffix(path, ".css") {
+		w.Header().Set("Content-Type", "text/css")
+	} else if strings.HasSuffix(path, ".js") {
+		w.Header().Set("Content-Type", "application/javascript")
+	}
+
+	http.ServeFile(w, r, path)
 }
 
 func main() {
@@ -110,12 +110,12 @@ func main() {
 	// Initialize additional modules.
 	initializeEc(db)
 	initializeSat(db)
-    initializeAI(db)
+	initializeAI(db)
 
 	// Register static file handlers.
 	http.HandleFunc("/sat", indexThing)
 	//http.HandleFunc("/extracurricular", indexThing)
-    http.HandleFunc("/ap", indexThing)
+	http.HandleFunc("/notes", indexThing)
 	http.HandleFunc("/feedback", indexThing)
 	http.HandleFunc("/", index)
 	http.HandleFunc("/signup", indexThing)
