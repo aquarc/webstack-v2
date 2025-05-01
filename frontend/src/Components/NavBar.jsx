@@ -1,95 +1,214 @@
-import React, { useState, useEffect } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import "./NavBar.css";
-import PomodoroTimer from "../SatPage/PomodoroTimer";
-import { ChevronLeft, Search } from "lucide-react"; // Import back icon
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Menu, X, ChevronDown } from 'lucide-react';
+import './NavBar.css';
 
-const Navbar = () => {
-  const navigate = useNavigate();
+const NavBar = () => {
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  
+  // Handle scroll event
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 20) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
 
-  // Check if current page is SAT page
-  const isSatPage = location.pathname.startsWith("/sat");
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
-  const toggleMenu = (e) => {
-    e.stopPropagation();
-    setIsMenuOpen(!isMenuOpen);
-    document.body.style.overflow = !isMenuOpen ? "hidden" : "";
+  // Close mobile menu when route changes
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location]);
+
+  const navbarClass = `navbar ${isScrolled ? 'scrolled' : ''}`;
+  
+  const navItems = [
+    { name: 'Home', path: '/' },
+    { name: 'SAT Prep', path: '/sat' },
+    { name: 'Extracurriculars', path: '/extracurricular' },
+    { name: 'Notes', path: '/notes' },
+    { name: 'About Us', path: '/aboutPage' },
+    { name: 'Feedback', path: '/feedback' }
+  ];
+
+  const isActive = (path) => location.pathname === path;
+
+  // Animation variants
+  const navVariants = {
+    hidden: { opacity: 0, y: -20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.5, ease: 'easeOut' }
+    }
   };
 
-  const handleBack = () => {
-    navigate(-1); // Go back to previous page
+  const mobileMenuVariants = {
+    hidden: { opacity: 0, y: -20, height: 0 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      height: 'auto',
+      transition: { duration: 0.3, ease: 'easeOut' }
+    },
+    exit: {
+      opacity: 0,
+      y: -20,
+      height: 0,
+      transition: { duration: 0.3, ease: 'easeIn' }
+    }
   };
 
-  // Keep existing useEffect and other handlers
+  const linkVariants = {
+    hover: { 
+      scale: 1.05, 
+      color: '#6366f1',
+      transition: { duration: 0.2 }
+    },
+    tap: { scale: 0.95 }
+  };
+
+  const logoVariants = {
+    hover: { 
+      scale: 1.1,
+      transition: { duration: 0.3, yoyo: Infinity, ease: 'easeInOut' }
+    }
+  };
 
   return (
-    <div style={{ position: "relative" }}>
-      <nav className={`nav`}>
-        <div
-          className="logo"
-          onClick={isSatPage ? handleBack : () => navigate("/")}
-          style={{ cursor: "pointer" }}
+    <motion.nav 
+      className={navbarClass}
+      initial="hidden"
+      animate="visible"
+      variants={navVariants}
+    >
+      <div className="navbar-container">
+        <motion.div 
+          className="logo-container"
+          whileHover="hover"
+          variants={logoVariants}
         >
-          <img src="/darkquarc.png" alt="Aquarc Logo" className="logo-image" />
-          <span className="brand-name">aquarc</span>
+          <Link to="/" className="logo-link">
+            <img src="darkquarc.png" alt="Aquarc Logo" className="logo" />
+            <span className="logo-text">Aquarc</span>
+          </Link>
+        </motion.div>
+
+        <div className="nav-links-desktop">
+          {navItems.map((item) => (
+            <motion.div
+              key={item.name}
+              className="nav-item-container"
+              whileHover="hover"
+              whileTap="tap"
+              variants={linkVariants}
+            >
+              <Link
+                to={item.path}
+                className={`nav-link ${isActive(item.path) ? 'active' : ''}`}
+              >
+                {item.name}
+                {isActive(item.path) && (
+                  <motion.div 
+                    className="active-indicator"
+                    layoutId="activeIndicator"
+                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                  />
+                )}
+              </Link>
+            </motion.div>
+          ))}
         </div>
 
-        <div className="nav-links">
-          <Link to="/sat" className="link">
-            SAT Practice
-          </Link>
-          <Link to="/notes" className="link">
-            Notes
-          </Link>
-          {/*<a href="https://aquarc.beehiiv.com" className="link">Newsletter</a>*/}
-          <Link to="/feedback" className="link">
-            Feedback
-          </Link>
-          <Link to="/feedback" className="link">
-            Blog
-          </Link>
-          {/*<Link to="/aboutPage" className="link">About Us</Link>*/}
+        <div className="auth-buttons-desktop">
+          <motion.div
+            whileHover="hover"
+            whileTap="tap"
+            variants={linkVariants}
+          >
+            <Link to="/login" className="login-button">
+              Log In
+            </Link>
+          </motion.div>
+          
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Link to="/signup" className="signup-button">
+              Sign Up
+            </Link>
+          </motion.div>
         </div>
 
-        <Link to="/signup" className="button">
-          Your 1600 starts here →
-        </Link>
-
-        {/* Mobile menu remains the same */}
-        <button className="menu-toggle" onClick={toggleMenu}>
-          <span className={`menu-line top ${isMenuOpen ? "open" : ""}`} />
-          <span className={`menu-line middle ${isMenuOpen ? "open" : ""}`} />
-          <span className={`menu-line bottom ${isMenuOpen ? "open" : ""}`} />
-        </button>
-      </nav>
-
-      {/* Mobile drawer - add SAT page check */}
-      <div className={`mobile-drawer ${isMenuOpen ? "open" : "closed"}`}>
-        <div className="mobile-link-container">
-          <Link to="/sat" className="link">
-            SAT Practice{" "}
-          </Link>
-          <Link to="/notes" className="link">
-            AP Notes
-          </Link>
-          {/*<a href="https://aquarc.beehiiv.com" className="link">Newsletter</a>*/}
-          <Link to="/feedback" className="link">
-            Feedback
-          </Link>
-          <Link to="/feedback" className="link">
-            Blog
-          </Link>
-
-          {/*<Link to="/aboutPage" className="link">About Us</Link>*/}
-          <Link to="/signup" className="button">
-            Your 1600 starts here →
-          </Link>
-        </div>
+        <motion.button
+          className="mobile-menu-button"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+        >
+          {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </motion.button>
       </div>
-    </div>
+
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            className="mobile-menu"
+            variants={mobileMenuVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+          >
+            <div className="mobile-nav-links">
+              {navItems.map((item) => (
+                <motion.div
+                  key={item.name}
+                  whileHover={{ x: 5 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Link
+                    to={item.path}
+                    className={`mobile-nav-link ${isActive(item.path) ? 'active' : ''}`}
+                  >
+                    {item.name}
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+            
+            <div className="mobile-auth-buttons">
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Link to="/login" className="mobile-login-button">
+                  Log In
+                </Link>
+              </motion.div>
+              
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Link to="/signup" className="mobile-signup-button">
+                  Sign Up
+                </Link>
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.nav>
   );
 };
 
-export default Navbar;
+export default NavBar;

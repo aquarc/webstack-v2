@@ -1,198 +1,274 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { useInView } from "react-intersection-observer";
 import "./LandingPage.css";
-import "./NewsletterSection/NewsLetterSection";
-import analyticsImage from '../Assets/data-analytics.png';
+import analyticsImage from "../Assets/data-analytics.png";
 
 // Headlines for the landing page
 const headlines = {
   0: (
-    <div className="headline">
+    <>
       <span className="highlight-text">Start scoring higher</span>
       <br />
       <span className="headline-text">in 2 clicks.</span>
-    </div>
+    </>
   ),
   1: (
-    <div className="headline">
+    <>
       <span className="highlight-text">Your mistakes</span>
       <br />
       <span className="headline-text">in clear sight.</span>
-    </div>
+    </>
   ),
   2: (
-    <div className="headline">
+    <>
       <span className="highlight-text">Learn with</span>
       <br />
       <span className="headline-text">AI-powered feedback.</span>
-    </div>
+    </>
   ),
 };
 
 const LandingPage = () => {
   const [currentHeadline, setCurrentHeadline] = useState(0);
-  const [fadeOut, setFadeOut] = useState(false);
-  const [isInView, setIsInView] = useState(false); // Track if the .analytics section is in view
-  const analyticsRef = useRef(null); // Reference to the analytics section
   const navigate = useNavigate();
+  
+  // Using react-intersection-observer for scroll animations
+  const [statsRef, statsInView] = useInView({
+    triggerOnce: false,
+    threshold: 0.3,
+  });
+  
+  const [missionRef, missionInView] = useInView({
+    triggerOnce: false,
+    threshold: 0.3,
+  });
+  
+  const [analyticsRef, analyticsInView] = useInView({
+    triggerOnce: false,
+    threshold: 0.3,
+  });
+  
+  const [satSectionRef, satSectionInView] = useInView({
+    triggerOnce: false,
+    threshold: 0.3,
+  });
 
   useEffect(() => {
     const headlineKeys = Object.keys(headlines);
     const interval = setInterval(() => {
-      setFadeOut(true);
-      setTimeout(() => {
-        setCurrentHeadline((prev) => (prev + 1) % headlineKeys.length);
-        setFadeOut(false);
-      }, 500);
+      setCurrentHeadline((prev) => (prev + 1) % headlineKeys.length);
     }, 4000);
 
     return () => clearInterval(interval);
   }, []);
 
-  // Use IntersectionObserver to detect when the .analytics section is in view
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setIsInView(true); // Trigger animation when the section is in view
-          } else {
-            setIsInView(false); // Reset animation when the section is out of view
-          }
-        });
-      },
-      { threshold: 0.5 } // Trigger when at least 50% of the section is in view
-    );
-
-    if (analyticsRef.current) {
-      observer.observe(analyticsRef.current);
+  const fadeVariants = {
+    hidden: { opacity: 0, y: 50 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { duration: 0.8, ease: "easeOut" }
+    },
+    exit: { 
+      opacity: 0, 
+      y: -50,
+      transition: { duration: 0.5, ease: "easeIn" }
     }
+  };
 
-    return () => {
-      if (analyticsRef.current) {
-        observer.unobserve(analyticsRef.current);
-      }
-    };
-  }, []);
+  const staggerChildren = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2,
+      },
+    },
+  };
+
+  const itemVariant = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { duration: 0.5 }
+    }
+  };
 
   return (
     <div className="landing-container">
+      <div className="hero-backdrop">
+        <div className="hero-gradient"></div>
+      </div>
+      
       <div className="main-content">
-        <div className={`headline-container ${fadeOut ? "fade" : ""}`}>
-          {headlines[`${currentHeadline}`]}
-        </div>
+        <motion.div 
+          className="headline-container"
+          initial="hidden"
+          animate="visible"
+          variants={staggerChildren}
+        >
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentHeadline}
+              className="headline"
+              variants={fadeVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+            >
+              {headlines[`${currentHeadline}`]}
+            </motion.div>
+          </AnimatePresence>
 
-        <div className="subheadline">
-          Spend less time studying and score higher for free.
-        </div>
+          <motion.div 
+            className="sat-button"
+            variants={itemVariant}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <button onClick={() => navigate("/sat")} className="cta-button">
+              Practice SAT Questions →
+            </button>
+          </motion.div>
+        </motion.div>
 
-        <div className="sat-button">
-          <button onClick={() => navigate("/sat")} className="cta-button">
-            Practice SAT Questions →
-          </button>
-        </div>
-
-        <div className="stats">
-          <div className="stat-item">
+        <motion.div 
+          className="stats"
+          ref={statsRef}
+          initial="hidden"
+          animate={statsInView ? "visible" : "hidden"}
+          variants={staggerChildren}
+        >
+          <motion.div className="stat-item" variants={itemVariant}>
             <div className="stat-number">20+</div>
             <div className="stat-label">Analytic Types</div>
-          </div>
-          <div className="stat-item">
+          </motion.div>
+          <motion.div className="stat-item" variants={itemVariant}>
             <div className="stat-number">500+</div>
             <div className="stat-label">Active Users</div>
-          </div>
-          <div className="stat-item">
+          </motion.div>
+          <motion.div className="stat-item" variants={itemVariant}>
             <div className="stat-number">5000+</div>
             <div className="stat-label">SAT questions</div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
 
-      <section className="SAT-section">
-        <div className="SAT-content">
+      <motion.section 
+        className="SAT-section"
+        ref={satSectionRef}
+        initial={{ opacity: 0 }}
+        animate={satSectionInView ? { opacity: 1 } : { opacity: 0 }}
+        transition={{ duration: 1 }}
+      >
+        <motion.div 
+          className="SAT-content"
+          initial={{ y: 50, opacity: 0 }}
+          animate={satSectionInView ? { y: 0, opacity: 1 } : { y: 50, opacity: 0 }}
+          transition={{ duration: 0.8, delay: 0.3 }}
+        >
           <h2 className="SAT-title">Improve your SAT score</h2>
           <p className="SAT-description">
             We provide you with the most recent SAT questions to help train you
             to get the score you want.
           </p>
-          <a href="/sat" className="cta-button">
-            try our tool →
-          </a>
-        </div>
-      </section>
+          <motion.a 
+            href="/sat" 
+            className="cta-button"
+            whileHover={{ scale: 1.05, boxShadow: "0 10px 25px rgba(0, 0, 0, 0.2)" }}
+            whileTap={{ scale: 0.98 }}
+          >
+            Try our tools →
+          </motion.a>
+        </motion.div>
+      </motion.section>
 
-
-      {/*
-
-      <div className="info-mission">
-
-        <div className="mission-statement">
+      <motion.div 
+        className="info-mission"
+        ref={missionRef}
+        initial="hidden"
+        animate={missionInView ? "visible" : "hidden"}
+        variants={staggerChildren}
+      >
+        <motion.div 
+          className="mission-statement"
+          variants={itemVariant}
+          whileHover={{ y: -10, transition: { duration: 0.3 } }}
+        >
           <div className="mission-title">
             <h1>Our Mission</h1>
           </div>
           <div className="mission-text">
             <p>
-            We created Aquarc to simplify the journey of getting ready for college. From helping you 
-            find the right SAT dates to discovering meaningful extracurricular activities, our aim is 
-            to save you time, keep you organized, and reduce stress. Our main goal is straightforward: 
-            to provide you with the tools you need, so you can focus on what truly matters to you during 
-            this important time.
+            We created Aquarc to simplify college preparation. We help with SAT dates, 
+            extracurriculars, and organization to save time and reduce stress.
             </p>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="mission-statement">
+        <motion.div 
+          className="mission-statement"
+          variants={itemVariant}
+          whileHover={{ y: -10, transition: { duration: 0.3 } }}
+        >
           <div className="mission-title">
             <h1>Why Aquarc?</h1>
           </div>
           <div className="mission-text">
             <p>
-            Preparing for college can feel overwhelming. Aquarc offers a way to make things easier and more manageable. 
-            By bringing together the resources you need, like SAT schedules and ideas for extracurriculars, we help you 
-            stay on track and feel less stressed. Think of Aquarc as a helpful guide designed to streamline the process, 
-            allowing you to concentrate on your studies and your passions.
+            College prep can be overwhelming. Aquarc makes it manageable by consolidating
+             resources to help you stay on track and feel less stressed.
             </p>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="mission-statement">
+        <motion.div 
+          className="mission-statement"
+          variants={itemVariant}
+          whileHover={{ y: -10, transition: { duration: 0.3 } }}
+        >
           <div className="mission-title">
             <h1>Our Features</h1>
           </div>
           <div className="mission-text">
             <p>
-            Aquarc is built to make the college prep journey smarter and easier. We offer tools to expedite your journey to a perfect 
-            SAT score and help you find extracurriculars that are the perfect fit for you. We're adding AI-powered tools that generate 
-            practice questions to help you learn faster, find personalized clubs and summer opportunities that match your interests, 
-            and keep all your tasks organized in one place. Our goal is simple: use AI to guide you, support you, and let you focus 
-            on what really matters.
+            Aquarc makes college prep smarter with tools for achieving ideal SAT scores 
+            and finding suitable extracurriculars using AI-powered solutions.
             </p>
           </div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
-      <div className="info-analytics">
-        <div
-          className={`analytics ${isInView ? "animate" : ""}`}
-          ref={analyticsRef}
+      <motion.div 
+        className="info-analytics"
+        ref={analyticsRef}
+        initial={{ opacity: 0, y: 100 }}
+        animate={analyticsInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 100 }}
+        transition={{ duration: 0.8 }}
+      >
+        <motion.div 
+          className="analytics"
+          whileHover={{ scale: 1.02, transition: { duration: 0.3 } }}
         >
           <div className="analytics-image">
-            <img src={analyticsImage} alt="Analytics preview" />
+            <motion.img 
+              src={analyticsImage} 
+              alt="Analytics preview"
+              whileHover={{ y: -5, transition: { duration: 0.2, yoyo: Infinity } }}
+            />
           </div>
           <div className="analytics-content">
             <h1>Analytics</h1>
             <p>
-            At Aquarc, we believe that understanding your progress is key to staying motivated and achieving your goals. That’s why 
-            we’ve integrated powerful analytics to give you a clear view of your journey. Whether it’s tracking your practice test 
-            scores, identifying patterns in your study habits, or seeing how your extracurriculars align with your college goals, 
-            our insights are designed to help you make smarter decisions. With real-time data at your fingertips, you can pinpoint 
-            areas to improve and celebrate your successes along the way. Our goal is to empower you with the information you need 
-            to stay organized, stay motivated, and keep moving forward with confidence.
+            We believe tracking progress motivates success. Our analytics provide real-time 
+            data to identify improvement areas and celebrate achievements.
             </p>
           </div>
-        </div>
-      </div>
-      */}
+        </motion.div>
+      </motion.div>
     </div>
   );
 };
