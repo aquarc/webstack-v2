@@ -424,3 +424,97 @@
     font-size: 1.1rem;
   }
 }
+
+/* Add these styles to LandingPage.css */
+.features-container {
+  background: #1a1a1c;
+  padding: 4rem 0;
+}
+
+.feature-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 4rem 2rem;
+  gap: 3rem;
+}
+
+.feature-text {
+  flex: 1;
+  min-width: 300px;
+}
+
+.feature-text h2 {
+  font-size: 2.5rem;
+  color: #e5e2ec;
+  margin-bottom: 1.5rem;
+  line-height: 1.3;
+}
+
+.feature-text p {
+  font-size: 1.2rem;
+  color: #bdc6d2;
+  line-height: 1.6;
+  max-width: 80%;
+}
+
+.feature-image {
+  flex: 1;
+  max-width: 600px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.feature-image img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .feature-section {
+    flex-direction: column;
+    padding: 2rem 1.5rem;
+    gap: 2rem;
+  }
+  
+  .feature-section.reverse {
+    flex-direction: column;
+  }
+
+  .feature-text {
+    order: 2;
+    text-align: center;
+  }
+
+  .feature-text h2 {
+    font-size: 2rem;
+  }
+
+  .feature-text p {
+    max-width: 100%;
+    font-size: 1.1rem;
+  }
+
+  .feature-image {
+    order: 1;
+    max-width: 100%;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .feature-section {
+    padding: 3rem 2rem;
+  }
+  
+  .feature-text h2 {
+    font-size: 2rem;
+  }
+  
+  .feature-text p {
+    font-size: 1.1rem;
+  }
+}

@@ -3,6 +3,11 @@ import { useNavigate } from "react-router-dom";
 import "./LandingPage.css";
 import "./NewsletterSection/NewsLetterSection";
 import analyticsImage from '../Assets/data-analytics.png';
+import askImage from '../Assets/ask-ai.png';
+import targetImage from '../Assets/target.png';
+import understandImage from '../Assets/understand.png';
+import approachImage from '../Assets/approach.png';
+import grindImage from '../Assets/grind.png';
 
 // Headlines for the landing page
 const headlines = {
@@ -108,15 +113,71 @@ const LandingPage = () => {
         </div>
       </div>
 
+      <div className="features-container">
+        {/* Target Weak Points Section */}
+        <div className="feature-section">
+          <div className="feature-text">
+            <h2>Target your weak points</h2>
+            <p>Grind any specific skill from 27 categories.</p>
+          </div>
+          <div className="feature-image">
+            <img src={targetImage} alt="Skill categories interface" />
+          </div>
+        </div>
+
+        <div className="feature-section">
+          <div className="feature-image">
+            <img src={askImage} alt="Ask AI Button" />
+          </div>
+          <div className="feature-text">
+            <h2>Help when you need it</h2>
+            <p>AI assistance available after you get a question wrong.</p>
+          </div>
+        </div>
+
+
+        {/* Understand Mistakes Section */}
+        <div className="feature-section reverse">
+          <div className="feature-text">
+            <h2>Understand what went wrong</h2>
+            <p>Contrast your thinking process with the multiple others to pinpoint error.</p>
+          </div>
+          <div className="feature-image">
+            <img src={understandImage} alt="Mistake analysis interface" />
+          </div>
+        </div>
+
+        {/* Multiple Approaches Section */}
+        <div className="feature-section">
+          <div className="feature-image">
+            <img src={approachImage} alt="Multiple solution methods example" />
+          </div>
+          <div className="feature-text">
+            <h2>Master every method</h2>
+            <p>Learn all possible solution paths - not just the official answer.</p>
+          </div>
+        </div>
+
+        {/* Grind Similar Questions Section */}
+        <div className="feature-section reverse">
+          <div className="feature-text">
+            <h2>Grind it out</h2>
+            <p>Practice similar questions to the ones you missed using AI-powered recommendations.</p>
+          </div>
+          <div className="feature-image">
+            <img src={grindImage} alt="Question generator interface" />
+          </div>
+        </div>
+      </div>
+
       <section className="SAT-section">
         <div className="SAT-content">
-          <h2 className="SAT-title">Improve your SAT score</h2>
+          <h2 className="SAT-title">Start scoring higher</h2>
           <p className="SAT-description">
-            We provide you with the most recent SAT questions to help train you
-            to get the score you want.
+            Check out our question bank, no sign up needed.
           </p>
           <a href="/sat" className="cta-button">
-            try our tool →
+            Practice SAT questions →
           </a>
         </div>
       </section>
