@@ -33,7 +33,6 @@ const NavBar = () => {
   const navItems = [
     { name: 'Home', path: '/' },
     { name: 'SAT Prep', path: '/sat' },
-    { name: 'Extracurriculars', path: '/extracurricular' },
     { name: 'Notes', path: '/notes' },
     { name: 'About Us', path: '/aboutPage' },
     { name: 'Feedback', path: '/feedback' }
