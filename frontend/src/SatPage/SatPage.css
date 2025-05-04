@@ -887,3 +887,14 @@ html {
   opacity: 0.5;
   cursor: not-allowed;
 } 
+.ai-question-tag {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #6366f1;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: bold;
+}

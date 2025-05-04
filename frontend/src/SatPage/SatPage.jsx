@@ -77,6 +77,8 @@ function SATPage() {
 
   const [fetchedSimilarQuestions, setFetchedSimilarQuestions] = useState(new Set());
 
+  const [excludedQuestionIds, setExcludedQuestionIds] = useState(new Set());
+
   const toggleSidebar = () => {
     setShowSidebar(prev => !prev);
   };
@@ -753,6 +755,13 @@ function SATPage() {
         return <div>{questionDisplay.content}</div>;
       case "question":
         const { questionDetails, navigation } = questionDisplay.content;
+        {
+          excludedQuestionIds.has(questionDetails.questionId) && (
+            <div className="ai-question-tag">
+              AI-Suggested Question
+            </div>
+          )
+        }
         if (questionDetails.category === "Math") {
           return (
             <div className={`question-container math-layout`}>
@@ -960,7 +969,7 @@ function SATPage() {
 
       // Get current question data
       const currentQuestion = currentQuestions[currentQuestionIndex];
-      
+
       // Check if this is the first response to the initial question
       const isFirstResponse = messages.length === 1 && messages[0].role == "model";
 
@@ -986,247 +995,251 @@ function SATPage() {
         message: inputMessage
       };
 
-        // API call
-        const response = await fetch('/ai/chat', {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(apiPayload)
-        });
+      // API call
+      const response = await fetch('/ai/chat', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(apiPayload)
+      });
 
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
-        const data = await response.json();
-        
-        // Add AI response
-        setMessages(prev => [
-          ...prev,
-          { parts: [data.response], role: "model" },
-        ]);
+      const data = await response.json();
 
-      } catch (error) {
-        console.error("Chat error:", error);
-        setMessages(prev => [
-          ...prev,
-          { parts: ["Sorry, there was an error processing your request"], role: "model" },
-        ]);
+      // Add AI response
+      setMessages(prev => [
+        ...prev,
+        { parts: [data.response], role: "model" },
+      ]);
+
+    } catch (error) {
+      console.error("Chat error:", error);
+      setMessages(prev => [
+        ...prev,
+        { parts: ["Sorry, there was an error processing your request"], role: "model" },
+      ]);
+    }
+  };
+
+
+  // Implement the handler function
+  const handleApproaches = async () => {
+    //      try {
+    // Convert messages to the required format
+
+    const requestBody = { "history": messages };
+
+    setMessages(prev => [
+      ...prev,
+      { parts: ["Generate Alternative Approaches"], role: "user" },
+    ]);
+    console.log(requestBody);
+
+    const response = await fetch('/ai/think', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody)
+    });
+
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+    const data = await response.json();
+
+    console.log(data.response);
+
+    // Update state with the AI response
+    setMessages(prev => [
+      ...prev,
+      {
+        parts: [data.response],
+        role: "model",
       }
-    };
+    ]);
 
+    /*      } catch (error) {
+            console.error("Error getting thinking process:", error);
+            setMessages(prev => [
+              ...prev,
+              { parts: ["Generate Alternative Approaches"], role: "model"},
+              { 
+                text: "Sorry, I couldn't generate the thinking process right now",
+                isAI: true 
+              }
+            ]);
+          } */
+  };
 
-    // Implement the handler function
-    const handleApproaches = async () => {
-//      try {
-        // Convert messages to the required format
+  // Add this function to check if a message contains thinking processes
+  const isThinking = (text) => {
+    try {
+      console.log(text);
+      const data = JSON.parse(text);
+      return Array.isArray(data) && data.every(item =>
+        'leads_to' in item && 'thinking_process' in item
+      );
+    } catch {
+      return false;
+    }
 
-        const requestBody: ThinkingConversationRequest = { "history": messages};
+  };
 
-        setMessages(prev => [
-          ...prev,
-          { parts: ["Generate Alternative Approaches"], role: "user"},
-        ]);
-        console.log(requestBody);
+  const renderThinking = (message) => {
+    console.log("Message is: " + message);
+    console.log(typeof message);
 
-        const response = await fetch('/ai/think', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(requestBody)
-        });
-
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-
-        const data = await response.json();
-
-        console.log(data.response);
-        
-        // Update state with the AI response
-        setMessages(prev => [
-          ...prev,
-          { 
-            parts: [data.response],
-            role: "model",
-          }
-        ]);
-
-/*      } catch (error) {
-        console.error("Error getting thinking process:", error);
-        setMessages(prev => [
-          ...prev,
-          { parts: ["Generate Alternative Approaches"], role: "model"},
-          { 
-            text: "Sorry, I couldn't generate the thinking process right now",
-            isAI: true 
-          }
-        ]);
-      } */
-    };
-
-    // Add this function to check if a message contains thinking processes
-    const isThinking = (text) => {
-      try {
-        console.log(text);
-        const data = JSON.parse(text);
-        return Array.isArray(data) && data.every(item => 
-          'leads_to' in item && 'thinking_process' in item
-        );
-      } catch {
-        return false;
-      }
-      
-    };
-
-    const renderThinking = (message) => {
-      console.log("Message is: " + message);
-      console.log(typeof message);
-
-      const data = JSON.parse(message);
-      return (
-        <div>
-          {data.map((item: any, index: number) =>  {
-            console.log(item.thinking_process);
-            return  (
+    const data = JSON.parse(message);
+    return (
+      <div>
+        {data.map((item, index) => {
+          console.log(item.thinking_process);
+          return (
             <Collapsible key={item.leads_to} title={item.leads_to == "user" ? "Your Answer" : "Correct Answer"}>
               <Markdown>{item.thinking_process}</Markdown>
             </Collapsible>);
-          }
-          )}
-        </div>
-      );
-    };
-
-    /*
-    const handleSimilarQuestions = async () => {
-      try {
-        const currentQuestion = currentQuestions[currentQuestionIndex];
-        
-        // Prepare the request payload using the current question text
-        const requestBody = {
-          query: currentQuestion.question
-        };
-
-        // Show loading state in chat
-        setMessages(prev => [
-          ...prev,
-          { parts: ["Searching for similar questions..."], role: "model" }
-        ]);
-
-        // Call the similar questions endpoint
-        const response = await fetch('/ai/similarquestions', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(requestBody)
-        });
-
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        const data = await response.json();
-
-        // Process the similar questions
-        if (data.similar_questions && data.similar_questions.length > 0) {
-          // Insert new questions after current index
-          const updatedQuestions = [...currentQuestions];
-          updatedQuestions.splice(currentQuestionIndex + 1, 0, ...data.similar_questions);
-          
-          // Update state with new questions
-          setCurrentQuestions(updatedQuestions);
-          setAttempts({});
-          setCurrentQuestionAttempts([]);
-
-          // Show success message
-          setMessages(prev => [
-            ...prev,
-            { 
-              parts: [`Found ${data.similar_questions.length} similar questions. They've been inserted after this one!`], 
-              role: "model" 
-            }
-          ]);
-        } else {
-          setMessages(prev => [
-            ...prev,
-            { parts: ["No similar questions found"], role: "model" }
-          ]);
         }
-      } catch (error) {
-        console.error("Error finding similar questions:", error);
+        )}
+      </div>
+    );
+  };
+
+  /*
+  const handleSimilarQuestions = async () => {
+    try {
+      const currentQuestion = currentQuestions[currentQuestionIndex];
+      
+      // Prepare the request payload using the current question text
+      const requestBody = {
+        query: currentQuestion.question
+      };
+
+      // Show loading state in chat
+      setMessages(prev => [
+        ...prev,
+        { parts: ["Searching for similar questions..."], role: "model" }
+      ]);
+
+      // Call the similar questions endpoint
+      const response = await fetch('/ai/similarquestions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody)
+      });
+
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      const data = await response.json();
+
+      // Process the similar questions
+      if (data.similar_questions && data.similar_questions.length > 0) {
+        // Insert new questions after current index
+        const updatedQuestions = [...currentQuestions];
+        updatedQuestions.splice(currentQuestionIndex + 1, 0, ...data.similar_questions);
+        
+        // Update state with new questions
+        setCurrentQuestions(updatedQuestions);
+        setAttempts({});
+        setCurrentQuestionAttempts([]);
+
+        // Show success message
         setMessages(prev => [
           ...prev,
           { 
-            parts: ["Failed to retrieve similar questions. Please try again later."], 
+            parts: [`Found ${data.similar_questions.length} similar questions. They've been inserted after this one!`], 
             role: "model" 
           }
+        ]);
+      } else {
+        setMessages(prev => [
+          ...prev,
+          { parts: ["No similar questions found"], role: "model" }
         ]);
       }
-    };
-    */
-
-    const handleSimilarQuestions = async () => {
-      try {
-        const currentQuestion = currentQuestions[currentQuestionIndex];
-        
-        // Disable button immediately
-        setFetchedSimilarQuestions(prev => new Set([...prev, currentQuestionIndex]));
-
-        // Rest of the function remains the same...
-        const requestBody = {
-          query: currentQuestion.question
-        };
-
-        setMessages(prev => [
-          ...prev,
-          { parts: ["Searching for similar questions..."], role: "model" }
-        ]);
-
-        const response = await fetch('/ai/similarquestions', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(requestBody)
-        });
-
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        const data = await response.json();
-
-        if (data.similar_questions?.length > 0) {
-          const updatedQuestions = [...currentQuestions];
-          updatedQuestions.splice(currentQuestionIndex + 1, 0, ...data.similar_questions);
-          setCurrentQuestions(updatedQuestions);
-          setAttempts({});
-          setCurrentQuestionAttempts([]);
-
-          setMessages(prev => [
-            ...prev,
-            { 
-              parts: [`Found ${data.similar_questions.length} similar questions. They've been inserted after this one!`], 
-              role: "model" 
-            }
-          ]);
-        } else {
-          setMessages(prev => [
-            ...prev,
-            { parts: ["No similar questions found"], role: "model" }
-          ]);
-          // Re-enable button if no questions found
-          setFetchedSimilarQuestions(prev => {
-            const newSet = new Set(prev);
-            newSet.delete(currentQuestionIndex);
-            return newSet;
-          });
+    } catch (error) {
+      console.error("Error finding similar questions:", error);
+      setMessages(prev => [
+        ...prev,
+        { 
+          parts: ["Failed to retrieve similar questions. Please try again later."], 
+          role: "model" 
         }
-      } catch (error) {
-        console.error("Error finding similar questions:", error);
+      ]);
+    }
+  };
+  */
+
+  const handleSimilarQuestions = async () => {
+    try {
+      const currentQuestion = currentQuestions[currentQuestionIndex];
+      const excludeIds = currentQuestions.map(q => q.questionId);
+
+      // Disable button immediately
+      setFetchedSimilarQuestions(prev => new Set([...prev, currentQuestionIndex]));
+
+      const requestBody = {
+        query: currentQuestion.question,
+        exclude: excludeIds, // Now includes original questions
+      };
+
+      setMessages(prev => [
+        ...prev,
+        { parts: ["Searching for similar questions..."], role: "model" }
+      ]);
+
+      const response = await fetch('/ai/similarquestions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody)
+      });
+
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      const data = await response.json();
+
+      if (data.similar_questions?.length > 0) {
+        const updatedQuestions = [...currentQuestions];
+        updatedQuestions.splice(currentQuestionIndex + 1, 0, ...data.similar_questions);
+        setCurrentQuestions(updatedQuestions);
+        setAttempts({});
+        setCurrentQuestionAttempts([]);
+
+        // Add new question IDs to excluded set
+        const newExcluded = new Set(excludedQuestionIds);
+        data.similar_questions.forEach(q => newExcluded.add(q.questionId));
+        setExcludedQuestionIds(newExcluded);
+
         setMessages(prev => [
           ...prev,
-          { 
-            parts: ["Failed to retrieve similar questions. Please try again later."], 
-            role: "model" 
+          {
+            parts: [`Found ${data.similar_questions.length} similar questions. They've been inserted after this one!`],
+            role: "model"
           }
         ]);
-        // Re-enable button on error
+      } else {
+        setMessages(prev => [
+          ...prev,
+          { parts: ["No similar questions found"], role: "model" }
+        ]);
         setFetchedSimilarQuestions(prev => {
           const newSet = new Set(prev);
           newSet.delete(currentQuestionIndex);
           return newSet;
         });
       }
-    };
+    } catch (error) {
+      console.error("Error finding similar questions:", error);
+      setMessages(prev => [
+        ...prev,
+        {
+          parts: ["Failed to retrieve similar questions. Please try again later."],
+          role: "model"
+        }
+      ]);
+      setFetchedSimilarQuestions(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(currentQuestionIndex);
+        return newSet;
+      });
+    }
+  };
 
   return (
     <>
@@ -1312,7 +1325,7 @@ function SATPage() {
               >
                 Analytics
               </button>
-              <button 
+              <button
                 className="close-sidebar-button"
                 onClick={toggleSidebar}
               >
@@ -1439,12 +1452,12 @@ function SATPage() {
                 key={index}
                 className={message.role == "model" ? "ai-message" : "user-message"}
               >
-                {message.role == "model" ? 
-                  (isThinking(message.parts[0]) ? 
+                {message.role == "model" ?
+                  (isThinking(message.parts[0]) ?
                     renderThinking(message.parts[0])
                     :
                     <Markdown>{message.parts[0]}</Markdown>)
-                  : 
+                  :
                   message.parts[0]}
               </div>
             ))}
@@ -1458,7 +1471,7 @@ function SATPage() {
                 onClick={() => handleApproaches()}
                 disabled={messages.length <= 1}
               >
-                Approaches 
+                Approaches
               </button>
               <button
                 type="button"
