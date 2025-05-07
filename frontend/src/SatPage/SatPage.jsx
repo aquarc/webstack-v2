@@ -258,6 +258,7 @@ function SATPage() {
     setIsCrossOutMode(false);
     setShowCalculator(false);
   };
+  
 
   const handleSubmitAnswer = () => {
     if (tempAnswer.trim()) {
@@ -1056,18 +1057,6 @@ function SATPage() {
         role: "model",
       }
     ]);
-
-    /*      } catch (error) {
-            console.error("Error getting thinking process:", error);
-            setMessages(prev => [
-              ...prev,
-              { parts: ["Generate Alternative Approaches"], role: "model"},
-              { 
-                text: "Sorry, I couldn't generate the thinking process right now",
-                isAI: true 
-              }
-            ]);
-          } */
   };
 
   // Add this function to check if a message contains thinking processes
@@ -1103,143 +1092,131 @@ function SATPage() {
     );
   };
 
-  /*
-  const handleSimilarQuestions = async () => {
-    try {
-      const currentQuestion = currentQuestions[currentQuestionIndex];
+// In SatPage.jsx - Update handleSimilarQuestions function
+const handleSimilarQuestions = async () => {
+  try {
+    const currentQuestion = currentQuestions[currentQuestionIndex];
+    
+    // Use a Set for more efficient lookups and guaranteed uniqueness
+    const allExistingIds = new Set();
+    
+    // Add all current question IDs
+    currentQuestions.forEach(q => {
+      if (q.questionId) allExistingIds.add(q.questionId);
+      // Also add internal ID as fallback
+      if (q.id) allExistingIds.add(q.id);
+    });
+    
+    // Add all previously excluded IDs
+    excludedQuestionIds.forEach(id => allExistingIds.add(id));
+
+    console.log("Excluding these question IDs:", Array.from(allExistingIds));
+    
+    const requestBody = {
+      query: currentQuestion.question,
+      exclude: Array.from(allExistingIds), // Now excludes all known IDs
+    };
+
+    setFetchedSimilarQuestions(prev => new Set([...prev, currentQuestionIndex]));
+
+    setMessages(prev => [
+      ...prev,
+      { parts: ["Searching for similar questions..."], role: "model" }
+    ]);
+
+    const response = await fetch('/ai/similarquestions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody)
+    });
+
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    const data = await response.json();
+
+    if (data.similar_questions?.length > 0) {
+      // Enhanced duplicate detection
+      const uniqueNewQuestions = [];
+      const seenIds = new Set(allExistingIds);
       
-      // Prepare the request payload using the current question text
-      const requestBody = {
-        query: currentQuestion.question
-      };
-
-      // Show loading state in chat
-      setMessages(prev => [
-        ...prev,
-        { parts: ["Searching for similar questions..."], role: "model" }
-      ]);
-
-      // Call the similar questions endpoint
-      const response = await fetch('/ai/similarquestions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody)
-      });
-
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const data = await response.json();
-
-      // Process the similar questions
-      if (data.similar_questions && data.similar_questions.length > 0) {
-        // Insert new questions after current index
-        const updatedQuestions = [...currentQuestions];
-        updatedQuestions.splice(currentQuestionIndex + 1, 0, ...data.similar_questions);
+      // More thorough duplicate check
+      for (const question of data.similar_questions) {
+        const idToCheck = question.questionId || question.id;
         
-        // Update state with new questions
-        setCurrentQuestions(updatedQuestions);
-        setAttempts({});
-        setCurrentQuestionAttempts([]);
-
-        // Show success message
-        setMessages(prev => [
-          ...prev,
-          { 
-            parts: [`Found ${data.similar_questions.length} similar questions. They've been inserted after this one!`], 
-            role: "model" 
-          }
-        ]);
-      } else {
-        setMessages(prev => [
-          ...prev,
-          { parts: ["No similar questions found"], role: "model" }
-        ]);
-      }
-    } catch (error) {
-      console.error("Error finding similar questions:", error);
-      setMessages(prev => [
-        ...prev,
-        { 
-          parts: ["Failed to retrieve similar questions. Please try again later."], 
-          role: "model" 
+        // Skip if we've seen this ID before
+        if (!idToCheck || seenIds.has(idToCheck)) {
+          console.log("Skipping duplicate question:", idToCheck);
+          continue;
         }
-      ]);
-    }
-  };
-  */
+        
+        // Also check for questions with the same content
+        const isDuplicateContent = currentQuestions.some(q => 
+          q.question === question.question || 
+          (q.question && question.question && 
+           q.question.trim() === question.question.trim())
+        );
+        
+        if (isDuplicateContent) {
+          console.log("Skipping question with duplicate content");
+          continue;
+        }
+        
+        // This is a new unique question
+        seenIds.add(idToCheck);
+        uniqueNewQuestions.push(question);
+      }
 
-  const handleSimilarQuestions = async () => {
-    try {
-      const currentQuestion = currentQuestions[currentQuestionIndex];
-      const excludeIds = currentQuestions.map(q => q.questionId);
-
-      // Disable button immediately
-      setFetchedSimilarQuestions(prev => new Set([...prev, currentQuestionIndex]));
-
-      const requestBody = {
-        query: currentQuestion.question,
-        exclude: excludeIds, // Now includes original questions
-      };
-
-      setMessages(prev => [
-        ...prev,
-        { parts: ["Searching for similar questions..."], role: "model" }
-      ]);
-
-      const response = await fetch('/ai/similarquestions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody)
-      });
-
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const data = await response.json();
-
-      if (data.similar_questions?.length > 0) {
+      if (uniqueNewQuestions.length > 0) {
         const updatedQuestions = [...currentQuestions];
-        updatedQuestions.splice(currentQuestionIndex + 1, 0, ...data.similar_questions);
+        updatedQuestions.splice(currentQuestionIndex + 1, 0, ...uniqueNewQuestions);
+        
+        // Update excluded IDs with the new questions
+        const newExcluded = new Set(allExistingIds);
+        uniqueNewQuestions.forEach(q => {
+          if (q.questionId) newExcluded.add(q.questionId);
+          if (q.id) newExcluded.add(q.id);
+        });
+        setExcludedQuestionIds(newExcluded);
+
         setCurrentQuestions(updatedQuestions);
         setAttempts({});
         setCurrentQuestionAttempts([]);
-
-        // Add new question IDs to excluded set
-        const newExcluded = new Set(excludedQuestionIds);
-        data.similar_questions.forEach(q => newExcluded.add(q.questionId));
-        setExcludedQuestionIds(newExcluded);
 
         setMessages(prev => [
           ...prev,
           {
-            parts: [`Found ${data.similar_questions.length} similar questions. They've been inserted after this one!`],
+            parts: [`Added ${uniqueNewQuestions.length} new similar questions`],
             role: "model"
           }
         ]);
       } else {
         setMessages(prev => [
           ...prev,
-          { parts: ["No similar questions found"], role: "model" }
+          { parts: ["No new similar questions found"], role: "model" }
         ]);
-        setFetchedSimilarQuestions(prev => {
-          const newSet = new Set(prev);
-          newSet.delete(currentQuestionIndex);
-          return newSet;
-        });
       }
-    } catch (error) {
-      console.error("Error finding similar questions:", error);
+    } else {
       setMessages(prev => [
         ...prev,
-        {
-          parts: ["Failed to retrieve similar questions. Please try again later."],
-          role: "model"
-        }
+        { parts: ["No similar questions found"], role: "model" }
       ]);
-      setFetchedSimilarQuestions(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(currentQuestionIndex);
-        return newSet;
-      });
     }
-  };
+  } catch (error) {
+    console.error("Error finding similar questions:", error);
+    setMessages(prev => [
+      ...prev,
+      {
+        parts: ["Failed to retrieve similar questions. Please try again later."],
+        role: "model"
+      }
+    ]);
+  } finally {
+    setFetchedSimilarQuestions(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(currentQuestionIndex);
+      return newSet;
+    });
+  }
+};
 
   return (
     <>

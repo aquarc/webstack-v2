@@ -391,7 +391,7 @@ func FindSimilarQuestionsHandler(w http.ResponseWriter, r *http.Request) {
 		vectorString = "[]"
 	}
 
-	n := 10
+	n := 20
 	similarQuestions, err := findSimilarQuestions(vectorString, req.Exclude, n)
 	if err != nil {
 		log.Printf("Error finding questions: %v", err)
@@ -422,6 +422,8 @@ func findSimilarQuestions(queryVector string, exclude []string, n int) ([]Questi
 	defer rows.Close()
 
 	var similarQuestions []QuestionDetails
+	seen := make(map[string]bool) // Track seen QuestionIDs
+
 	for rows.Next() {
 		var sq QuestionDetails
 		if err := rows.Scan(&sq.QuestionID, &sq.ID, &sq.Test,
@@ -430,7 +432,10 @@ func findSimilarQuestions(queryVector string, exclude []string, n int) ([]Questi
 			&sq.AnswerChoices, &sq.Answer, &sq.Rationale); err != nil {
 			return nil, fmt.Errorf("error scanning similar question row: %w", err)
 		}
-		similarQuestions = append(similarQuestions, sq)
+		if !seen[sq.QuestionID] {
+			similarQuestions = append(similarQuestions, sq)
+			seen[sq.QuestionID] = true
+		}
 	}
 
 	if err := rows.Err(); err != nil {
