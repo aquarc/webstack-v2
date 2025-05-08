@@ -30,8 +30,69 @@ const headlines = {
   ),
 };
 
+// Feature slideshow content
+const slideshowFeatures = [
+  {
+    id: 1,
+    title: "Target your weak points",
+    description: "Grind any specific skill from 27 categories.",
+    color: "#3b82f6"
+  },
+  {
+    id: 2,
+    title: "Help when you need it",
+    description: "AI assistance available after you get a question wrong.",
+    color: "#6366f1"
+  },
+  {
+    id: 3,
+    title: "Understand what went wrong",
+    description: "Contrast your thinking process with the multiple others to pinpoint error.",
+    color: "#8b5cf6"
+  },
+  {
+    id: 4,
+    title: "Master every method",
+    description: "Learn all possible solution paths - not just the official answer.",
+    color: "#ec4899"
+  },
+  {
+    id: 5,
+    title: "Grind it out",
+    description: "Practice similar questions to the ones you missed using AI-powered recommendations.",
+    color: "#f43f5e"
+  }
+];
+
+// Testimonials data
+const testimonials = [
+  {
+    id: 1,
+    text: "Aquarc helped me improve my SAT score by 150 points in just a month of focused practice.",
+    name: "Sarah L.",
+    score: "1480",
+    improvement: "+150"
+  },
+  {
+    id: 2,
+    text: "The AI feedback pointed out patterns in my mistakes I never would have noticed myself.",
+    name: "Michael T.",
+    score: "1520",
+    improvement: "+200"
+  },
+  {
+    id: 3,
+    text: "Being able to focus on specific weak areas was a game-changer for my study strategy.",
+    name: "Jamie K.",
+    score: "1390",
+    improvement: "+110"
+  }
+];
+
 const LandingPage = () => {
   const [currentHeadline, setCurrentHeadline] = useState(0);
+  const [activeSlide, setActiveSlide] = useState(0);
+  const [activeTestimonial, setActiveTestimonial] = useState(0);
   const navigate = useNavigate();
   
   // Using react-intersection-observer for scroll animations
@@ -55,6 +116,16 @@ const LandingPage = () => {
     threshold: 0.3,
   });
 
+  const [slideshowRef, slideshowInView] = useInView({
+    triggerOnce: false,
+    threshold: 0.3,
+  });
+
+  const [testimonialsRef, testimonialsInView] = useInView({
+    triggerOnce: false,
+    threshold: 0.3,
+  });
+
   useEffect(() => {
     const headlineKeys = Object.keys(headlines);
     const interval = setInterval(() => {
@@ -62,6 +133,22 @@ const LandingPage = () => {
     }, 4000);
 
     return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const slideshowInterval = setInterval(() => {
+      setActiveSlide((prev) => (prev + 1) % slideshowFeatures.length);
+    }, 5000);
+
+    return () => clearInterval(slideshowInterval);
+  }, []);
+
+  useEffect(() => {
+    const testimonialInterval = setInterval(() => {
+      setActiveTestimonial((prev) => (prev + 1) % testimonials.length);
+    }, 6000);
+
+    return () => clearInterval(testimonialInterval);
   }, []);
 
   const fadeVariants = {
@@ -97,6 +184,20 @@ const LandingPage = () => {
     }
   };
 
+  const slideVariants = {
+    hidden: { opacity: 0, x: 100 },
+    visible: { 
+      opacity: 1, 
+      x: 0,
+      transition: { duration: 0.7, ease: "easeOut" }
+    },
+    exit: { 
+      opacity: 0, 
+      x: -100,
+      transition: { duration: 0.5, ease: "easeIn" }
+    }
+  };
+
   return (
     <div className="landing-container">
       <div className="hero-backdrop">
@@ -124,14 +225,24 @@ const LandingPage = () => {
           </AnimatePresence>
 
           <motion.div 
-            className="sat-button"
+            className="subheadline"
             variants={itemVariant}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.98 }}
           >
-            <button onClick={() => navigate("/sat")} className="cta-button">
+            Designed by students, for students. The most comprehensive SAT prep platform that adapts to your learning style.
+          </motion.div>
+
+          <motion.div 
+            className="cta-container"
+            variants={itemVariant}
+          >
+            <motion.button 
+              onClick={() => navigate("/sat")} 
+              className="cta-button"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.98 }}
+            >
               Practice SAT Questions →
-            </button>
+            </motion.button>
           </motion.div>
         </motion.div>
 
@@ -157,6 +268,60 @@ const LandingPage = () => {
         </motion.div>
       </div>
 
+      {/* New Feature Slideshow Section */}
+      <motion.section 
+        className="slideshow-section"
+        ref={slideshowRef}
+        initial={{ opacity: 0 }}
+        animate={slideshowInView ? { opacity: 1 } : { opacity: 0 }}
+        transition={{ duration: 1 }}
+      >
+        <motion.div 
+          className="slideshow-container"
+          initial={{ y: 50, opacity: 0 }}
+          animate={slideshowInView ? { y: 0, opacity: 1 } : { y: 50, opacity: 0 }}
+          transition={{ duration: 0.8 }}
+        >
+          <div className="slideshow-heading">
+            <h2>How Aquarc Transforms Your SAT Prep</h2>
+            <p>Our tools are designed to accelerate your learning and focus on what matters most</p>
+          </div>
+          
+          <div className="slideshow-content">
+            <AnimatePresence mode="wait">
+              <motion.div 
+                key={activeSlide}
+                className="slide"
+                variants={slideVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                style={{ borderColor: slideshowFeatures[activeSlide].color }}
+              >
+                <div className="slide-image">
+                  <img src={slideshowFeatures[activeSlide].image} alt={slideshowFeatures[activeSlide].title} />
+                </div>
+                <div className="slide-text">
+                  <h3 style={{ color: slideshowFeatures[activeSlide].color }}>{slideshowFeatures[activeSlide].title}</h3>
+                  <p>{slideshowFeatures[activeSlide].description}</p>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+            
+            <div className="slideshow-controls">
+              {slideshowFeatures.map((feature, index) => (
+                <div 
+                  key={feature.id}
+                  className={`control-dot ${index === activeSlide ? 'active' : ''}`}
+                  style={{ backgroundColor: index === activeSlide ? feature.color : 'rgba(255, 255, 255, 0.3)' }}
+                  onClick={() => setActiveSlide(index)}
+                ></div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+      </motion.section>
+
       <motion.section 
         className="SAT-section"
         ref={satSectionRef}
@@ -175,14 +340,14 @@ const LandingPage = () => {
             We provide you with the most recent SAT questions to help train you
             to get the score you want.
           </p>
-          <motion.a 
-            href="/sat" 
+          <motion.button 
+            onClick={() => navigate("/sat")}
             className="cta-button"
             whileHover={{ scale: 1.05, boxShadow: "0 10px 25px rgba(0, 0, 0, 0.2)" }}
             whileTap={{ scale: 0.98 }}
           >
             Try our tools →
-          </motion.a>
+          </motion.button>
         </motion.div>
       </motion.section>
 
@@ -242,6 +407,56 @@ const LandingPage = () => {
         </motion.div>
       </motion.div>
 
+      {/* Testimonials Section */}
+      <motion.section 
+        className="testimonials-section"
+        ref={testimonialsRef}
+        initial={{ opacity: 0 }}
+        animate={testimonialsInView ? { opacity: 1 } : { opacity: 0 }}
+        transition={{ duration: 1 }}
+      >
+        <div className="testimonials-heading">
+          <h2>Success Stories</h2>
+          <p>See how students like you are improving their scores with Aquarc</p>
+        </div>
+
+        <div className="testimonials-slider">
+          <AnimatePresence mode="wait">
+            <motion.div 
+              key={activeTestimonial}
+              className="testimonial-card"
+              variants={fadeVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+            >
+              <div className="testimonial-quote">"</div>
+              <p className="testimonial-text">{testimonials[activeTestimonial].text}</p>
+              <div className="testimonial-author">{testimonials[activeTestimonial].name}</div>
+              <div className="testimonial-stats">
+                <div className="score-badge">
+                  <span>Score: </span>
+                  <span className="highlight-text">{testimonials[activeTestimonial].score}</span>
+                </div>
+                <div className="improvement-badge">
+                  <span>{testimonials[activeTestimonial].improvement}</span>
+                </div>
+              </div>
+            </motion.div>
+          </AnimatePresence>
+          
+          <div className="testimonial-dots">
+            {testimonials.map((testimonial, index) => (
+              <div 
+                key={testimonial.id}
+                className={`testimonial-dot ${index === activeTestimonial ? 'active' : ''}`}
+                onClick={() => setActiveTestimonial(index)}
+              ></div>
+            ))}
+          </div>
+        </div>
+      </motion.section>
+
       <motion.div 
         className="info-analytics"
         ref={analyticsRef}
@@ -269,6 +484,44 @@ const LandingPage = () => {
           </div>
         </motion.div>
       </motion.div>
+
+      {/* Footer */}
+      <footer className="footer">
+        <div className="footer-content">
+          <div className="footer-logo">
+            <h3>Aquarc</h3>
+            <p>Make test prep smarter, not harder.</p>
+          </div>
+          <div className="footer-links">
+            <div className="footer-column">
+              <h4>Learn</h4>
+              <ul>
+                <li><a href="/sat">SAT Prep</a></li>
+                <li><a href="/blog">Blog</a></li>
+                <li><a href="/resources">Resources</a></li>
+              </ul>
+            </div>
+            <div className="footer-column">
+              <h4>Company</h4>
+              <ul>
+                <li><a href="/about">About Us</a></li>
+                <li><a href="/careers">Careers</a></li>
+                <li><a href="/contact">Contact</a></li>
+              </ul>
+            </div>
+            <div className="footer-column">
+              <h4>Legal</h4>
+              <ul>
+                <li><a href="/terms">Terms</a></li>
+                <li><a href="/privacy">Privacy</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div className="footer-bottom">
+          <p>© 2025 Aquarc. All rights reserved.</p>
+        </div>
+      </footer>
     </div>
   );
 };
