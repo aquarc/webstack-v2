@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from "react";
 import { ChevronDown, Clock, X, Play, Pause, RotateCcw } from "lucide-react";
 
-const PomodoroTimer = () => {
+const PomodoroTimer = forwardRef((props, ref) => {
   const [mode, setMode] = useState("Stopwatch"); // 'Pomodoro' or 'Stopwatch'
   /* Pomodoro mode */
   const [isActive, setIsActive] = useState(false);
@@ -39,6 +39,22 @@ const PomodoroTimer = () => {
     { label: "15", value: 15 * 60 },
     { label: "20", value: 20 * 60 },
   ];
+
+  useImperativeHandle(ref, () => ({
+    start: () => {
+      if (!isActive) {
+        setIsActive(true);
+      }
+    },
+    // Optional: expose other controls if needed
+    toggle: () => setIsActive(!isActive),
+    reset: () => resetTimer(),
+    stopwatchReset: (() => {
+      if (mode === "Stopwatch") {
+        setTime(0);
+      }
+    }),
+  }));
 
   // reset timer when mode is changed
   useEffect(() => {
@@ -382,6 +398,6 @@ const PomodoroTimer = () => {
       )}
     </div>
   );
-};
+});
 
 export default PomodoroTimer;

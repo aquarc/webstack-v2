@@ -22,6 +22,7 @@ import Markdown from 'react-markdown'
 function SATPage() {
   // navbar
   const navigate = useNavigate();
+  const pomodoroTimerRef = useRef();
 
   // State variables for managing the SAT question interface
   const [selectedTest, setSelectedTest] = useState("SAT");
@@ -247,12 +248,12 @@ function SATPage() {
       setCurrentQuestionIndex(currentQuestionIndex - 1);
     else setCurrentQuestionIndex(currentQuestions.length - 1);
 
-
     setShowChat(false);
     clearChanges();
   };
 
   const clearChanges = () => {
+    pomodoroTimerRef.current?.stopwatchReset();
     setSelectedAnswer(null);
     setTempAnswer("");
     setIsCrossOutMode(false);
@@ -357,6 +358,7 @@ function SATPage() {
       if (questions.length > 0) {
         setCurrentQuestions(questions);
         setCurrentQuestionIndex(0);
+        pomodoroTimerRef.current?.start(); // Start timer
         window.scrollTo(0, 0);
         setError(null);
       } else {
@@ -847,6 +849,11 @@ function SATPage() {
                     questionDetails.externalId,
                   )}
                 </div>
+                <div className={`feedback-link ${showSidebar ? "with-sidebar" : ""}`}>
+                  <a href="/feedback" target="_blank" rel="noopener noreferrer">
+                    Feedback
+                  </a>
+                </div>
               </div>
             </div>
           );
@@ -905,6 +912,11 @@ function SATPage() {
                     questionDetails.questionType,
                     questionDetails.externalId,
                   )}
+                </div>
+                <div className={`feedback-link ${showSidebar ? "with-sidebar" : ""}`}>
+                  <a href="/feedback" target="_blank" rel="noopener noreferrer">
+                    Feedback
+                  </a>
                 </div>
               </div>
             </div>
@@ -1230,7 +1242,7 @@ const handleSimilarQuestions = async () => {
             <img src="/aquLogo.png" alt="Aquarc Logo" className="logo-image" />
           </div>
 
-          <PomodoroTimer />
+          <PomodoroTimer ref={pomodoroTimerRef} />
 
           <div>
             {questionDisplay.content?.questionDetails?.category == "Math" && (
