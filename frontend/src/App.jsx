@@ -18,6 +18,13 @@ import AboutUsPage from "./AboutPage/AboutPage";
 import LoginPage from "./Authentication/Login/Login";
 import AuthRedirect from "./Components/AuthRedirect";
 
+import ReactGA from 'react-ga4';
+
+// Initialize GA
+if (process.env.NODE_ENV === 'production') {
+  ReactGA.initialize(process.env.REACT_APP_GTAG);
+}
+
 export function sendClickEvent(eventName, eventCategory = "") {
   if (!window.gtag) return;
 
@@ -27,14 +34,35 @@ export function sendClickEvent(eventName, eventCategory = "") {
   });
 }
 
+// Global click handler
+const trackInteraction = (event) => {
+  if (process.env.NODE_ENV !== 'production') return;
+
+  const target = event.target.closest('button,a[href],.nav-item,[data-track]');
+  
+  if (target) {
+    const category = target.dataset.category || 'General';
+    const action = target.textContent.trim() || target.href || 'Unknown Action';
+    const label = target.dataset.label || window.location.pathname;
+
+    ReactGA.event({
+      category,
+      action: action.substring(0, 150), // Truncate to 150 chars
+      label,
+    });
+  }
+};
+
 // Wrapper component to handle conditional NavBar rendering
 const AppContent = () => {
   const location = useLocation();
 
+  // Track page views
   useEffect(() => {
-    if (process.env.NODE_ENV !== "production" && window.gtag) {
-      window.gtag("config", process.env.REACT_APP_GTAG, {
-        page_path: location.pathname,
+    if (process.env.NODE_ENV === 'production') {
+      ReactGA.send({
+        hitType: "pageview",
+        page: location.pathname
       });
     }
   }, [location]);
@@ -66,13 +94,24 @@ const AppContent = () => {
   );
 };
 
+const GlobalClickTracker = ({ children }) => {
+  useEffect(() => {
+    document.addEventListener('click', trackInteraction, true); // Use capture phase
+    return () => document.removeEventListener('click', trackInteraction, true);
+  }, []);
+
+  return children;
+};
+
 function App() {
   return (
     <div className="App">
-      <BrowserRouter>
-        <AuthRedirect />
-        <AppContent />
-      </BrowserRouter>
+      <GlobalClickTracker>
+        <BrowserRouter>
+          <AuthRedirect />
+          <AppContent />
+        </BrowserRouter>
+      </GlobalClickTracker>
     </div>
   );
 }
