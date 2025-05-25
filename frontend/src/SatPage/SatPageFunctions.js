@@ -1,13 +1,12 @@
 import { MathSubdomains, EnglishSubdomains } from "./SatSubdomains";
 import { endpoints } from "../config";
 
-// Consolidated search payload generation
 export function getSearchPayload(state) {
   const {
     selectedTest,
-    selectedTestSection,
     selectedSubdomains,
     selectedDifficulties,
+    practiceTestMode = true // Default to enabled
   } = state;
 
   const difficulty = Object.entries(selectedDifficulties)
@@ -18,11 +17,19 @@ export function getSearchPayload(state) {
     .filter(([_, isSelected]) => isSelected)
     .map(([subdomain]) => subdomain);
 
-  return {
+  // Base payload
+  const payload = {
     test: selectedTest,
     subdomain: subdomain.length > 0 ? subdomain : [""],
-    difficulty: difficulty.length > 0 ? difficulty : [""],
+    difficulty: difficulty.length > 0 ? difficulty : [""]
   };
+
+  // Only add limit if practice test mode is enabled
+  if (practiceTestMode) {
+    payload.limit = 15;
+  }
+
+  return payload;
 }
 
 // Fetch questions from the server

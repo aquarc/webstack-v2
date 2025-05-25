@@ -45,6 +45,7 @@ type SATQuestion struct {
 	Test       string   `json:"test"`
 	Difficulty []string `json:"difficulty"`
 	Subdomain  []string `json:"subdomain"`
+    Limit      *int     `json:"limit,omitempty"` // Optional limit parameter
 }
 
 // Credentials holds user registration/login info.
@@ -225,19 +226,40 @@ func FindQuestionsHandlerv2(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	query := `
-		SELECT questionId, id, test, category, domain, skill, difficulty, details,
-		       question, answer_choices, answer, rationale
-		FROM sat_questions
-		WHERE test = $1
-		  AND difficulty = ANY($2)
-		  AND skill = ANY($3);
-	`
+    query := `
+        SELECT questionId, id, test, category, domain, skill, difficulty, details,
+               question, answer_choices, answer, rationale
+        FROM (
+            SELECT *, 
+                ROW_NUMBER() OVER (
+                    PARTITION BY category 
+                    ORDER BY RANDOM()
+                ) AS rn
+            FROM sat_questions
+            WHERE test = $1
+              AND difficulty = ANY($2)
+              AND skill = ANY($3)
+        ) AS sub
+        ORDER BY rn, category 
+    `
+
 	diffArray := pq.Array(data.Difficulty)
 	subdomainArray := pq.Array(data.Subdomain)
-	rows, err := db.Query(query, data.Test, diffArray, subdomainArray)
+
+    args := []interface{}{data.Test, diffArray, subdomainArray}
+
+    // Add LIMIT clause if specified
+    if data.Limit != nil && *data.Limit > 0 {
+        query += " LIMIT $4"
+        args = append(args, *data.Limit)
+    }
+
+    fmt.Println(query)
+    fmt.Println(args)
+
+	rows, err := db.Query(query, args...)
 	if err != nil {
-		http.Error(w, "Error querying: "+err.Error(), http.StatusInternalServerError)
+        http.Error(w, "262: Error querying: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	defer rows.Close()

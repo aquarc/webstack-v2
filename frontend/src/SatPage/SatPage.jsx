@@ -44,6 +44,9 @@ function SATPage() {
   // Add this state declaration near other useState hooks
   const [selectedTestSections, setSelectedTestSections] = useState([]);
 
+  // practice test mode
+  const [practiceTestMode, setPracticeTestMode] = useState(true);
+
   // Add this function definition (placeholder implementation)
   const sendClickEvent = (eventName) => {
     // Implement actual analytics tracking here
@@ -331,12 +334,7 @@ function SATPage() {
       setError("Please select a test type.");
       return;
     }
-    if (true /*selectedSubdomains.length > 0*/) {
-      // for each ref in selectedRef, console.log it
-      console.log("eeee:", selectedRef);
-    } else {
-      console.log("TODO: insert real error");
-    }
+
     if (
       !selectedDifficulties.Easy &&
       !selectedDifficulties.Medium &&
@@ -349,6 +347,7 @@ function SATPage() {
       selectedTest,
       selectedSubdomains,
       selectedDifficulties,
+      practiceTestMode,
     });
     console.log("Sending search request with payload:", searchPayload);
     setIsLoading(true);
@@ -850,7 +849,7 @@ function SATPage() {
                   )}
                 </div>
                 <div className={`feedback-link ${showSidebar ? "with-sidebar" : ""}`}>
-                  <a href="/feedback" target="_blank" rel="noopener noreferrer">
+                  <a href={`/feedback?questionId=${questionDetails.questionId}`} target="_blank" rel="noopener noreferrer">
                     Feedback
                   </a>
                 </div>
@@ -914,7 +913,7 @@ function SATPage() {
                   )}
                 </div>
                 <div className={`feedback-link ${showSidebar ? "with-sidebar" : ""}`}>
-                  <a href="/feedback" target="_blank" rel="noopener noreferrer">
+                  <a href={`/feedback?questionId=${questionDetails.questionId}`} target="_blank" rel="noopener noreferrer">
                     Feedback
                   </a>
                 </div>
@@ -927,6 +926,7 @@ function SATPage() {
     }
   };
 
+  // In the renderNavigationView function
   const renderNavigationView = () => {
     switch (questionDisplay.type) {
       case "loading":
@@ -936,21 +936,38 @@ function SATPage() {
         const { questionDetails, navigation } = questionDisplay.content;
 
         return (
-          <div class="fixed-bottom-bar">
-            <button
-              onClick={handleNavigatePrevious}
-              disabled={!navigation.hasPrevious}
-            >
-              Previous
-            </button>
-            <span class="progress-text">
-              {`${navigation.currentIndex} / ${navigation.totalQuestions}`}
-            </span>
-            <button onClick={handleNavigateNext} disabled={!navigation.hasNext}>
-              Next
-            </button>
-          </div>
+          <div className="fixed-bottom-bar">
+            <div className="left-section">
+              {userEmail ? (
+                <span className="user-email-bottom">{userEmail}</span>
+              ) : (
+                <span className="login-status">Not Logged In</span>
+              )}
+            </div>
+            
+            <div className="middle-section">
+              <span className="progress-text">
+                {`${navigation.currentIndex} / ${navigation.totalQuestions}`}
+              </span>
+            </div>
 
+            <div className="right-section">
+              <button
+                onClick={handleNavigatePrevious}
+                disabled={!navigation.hasPrevious}
+                className="nav-button"
+              >
+                Previous
+              </button>
+              <button 
+                onClick={handleNavigateNext} 
+                disabled={!navigation.hasNext}
+                className="nav-button"
+              >
+                Next
+              </button>
+            </div>
+          </div>
         );
       default:
         return null;
@@ -1413,6 +1430,18 @@ const handleSimilarQuestions = async () => {
                     <label htmlFor={difficulty.toLowerCase()}>{difficulty}</label>
                   </div>
                 ))}
+              </div>
+
+              <div className="checkbox-group" style={{ marginTop: '1rem' }}>
+                <input
+                  type="checkbox"
+                  id="practice-test-mode"
+                  checked={practiceTestMode}
+                  onChange={() => setPracticeTestMode(!practiceTestMode)}
+                />
+                <label htmlFor="practice-test-mode">
+                  Practice Test Mode (15 questions)
+                </label>
               </div>
 
               {questionDisplay.type === "error" && (

@@ -47,9 +47,6 @@ const Navbar = () => {
           <Link to="/feedback" className="link">
             Feedback
           </Link>
-          <Link to="/feedback" className="link">
-            Blog
-          </Link>
           {/*<Link to="/aboutPage" className="link">About Us</Link>*/}
         </div>
 
@@ -77,9 +74,6 @@ const Navbar = () => {
           {/*<a href="https://aquarc.beehiiv.com" className="link">Newsletter</a>*/}
           <Link to="/feedback" className="link">
             Feedback
-          </Link>
-          <Link to="/feedback" className="link">
-            Blog
           </Link>
 
           {/*<Link to="/aboutPage" className="link">About Us</Link>*/}

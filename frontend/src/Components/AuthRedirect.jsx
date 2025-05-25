@@ -8,7 +8,7 @@ const AuthRedirect = () => {
 
     useEffect(() => {
         const user = Cookies.get('user');
-        const publicRoutes = ['/', '/login', '/signup', '/feedback', '/aboutPage', '/extracurricular'];
+        const publicRoutes = ['/login', '/signup'];
         const currentPath = location.pathname;
 
         // Only redirect if trying to access auth-related pages while logged in
