@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } f
 import { ChevronDown, Clock, X, Play, Pause, RotateCcw } from "lucide-react";
 
 const PomodoroTimer = forwardRef((props, ref) => {
-  const [mode, setMode] = useState("Stopwatch"); // 'Pomodoro' or 'Stopwatch'
+  const [mode, setMode] = useState("Stopwatch"); // 'Pomodoro', 'Stopwatch', or 'Timer'
   /* Pomodoro mode */
   const [isActive, setIsActive] = useState(false);
   const [isBreak, setIsBreak] = useState(false);
@@ -54,6 +54,11 @@ const PomodoroTimer = forwardRef((props, ref) => {
         setTime(0);
       }
     }),
+    setPracticeTestMode: (minutes) => {
+      setMode("Timer");
+      setTime(minutes * 60);
+      setIsActive(true);
+    },
   }));
 
   // reset timer when mode is changed
@@ -65,6 +70,14 @@ const PomodoroTimer = forwardRef((props, ref) => {
   useEffect(() => {
     setInputValue(String(selectedDuration / 60));
   }, [selectedDuration]);
+
+  // Update timer logic
+  useEffect(() => {
+    if (mode === "Timer" && time <= 0) {
+      props.onTimeUp?.();
+      resetTimer();
+    }
+  }, [time, mode]);
 
   /*
   // Timer logic
@@ -164,6 +177,12 @@ const PomodoroTimer = forwardRef((props, ref) => {
           setTime((time) => time + 1);
         }, 1000);
       }
+    } else if (mode === "Timer") {
+      if (isActive) {
+        interval = setInterval(() => {
+          setTime((time) => time - 1);
+        }, 1000);
+      }
     }
 
     return () => clearInterval(interval);
@@ -191,6 +210,8 @@ const PomodoroTimer = forwardRef((props, ref) => {
         setTime(selectedDuration);
       } else if (mode === "Stopwatch") {
         setTime(0);
+      } else if (mode === "Timer") {
+        setTime(17 * 60);
       }
     }
     setIsActive(!isActive);
@@ -243,7 +264,7 @@ const PomodoroTimer = forwardRef((props, ref) => {
         >
           <div className="sidebar-header">
             <h3 className="text-sm font-semibold text-gray-900">
-              Stopwatch/Timer
+              {mode === "Timer" ? "Test Timer" : "Stopwatch/Timer"}
             </h3>
             <div>
               <button
@@ -274,18 +295,21 @@ const PomodoroTimer = forwardRef((props, ref) => {
 
           {/* Mode Toggle */}
           <div className="input-group">
-            {["Stopwatch", "Pomodoro"].map((modeChoice) => (
-              <button
-                key={modeChoice}
-                onClick={() => setMode(modeChoice)}
-                type="button"
-                className={`input-group-button solo ${
-                  modeChoice === mode ? "active" : ""
-                }`}
-              >
-                {modeChoice}
+            {mode === "Timer" ? (
+              <button className="mode-display-button" disabled>
+                Timer
               </button>
-            ))}
+            ) : (
+              ["Stopwatch", "Pomodoro"].map((modeChoice) => (
+                <button
+                  key={modeChoice}
+                  onClick={() => setMode(modeChoice)}
+                  className={`input-group-button ${mode === modeChoice ? "active" : ""}`}
+                >
+                  {modeChoice}
+                </button>
+              ))
+            )}
           </div>
 
           {/* Pomodoro settings */}

@@ -11,7 +11,7 @@ import {
 } from "./SatPageFunctions";
 import Desmos from "desmos";
 import Collapsible from "../Components/Collapsible";
-import { Bookmark, Calculator, ListFilter, X, HelpCircle } from "lucide-react";
+import { Bookmark, Calculator, ListFilter, X, HelpCircle, ChevronDown } from "lucide-react";
 import PomodoroTimer from "./PomodoroTimer";
 import Draggable from "react-draggable";
 import { ResizableBox } from "react-resizable";
@@ -41,13 +41,8 @@ function SATPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showSidebar, setShowSidebar] = useState(true);
-  // Add this state declaration near other useState hooks
   const [selectedTestSections, setSelectedTestSections] = useState([]);
 
-  // practice test mode
-  const [practiceTestMode, setPracticeTestMode] = useState(true);
-
-  // Add this function definition (placeholder implementation)
   const sendClickEvent = (eventName) => {
     // Implement actual analytics tracking here
     console.log(`Event tracked: ${eventName}`);
@@ -82,6 +77,23 @@ function SATPage() {
   const [fetchedSimilarQuestions, setFetchedSimilarQuestions] = useState(new Set());
 
   const [excludedQuestionIds, setExcludedQuestionIds] = useState(new Set());
+
+  // question grid on the middle of the bottom navbar
+  const [showQuestionGrid, setShowQuestionGrid] = useState(false);
+
+  // practice test mode
+  const [practiceTestMode, setPracticeTestMode] = useState(true);
+  // review screen for practice mode
+  const [showReviewScreen, setShowReviewScreen] = useState(false);
+  // review mode so you can go back and check your answers
+  const [reviewMode, setReviewMode] = useState(false);
+
+  // Timer completion handler
+  const handleTimeUp = () => {
+    setShowReviewScreen(true);
+    setCurrentQuestionIndex(0);
+    pomodoroTimerRef.current?.reset();
+  };
 
   const toggleSidebar = () => {
     setShowSidebar(prev => !prev);
@@ -148,7 +160,7 @@ function SATPage() {
     return () => {
       document.title = "Aquarc"; // Optional: Reset title when leaving the page
     };
-  }, []);
+  }, [])
 
   useEffect(() => {
     setHasSelectedAnswer(false);
@@ -232,6 +244,11 @@ function SATPage() {
   const handleNavigateNext = () => {
     if (currentQuestions.length === 0) return;
 
+    if (practiceTestMode && currentQuestionIndex === currentQuestions.length - 1) {
+      setShowReviewScreen(true);
+      return;
+    }
+
     setShowChat(false);
 
     // Send accumulated attempts for current question
@@ -256,7 +273,8 @@ function SATPage() {
   };
 
   const clearChanges = () => {
-    pomodoroTimerRef.current?.stopwatchReset();
+    setHasSelectedAnswer(false);
+    if (!practiceTestMode) pomodoroTimerRef.current?.stopwatchReset();
     setSelectedAnswer(null);
     setTempAnswer("");
     setIsCrossOutMode(false);
@@ -299,35 +317,61 @@ function SATPage() {
         ]
       }));
 
-      // Update UI state based on answer correctness
-      if (isCorrect) {
-        setSelectedAnswer(tempAnswer);
-        setHasSelectedAnswer(true);
-        setAttempts(prev => {
-          const newAttempts = { ...prev };
-          delete newAttempts[currentQuestionIndex];
-          return newAttempts;
-        });
-      } else {
-        const currentAttempts = attempts[currentQuestionIndex] || 0;
-        if (currentAttempts < 1) {
-          setAttempts(prev => ({
-            ...prev,
-            [currentQuestionIndex]: currentAttempts + 1,
-          }));
-        } else {
-          setAttempts(prev => ({
-            ...prev,
-            [currentQuestionIndex]: currentAttempts + 1,
-          }));
-          setSelectedAnswer(tempAnswer);
-        }
-      }
     }
     sendClickEvent("submit-answer");
   };
 
+  const checkCorrectAnswer = (choice=null) => {
+    const currentQuestion = currentQuestions[currentQuestionIndex];
+    let isCorrect = false;
+
+    choice = choice || (shouldShowFreeResponse(currentQuestion.answerChoices) ? tempAnswer : selectedAnswer);
+
+    // Determine correctness
+    if (shouldShowFreeResponse(currentQuestion.answerChoices)) {
+      // Free-response validation
+      if (choice.includes("/")) {
+        const [n, d] = choice.split("/");
+        isCorrect = Math.abs((n/d).toFixed(4) - currentQuestion.answer) < 0.001;
+      } else {
+        isCorrect = choice === currentQuestion.answer;
+      }
+    } else {
+      // Multiple-choice validation
+      console.log("selectedAnswer", choice, "answer", currentQuestion.answer);
+      isCorrect = choice?.toLowerCase() === currentQuestion.answer.toLowerCase();
+    }
+
+    return isCorrect;
+  };
+
+  const handleCheckAnswer = () => {
+    // Determine correctness
+    const isCorrect = checkCorrectAnswer();
+
+    // Always log the attempt
+    const attempt = { 
+      answer: tempAnswer || selectedAnswer, 
+      timestamp: Date.now(),
+      correct: isCorrect 
+    };
+    setCurrentQuestionAttempts(prev => [...prev, attempt]);
+    
+    // Force the answer to stay selected and show feedback
+    setHasSelectedAnswer(true);
+
+    // Update attempts counter
+    setAttempts(prev => ({
+      ...prev,
+      [currentQuestionIndex]: (prev[currentQuestionIndex] || 0) + 1,
+    }));
+  };
+
   const handleSearch = async () => {
+    if (practiceTestMode) {
+      pomodoroTimerRef.current?.setPracticeTestMode(17);
+    }
+    setReviewMode(false);
     setSelectedAnswer(null);
     setTempAnswer("");
     if (!selectedTest) {
@@ -450,6 +494,8 @@ function SATPage() {
         }
       };
 
+      const isCorrect = Math.abs(selectedAnswer - correctAnswer) < 0.001;
+
       return (
         <>
           <input
@@ -458,11 +504,9 @@ function SATPage() {
             value={tempAnswer}
             onChange={(e) => setTempAnswer(e.target.value)}
             onKeyDown={handleKeyPress}
-            className={`flex-1 p-2 border rounded-md ${selectedAnswer
-              ? selectedAnswer === correctAnswer
-                ? "correct-answer"
-                : "incorrect-answer"
-              : ""
+            className={`flex-1 p-2 border rounded-md ${hasSelectedAnswer ? 
+                (isCorrect ? "correct-answer" : "incorrect-answer") : 
+                "" 
               }`}
             placeholder="Enter your answer..."
           />
@@ -504,6 +548,7 @@ function SATPage() {
         externalId?.startsWith("DC-") ||
         (!Array.isArray(parsedChoices) && typeof parsedChoices === "object")
       ) {
+
         return (
           <>
             <div className="multiple-choice-container">
@@ -513,92 +558,12 @@ function SATPage() {
 
                   const content =
                     parsedChoices[letterChoice].body || parsedChoices[letterChoice];
-                  const choiceKey = `choice-${letterChoice}`;
-                  const isSelected = selectedAnswer === letterChoice;
-                  const isCorrect =
-                    isSelected &&
-                    letterChoice.toLowerCase() === correctAnswer.toLowerCase();
 
-                  const isCrossedOut =
-                    crossedOutAnswers[currentQuestionIndex]?.has(choiceKey);
-
-                  return (
-                    <div
-                      key={choiceKey}
-                      className={`answer-choice ${isCrossedOut ? "crossed-out" : ""}`}
-                      onClick={(e) => {
-                        if (isCrossOutMode) {
-                          // Cross out logic
-                          setCrossedOutAnswers((prev) => {
-                            const currentCrossouts = new Set(
-                              prev[currentQuestionIndex] || [],
-                            );
-
-                            if (currentCrossouts.has(choiceKey)) {
-                              currentCrossouts.delete(choiceKey);
-                            } else {
-                              if (selectedAnswer === letterChoice)
-                                setSelectedAnswer(null);
-                              currentCrossouts.add(choiceKey);
-                            }
-
-                            return {
-                              ...prev,
-                              [currentQuestionIndex]: currentCrossouts,
-                            };
-                          });
-                        } else {
-                          // Selection logic - fixed to use letterChoice directly
-                          setSelectedAnswer(letterChoice);
-                          setHasSelectedAnswer(true);
-
-                          // Log this attempt
-                          const timestamp = Date.now();
-                          const isCorrect = letterChoice.toLowerCase() === correctAnswer.toLowerCase();
-
-                          // Add to current question attempts
-                          setCurrentQuestionAttempts(prev => [...prev, {
-                            answer: letterChoice,
-                            timestamp: timestamp,
-                            correct: isCorrect
-                          }]);
-
-                          // Update attempt counter for UI display
-                          if (!isCorrect) {
-                            setAttempts(prev => ({
-                              ...prev,
-                              [currentQuestionIndex]: (prev[currentQuestionIndex] || 0) + 1,
-                            }));
-                          }
-
-                          // Keep legacy logging for backward compatibility
-                          setAttemptLogs(prev => ({
-                            ...prev,
-                            [currentQuestions[currentQuestionIndex]?.questionId]: [
-                              ...(prev[currentQuestions[currentQuestionIndex]?.questionId] || []),
-                              { answer: letterChoice, timestamp: timestamp }
-                            ]
-                          }));
-                        }
-                      }}
-                    >
-                      <label
-                        htmlFor={choiceKey}
-                        className={
-                          isSelected
-                            ? isCorrect
-                              ? " correct-answer"
-                              : " incorrect-answer"
-                            : "unselected-answer"
-                        }
-                        dangerouslySetInnerHTML={{ __html: content }}
-                      />
-                    </div>
-                  );
+                  return renderMultipleChoiceAnswer(correctAnswer, letterChoice, isCrossOutMode, content);
                 })
                 .filter(Boolean)}
             </div>
-            {(selectedAnswer && (selectedAnswer.toLowerCase() === correctAnswer.toLowerCase() || currentAttempts >= 3)) && (
+            {(selectedAnswer && hasSelectedAnswer) && (
               <div
                 className={`rationale-container ${selectedAnswer.toLowerCase() === correctAnswer.toLowerCase() ? "correct" : "incorrect"}`}
               >
@@ -630,88 +595,11 @@ function SATPage() {
                 const letterChoice = String.fromCharCode(
                   65 + index,
                 ).toLowerCase();
-                const choiceKey = choice.id || `choice-${index}`;
-                const isSelected = selectedAnswer === letterChoice;
-                const isCorrect =
-                  isSelected && letterChoice === correctAnswer.toLowerCase();
 
-                const isCrossedOut =
-                  crossedOutAnswers[currentQuestionIndex]?.has(choiceKey);
-
-                return (
-                  <div
-                    key={choiceKey}
-                    className={`answer-choice ${isCrossedOut ? "crossed-out" : ""}`}
-                    onClick={(e) => {
-                      if (isCrossOutMode) {
-                        setCrossedOutAnswers((prev) => {
-                          const currentCrossouts = new Set(
-                            prev[currentQuestionIndex] || [],
-                          );
-
-                          if (currentCrossouts.has(choiceKey)) {
-                            currentCrossouts.delete(choiceKey);
-                          } else {
-                            if (selectedAnswer == letterChoice)
-                              setSelectedAnswer(null);
-                            currentCrossouts.add(choiceKey);
-                          }
-
-                          return {
-                            ...prev,
-                            [currentQuestionIndex]: currentCrossouts,
-                          };
-                        });
-                      } else {
-                        setSelectedAnswer(letterChoice);
-                        setHasSelectedAnswer(true);
-
-                        // Log this attempt
-                        const timestamp = Date.now();
-                        const isCorrect = letterChoice.toLowerCase() === correctAnswer.toLowerCase();
-
-                        // Add to current question attempts
-                        setCurrentQuestionAttempts(prev => [...prev, {
-                          answer: letterChoice,
-                          timestamp: timestamp,
-                          correct: isCorrect
-                        }]);
-
-                        // Update attempt counter for UI display
-                        if (!isCorrect) {
-                          setAttempts(prev => ({
-                            ...prev,
-                            [currentQuestionIndex]: (prev[currentQuestionIndex] || 0) + 1,
-                          }));
-                        }
-
-                        // Keep legacy logging for backward compatibility
-                        setAttemptLogs(prev => ({
-                          ...prev,
-                          [currentQuestions[currentQuestionIndex]?.questionId]: [
-                            ...(prev[currentQuestions[currentQuestionIndex]?.questionId] || []),
-                            { answer: letterChoice, timestamp: timestamp }
-                          ]
-                        }));
-                      }
-                    }}
-                  >
-                    <label
-                      htmlFor={choiceKey}
-                      className={
-                        isSelected
-                          ? isCorrect
-                            ? " correct-answer"
-                            : " incorrect-answer"
-                          : "unselected-answer"
-                      }
-                      dangerouslySetInnerHTML={{ __html: content }}
-                    />
-                  </div>
-                );
+                return renderMultipleChoiceAnswer(correctAnswer, letterChoice, isCrossOutMode, content);
               })}
             </div>
-            {(selectedAnswer && (selectedAnswer === correctAnswer.toLowerCase() || currentAttempts >= 3)) && (
+            {(selectedAnswer && hasSelectedAnswer) && (
               <div
                 className={`rationale-container ${selectedAnswer === correctAnswer.toLowerCase() ? "correct" : "incorrect"}`}
               >
@@ -749,6 +637,97 @@ function SATPage() {
     );
   };
 
+  const renderMultipleChoiceAnswer = (correctAnswer, letterChoice, isCrossOutMode, content) => {
+
+    const choiceKey = `choice-${letterChoice}`;
+    const isSelected = selectedAnswer === letterChoice;
+    let isCorrect =
+      isSelected && letterChoice === correctAnswer.toLowerCase();
+
+    const isCrossedOut = !reviewMode &&
+      crossedOutAnswers[currentQuestionIndex]?.has(choiceKey);
+
+    // In renderMultipleChoiceAnswer function
+    const currentQuestionId = currentQuestions[currentQuestionIndex]?.questionId;
+    const questionAttempts = attemptLogs[currentQuestionId] || [];
+    console.log(questionAttempts);
+    const lastAttempt = questionAttempts[questionAttempts.length - 1];
+
+    if (reviewMode) {
+      isCorrect = currentQuestions[currentQuestionIndex]?.answer?.toLowerCase()
+            === letterChoice;
+    }
+    
+    const isUserAnswer = 
+          reviewMode && lastAttempt?.answer?.toLowerCase() === letterChoice;
+
+    console.log("reviewMode: ", reviewMode, "isUserAnswer: ", isUserAnswer,
+      "isSelected: ", isSelected, "isCorrect: ", isCorrect);
+
+    return (
+      <>
+        <div
+          key={choiceKey}
+          className={`answer-choice ${isCrossedOut ? "crossed-out" : ""}`}
+          onClick={(e) => {
+            if (reviewMode) {
+                e.stopPropagation();
+                return;
+            }
+
+            if (isCrossOutMode) {
+              setCrossedOutAnswers((prev) => {
+                const currentCrossouts = new Set(
+                  prev[currentQuestionIndex] || [],
+                );
+
+                if (currentCrossouts.has(choiceKey)) {
+                  currentCrossouts.delete(choiceKey);
+                } else {
+                  if (selectedAnswer == letterChoice)
+                    setSelectedAnswer(null);
+                  currentCrossouts.add(choiceKey);
+                }
+
+                return {
+                  ...prev,
+                  [currentQuestionIndex]: currentCrossouts,
+                };
+              });
+            } else {
+              setSelectedAnswer(letterChoice);
+              if (practiceTestMode) {
+                handleSilentAttempt(letterChoice);
+              }
+            }
+          }}
+        >
+         <label
+           className={
+             reviewMode ? 
+               (isCorrect ? "correct-answer" : 
+                (isUserAnswer ? "incorrect-answer" : "unselected-answer")) :
+               (practiceTestMode ? 
+                 (lastAttempt?.answer?.toLowerCase() === letterChoice ?
+                   "selected-answer" : "unselected-answer") :
+                 (hasSelectedAnswer ? 
+                   (letterChoice === correctAnswer.toLowerCase() ? "correct-answer" : 
+                    selectedAnswer === letterChoice ? 
+                       "incorrect-answer" : "unselected-answer") :
+                   (selectedAnswer === letterChoice ? 
+                       "selected-answer" : "unselected-answer"))
+               )
+           }
+           dangerouslySetInnerHTML={{ __html: content }}
+         />
+        </div>
+        { reviewMode && !(lastAttempt?.answer?.toLowerCase()) && isCorrect && (
+            <p>You did not select any answer for this question.</p>
+        )}
+      </>
+   );
+  };
+
 
   // Update the renderQuestionView function
   const renderQuestionView = () => {
@@ -783,8 +762,9 @@ function SATPage() {
                         <span>Eliminate Answer</span>
                       </button>
                     )}
+
                     {/* Show Ask AI button for all question types after incorrect attempt */}
-                    {hasSelectedAnswer && (
+                    {attempts[currentQuestionIndex] && attempts[currentQuestionIndex] > 0 && (
                       <button
                         className="control-button ai-help-button"
                         onClick={() => handleAIHelp()}
@@ -819,7 +799,7 @@ function SATPage() {
                       </button>
                     )}
                     {/* Show AI button after any attempt */}
-                    {(attempts[currentQuestionIndex] > 0) && (
+                    {attempts[currentQuestionIndex] && attempts[currentQuestionIndex] > 0 && (
                       <button
                         className="control-button ai-help-button"
                         onClick={() => handleAIHelp()}
@@ -885,7 +865,7 @@ function SATPage() {
                     <span>Eliminate Answer</span>
                   </button>
                   {/* Add AI Help button for English */}
-                  {hasSelectedAnswer && (
+                  {attempts[currentQuestionIndex] && attempts[currentQuestionIndex] > 0 && (
                     <button
                       className="control-button ai-help-button"
                       onClick={() => handleAIHelp()}
@@ -946,9 +926,13 @@ function SATPage() {
             </div>
             
             <div className="middle-section">
-              <span className="progress-text">
+              <button
+                className="progress-button"
+                onClick={() => setShowQuestionGrid(true)}
+              >
                 {`${navigation.currentIndex} / ${navigation.totalQuestions}`}
-              </span>
+                <ChevronDown size={16} className="dropdown-icon" />
+              </button>
             </div>
 
             <div className="right-section">
@@ -961,17 +945,149 @@ function SATPage() {
               </button>
               <button 
                 onClick={handleNavigateNext} 
-                disabled={!navigation.hasNext}
+                disabled={showReviewScreen ? !navigation.hasNext : false}
                 className="nav-button"
               >
                 Next
               </button>
+              {!practiceTestMode && (
+                <button onClick={handleCheckAnswer}>Check</button>
+              )}
             </div>
           </div>
         );
       default:
         return null;
     }
+  };
+
+  // Add new component inside SATPage component
+  const renderQuestionGrid = () => {
+    if (!showQuestionGrid) return null;
+
+    return (
+      <div className="question-grid-overlay" onClick={() => setShowQuestionGrid(false)}>
+        <div className="question-grid-container" onClick={(e) => e.stopPropagation()}>
+          <div className="question-grid-header">
+            <h3>Questions</h3>
+            <button 
+              className="close-grid-button"
+              onClick={() => setShowQuestionGrid(false)}
+            >
+              <X size={20} />
+            </button>
+          </div>
+          <QuestionGrid
+            questions={currentQuestions}
+            attempts={attempts}
+            currentQuestionIndex={currentQuestionIndex}
+          />
+        </div>
+      </div>
+    );
+  };
+
+  const QuestionGrid = ({ 
+    questions, 
+    attempts, 
+    currentQuestionIndex,
+  }) => {
+    return (
+      <div className="question-grid">
+        {questions.map((_, index) => (
+          <button
+            key={index}
+            className={`question-grid-item ${
+              attempts[index] ? 'answered' : 'unanswered'
+            } ${currentQuestionIndex === index ? 'current' : ''}`}
+            onClick={() => {
+                setCurrentQuestionIndex(index);
+                setShowQuestionGrid(false);
+                setShowReviewScreen(false);
+                clearChanges();
+            }}
+          >
+            {index + 1}
+          </button>
+        ))}
+      </div>
+    );
+  };
+
+  // helper for practice test mode
+  const handleSilentAttempt = (answer) => {
+    const currentQuestion = currentQuestions[currentQuestionIndex];
+    const isCorrect = checkCorrectAnswer(answer);
+    
+    const attempt = {
+      answer: answer,
+      timestamp: Date.now(),
+      correct: isCorrect
+    };
+    console.log("Question " + (currentQuestionIndex + 1) + 
+        " is ", attempt["correct"] + 
+        " answer: " + attempt["answer"]);
+    
+    setCurrentQuestionAttempts(prev => [...prev, attempt]);
+    setAttemptLogs(prev => ({
+      ...prev,
+      [currentQuestion.questionId]: [
+        ...(prev[currentQuestion.questionId] || []),
+        attempt
+      ]
+    }));
+  };
+
+  const getLastSubmittedAnswers = () => {
+    return currentQuestions.map((question, index) => {
+      const questionId = question.questionId;
+      const questionAttempts = attemptLogs[questionId] || [];
+      const lastAttempt = questionAttempts[questionAttempts.length - 1];
+      
+      return {
+        questionNumber: index + 1,
+        lastAnswer: lastAttempt?.answer || null,
+        correct: lastAttempt?.correct || false
+      };
+    });
+  };
+
+  const ReviewScreen = ({ questions, attempts, onClose, setReviewMode }) => {
+    const navigate = useNavigate();
+
+    return (
+      <div className="review-screen">
+        <div className="review-content">
+          <h2>Review Your Answers</h2>
+          <QuestionGrid
+            questions={questions}
+            attempts={attempts}
+            currentQuestionIndex={-1}
+            onQuestionSelect={() => {}} // No-op for now
+          />
+          <div className="review-buttons">
+            <button 
+              className="review-button"
+              onClick={onClose}
+            >
+              Back
+            </button>
+            <button
+              className="review-button submit-button"
+              onClick={() => {
+                setReviewMode(true);
+                const results = getLastSubmittedAnswers();
+                console.log('Practice Test Results:', results);
+                setCurrentQuestionIndex(0);
+                onClose();
+              }}
+            >
+              Submit
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   const handleAIHelp = () => {
@@ -1259,7 +1375,10 @@ const handleSimilarQuestions = async () => {
             <img src="/aquLogo.png" alt="Aquarc Logo" className="logo-image" />
           </div>
 
-          <PomodoroTimer ref={pomodoroTimerRef} />
+          <PomodoroTimer 
+            ref={pomodoroTimerRef} 
+            onTimeUp={handleTimeUp}
+          />
 
           <div>
             {questionDisplay.content?.questionDetails?.category == "Math" && (
@@ -1516,6 +1635,15 @@ const handleSimilarQuestions = async () => {
             </div>
           </form>
         </div>
+      )}
+      {renderQuestionGrid()}
+      {showReviewScreen && (
+        <ReviewScreen
+          questions={currentQuestions}
+          attempts={attempts}
+          onClose={() => setShowReviewScreen(false)}
+          setReviewMode={setReviewMode}
+        />
       )}
     </>
   );
