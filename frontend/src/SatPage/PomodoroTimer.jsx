@@ -48,6 +48,7 @@ const PomodoroTimer = forwardRef((props, ref) => {
     },
     // Optional: expose other controls if needed
     toggle: () => setIsActive(!isActive),
+    stop: () => setIsActive(false),
     reset: () => resetTimer(),
     stopwatchReset: (() => {
       if (mode === "Stopwatch") {
@@ -56,7 +57,7 @@ const PomodoroTimer = forwardRef((props, ref) => {
     }),
     setPracticeTestMode: (minutes) => {
       setMode("Timer");
-      setTime(minutes * 60);
+      handleDurationChange(minutes * 60);
       setIsActive(true);
     },
   }));
@@ -222,8 +223,10 @@ const PomodoroTimer = forwardRef((props, ref) => {
     setIsBreak(false);
     if (mode === "Pomodoro") {
       setTime(selectedDuration);
-    } else {
+    } else if (mode === "Stopwatch") {
       setTime(0);
+    } else if (mode === "Timer") {
+      setTime(17 * 60);
     }
   };
 

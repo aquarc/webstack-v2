@@ -239,8 +239,6 @@ func FindQuestionsHandlerv2(w http.ResponseWriter, r *http.Request) {
             WHERE test = $1
               AND difficulty = ANY($2)
               AND skill = ANY($3)
-        ) AS sub
-        ORDER BY rn, category 
     `
 
 	diffArray := pq.Array(data.Difficulty)
@@ -248,9 +246,51 @@ func FindQuestionsHandlerv2(w http.ResponseWriter, r *http.Request) {
 
     args := []interface{}{data.Test, diffArray, subdomainArray}
 
-    // Add LIMIT clause if specified
-    if data.Limit != nil && *data.Limit > 0 {
-        query += " LIMIT $4"
+    var email string
+    hasLimit := data.Limit != nil && *data.Limit > 0
+
+    // Session validation only when limit is specified
+    if hasLimit {
+        cookie, err := r.Cookie("session")
+        if err != nil {
+            if err == http.ErrNoCookie {
+                http.Error(w, "Session cookie required for limited requests", http.StatusUnauthorized)
+                return
+            }
+            http.Error(w, "Bad request", http.StatusBadRequest)
+            return
+        }
+
+        err = db.QueryRow(
+            "SELECT email FROM user_sessions WHERE token = $1",
+            cookie.Value,
+        ).Scan(&email)
+        if err != nil {
+            if err == sql.ErrNoRows {
+                http.Error(w, "Invalid session token", http.StatusUnauthorized)
+                return
+            }
+            http.Error(w, "Database error", http.StatusInternalServerError)
+            return
+        }
+
+        query += `
+              AND NOT EXISTS (
+                  SELECT 1 FROM practiced_questions 
+                  WHERE email = $4 
+                    AND questionId = sat_questions.questionId
+              )
+        `
+        args = append(args, email)
+    }
+
+    query += `
+        ) AS sub
+        ORDER BY rn, category
+    `
+
+    if hasLimit {
+        query += " LIMIT $5"
         args = append(args, *data.Limit)
     }
 
@@ -704,6 +744,103 @@ func logQuestionAttempt(w http.ResponseWriter, r *http.Request) {
     w.Write([]byte(`{"success":true}`))
 }
 
+
+func setResults(w http.ResponseWriter, r *http.Request) {
+    // Only allow POST requests
+    if r.Method != http.MethodPost {
+        http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        return
+    }
+
+    // Parse request body
+    var results []struct {
+        QuestionID string  `json:"questionId"`
+        LastAnswer *string `json:"lastAnswer"` // Pointer to handle null values
+        Correct    bool    `json:"correct"`
+    }
+
+    if err := json.NewDecoder(r.Body).Decode(&results); err != nil {
+        http.Error(w, "Invalid request body", http.StatusBadRequest)
+        return
+    }
+
+    // Get email from cookie
+    cookie, err := r.Cookie("session")
+    if err != nil {
+        // Handle different error types
+        if err == http.ErrNoCookie {
+            http.Error(w, "Unauthorized: missing session cookie", http.StatusUnauthorized)
+            return
+        }
+        http.Error(w, "Bad request", http.StatusBadRequest)
+        return
+    }
+
+    // check for actual email
+    var email string
+    err = db.QueryRow(
+        "SELECT email FROM user_sessions WHERE token = $1", 
+        cookie.Value,
+    ).Scan(&email)
+
+    if err != nil {
+        if err == sql.ErrNoRows {
+            // No matching session found
+            http.Error(w, "Unauthorized: invalid session", http.StatusUnauthorized)
+            return
+        }
+        // Handle other database errors
+        http.Error(w, "Database error", http.StatusInternalServerError)
+        return
+    }
+
+    // Start database transaction
+    tx, err := db.Begin()
+    if err != nil {
+        http.Error(w, "Database error", http.StatusInternalServerError)
+        return
+    }
+    defer tx.Rollback() // Safe to call if transaction is already committed
+
+    // Prepare insert statement
+    stmt, err := tx.Prepare(`
+        INSERT INTO practiced_questions 
+        (email, questionId, answer, isCorrect)
+        VALUES ($1, $2, $3, $4)
+    `)
+    if err != nil {
+        http.Error(w, "Database error", http.StatusInternalServerError)
+        return
+    }
+    defer stmt.Close()
+
+    // Insert each result
+    for _, result := range results {
+        _, err := stmt.Exec(
+            email,
+            result.QuestionID,
+            result.LastAnswer, // Will be NULL if pointer is nil
+            result.Correct,
+        )
+        if err != nil {
+            http.Error(w, "Failed to save results", http.StatusInternalServerError)
+            return
+        }
+    }
+
+    // Commit transaction
+    if err := tx.Commit(); err != nil {
+        http.Error(w, "Database error", http.StatusInternalServerError)
+        return
+    }
+
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(map[string]interface{}{
+        "status":  "success",
+        "message": "Results saved successfully",
+    })
+}
+
 // -----------------------------
 // Initialization Function
 // -----------------------------
@@ -811,6 +948,17 @@ func initializeSat(db *sql.DB) {
 		log.Fatal(err)
 	}
 
+    _,err = db.Exec(`CREATE TABLE IF NOT EXISTS practiced_questions (
+        email TEXT NOT NULL,
+        questionId TEXT NOT NULL,
+        timestamp decimal default extract(epoch from now()) NOT NULL,
+        answer VARCHAR(6),
+        isCorrect BOOLEAN DEFAULT false NOT NULL
+    )`)
+    if err != nil {
+        log.Fatal(err)
+    }
+
 	// Register SAT-related HTTP handlers.
 	http.HandleFunc("/sat/test", ServeForm)
 	http.HandleFunc("/sat/find-questions", FindQuestionsHandler)
@@ -821,6 +969,7 @@ func initializeSat(db *sql.DB) {
 	http.HandleFunc("/sat/record-topic-timing", recordTopicTiming)
 	http.HandleFunc("/sat/get-practice-times", getPracticeTimes)
 	http.HandleFunc("/sat/log-attempt", logQuestionAttempt)
+    http.HandleFunc("/sat/set-results", setResults)
 
 	// If you have legacy SAT initialization, call it here.
 	initializeLegacySat(db)

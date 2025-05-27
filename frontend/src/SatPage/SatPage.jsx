@@ -89,10 +89,38 @@ function SATPage() {
   const [reviewMode, setReviewMode] = useState(false);
 
   // Timer completion handler
-  const handleTimeUp = () => {
-    setShowReviewScreen(true);
+  const handleTimeUp = async () => {
+    setReviewMode(true);
+    pomodoroTimerRef.current.stop();
+    const results = getLastSubmittedAnswers();
+    console.log('Practice Test Results:', results);
     setCurrentQuestionIndex(0);
-    pomodoroTimerRef.current?.reset();
+
+    try {
+      const response = await fetch("/sat/set-results", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(results),
+      });
+
+      if (!response.ok) {
+        let errorMessage;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || `HTTP error ${response.status}`;
+        } catch (parseError) {
+          errorMessage = `HTTP error ${response.status}`;
+        }
+        throw new Error(errorMessage);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching questions:", error);
+      throw error;
+    }
   };
 
   const toggleSidebar = () => {
@@ -338,7 +366,6 @@ function SATPage() {
       }
     } else {
       // Multiple-choice validation
-      console.log("selectedAnswer", choice, "answer", currentQuestion.answer);
       isCorrect = choice?.toLowerCase() === currentQuestion.answer.toLowerCase();
     }
 
@@ -599,14 +626,18 @@ function SATPage() {
                 return renderMultipleChoiceAnswer(correctAnswer, letterChoice, isCrossOutMode, content);
               })}
             </div>
-            {(selectedAnswer && hasSelectedAnswer) && (
+            {(reviewMode || ( selectedAnswer && hasSelectedAnswer)) && (
               <div
-                className={`rationale-container ${selectedAnswer === correctAnswer.toLowerCase() ? "correct" : "incorrect"}`}
+                className={`rationale-container ${reviewMode ? 
+                  (isMCQCorrectReviewMode() ? "correct" : "incorrect")
+                  : (selectedAnswer === correctAnswer.toLowerCase() ? "correct" : "incorrect")}`}
               >
                 <h4 className="rationale-header">
-                  {selectedAnswer === correctAnswer.toLowerCase()
+                  {reviewMode ? 
+                    (isMCQCorrectReviewMode() ? "Correct!" : "Incorrect") :
+                    (selectedAnswer === correctAnswer.toLowerCase()
                     ? "Correct!"
-                    : "Incorrect"}
+                    : "Incorrect")}
                 </h4>
                 <div
                   className="rationale-content"
@@ -637,6 +668,16 @@ function SATPage() {
     );
   };
 
+  const isMCQCorrectReviewMode = () => {
+    const currentQuestionId = currentQuestions[currentQuestionIndex]?.questionId;
+    const questionAttempts = attemptLogs[currentQuestionId] || [];
+    const lastAttempt = questionAttempts[questionAttempts.length - 1];
+    return currentQuestions[currentQuestionIndex]?.answer?.toLowerCase() ===
+            lastAttempt?.answer?.toLowerCase();
+ 
+  };
+
+
   const renderMultipleChoiceAnswer = (correctAnswer, letterChoice, isCrossOutMode, content) => {
 
     const choiceKey = `choice-${letterChoice}`;
@@ -650,7 +691,6 @@ function SATPage() {
     // In renderMultipleChoiceAnswer function
     const currentQuestionId = currentQuestions[currentQuestionIndex]?.questionId;
     const questionAttempts = attemptLogs[currentQuestionId] || [];
-    console.log(questionAttempts);
     const lastAttempt = questionAttempts[questionAttempts.length - 1];
 
     if (reviewMode) {
@@ -660,9 +700,6 @@ function SATPage() {
     
     const isUserAnswer = 
           reviewMode && lastAttempt?.answer?.toLowerCase() === letterChoice;
-
-    console.log("reviewMode: ", reviewMode, "isUserAnswer: ", isUserAnswer,
-      "isSelected: ", isSelected, "isCorrect: ", isCorrect);
 
     return (
       <>
@@ -726,6 +763,25 @@ function SATPage() {
         )}
       </>
    );
+  };
+
+  const renderSignUpForm = () => {
+    return (
+      <div className="auth-buttons-container">
+        <button
+          className="auth-button auth-button-primary"
+          onClick={() => navigate('/signup')}
+        >
+          Create Account
+        </button>
+        <button
+          className="auth-button auth-button-secondary"
+          onClick={() => navigate('/login')}
+        >
+          Sign In
+        </button>
+      </div>
+    );
   };
 
 
@@ -1024,9 +1080,6 @@ function SATPage() {
       timestamp: Date.now(),
       correct: isCorrect
     };
-    console.log("Question " + (currentQuestionIndex + 1) + 
-        " is ", attempt["correct"] + 
-        " answer: " + attempt["answer"]);
     
     setCurrentQuestionAttempts(prev => [...prev, attempt]);
     setAttemptLogs(prev => ({
@@ -1045,7 +1098,7 @@ function SATPage() {
       const lastAttempt = questionAttempts[questionAttempts.length - 1];
       
       return {
-        questionNumber: index + 1,
+        questionId: questionId,
         lastAnswer: lastAttempt?.answer || null,
         correct: lastAttempt?.correct || false
       };
@@ -1075,10 +1128,7 @@ function SATPage() {
             <button
               className="review-button submit-button"
               onClick={() => {
-                setReviewMode(true);
-                const results = getLastSubmittedAnswers();
-                console.log('Practice Test Results:', results);
-                setCurrentQuestionIndex(0);
+                handleTimeUp();
                 onClose();
               }}
             >
@@ -1492,20 +1542,7 @@ const handleSimilarQuestions = async () => {
                     Track your progress, see performance trends, and get personalized recommendations by signing in.
                   </p>
 
-                  <div className="auth-buttons-container">
-                    <button
-                      className="auth-button auth-button-primary"
-                      onClick={() => navigate('/signup')}
-                    >
-                      Create Account
-                    </button>
-                    <button
-                      className="auth-button auth-button-secondary"
-                      onClick={() => navigate('/login')}
-                    >
-                      Sign In
-                    </button>
-                  </div>
+                  {renderSignUpForm()}
 
                   <div className="auth-divider">or</div>
 
@@ -1555,13 +1592,20 @@ const handleSimilarQuestions = async () => {
                 <input
                   type="checkbox"
                   id="practice-test-mode"
-                  checked={practiceTestMode}
+                  checked={userEmail && practiceTestMode}
                   onChange={() => setPracticeTestMode(!practiceTestMode)}
+                  disabled={!userEmail}
                 />
                 <label htmlFor="practice-test-mode">
                   Practice Test Mode (15 questions)
                 </label>
               </div>
+              {!userEmail && (
+                <>
+                  <p><i style={{ color: 'red' }}>Please sign in to practice test mode.</i></p>
+                  {renderSignUpForm()}
+                </>
+              )}
 
               {questionDisplay.type === "error" && (
                 <div className="error-message">{questionDisplay.content}</div>
