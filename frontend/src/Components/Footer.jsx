@@ -1,193 +1,93 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { Youtube, Instagram, Linkedin, Mail, ChevronRight } from 'lucide-react';
 import './Footer.css';
 
 const Footer = () => {
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2,
-        delayChildren: 0.1,
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.6, ease: "easeOut" }
-    }
-  };
-
-  const linkVariants = {
-    initial: { x: 0 },
-    hover: { 
-      x: 5, 
-      transition: { duration: 0.2 } 
-    }
-  };
-
-  const socialVariants = {
-    initial: { y: 0 },
-    hover: { 
-      y: -5, 
-      transition: { duration: 0.2, yoyo: Infinity, ease: "easeInOut" } 
-    }
-  };
-
-  const logoVariants = {
-    initial: { scale: 1 },
-    hover: {
-      scale: 1.1,
-      transition: { duration: 0.3 }
-    }
-  };
-
   return (
     <footer className="footer-container">
       <div className="footer-gradient"></div>
       
-      <motion.div 
-        className="footer-grid"
-        variants={containerVariants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: false, amount: 0.3 }}
-      >
+      <div className="footer-grid">
         {/* Left section */}
-        <motion.div 
-          className="footer-left"
-          variants={itemVariants}
-        >
-          <motion.div 
-            className="footer-logo"
-            variants={logoVariants}
-            whileHover="hover"
-          >
+        <div className="footer-left">
+          <div className="footer-logo">
             <img src="darkquarc.png" alt="Aquarc Logo" className="logo-icon"/>
             <span className='brand-name'>Aquarc</span>
-          </motion.div>
+          </div>
           
-          <motion.p 
-            className="footer-description"
-            variants={itemVariants}
-          >
+          <p className="footer-description">
             Making high school navigation easier with personalized SAT prep.
-          </motion.p>
+          </p>
           
-          <motion.div 
-            className="footer-links"
-            variants={itemVariants}
-          >
-            <motion.a 
-              href="/sat" 
-              className="footer-link"
-              variants={linkVariants}
-              whileHover="hover"
-            >
+          <div className="footer-links">
+            <a href="/sat" className="footer-link">
               <ChevronRight size={16} className="link-icon" />
               <span>SAT Practice</span>
-            </motion.a>
-            
-            
-          </motion.div>
-        </motion.div>
+            </a>
+          </div>
+        </div>
 
         {/* Center section */}
-        <motion.div 
-          className="footer-center"
-          variants={itemVariants}
-        >
-          <motion.h3 
-            className="footer-heading"
-            variants={itemVariants}
-          >
+        <div className="footer-center">
+          <h3 className="footer-heading">
             Contact Us
-          </motion.h3>
+          </h3>
           
-          <motion.div 
-            className="contact-item"
-            variants={itemVariants}
-          >
+          <div className="contact-item">
             <Mail size={18} className="contact-icon" />
             <a href="mailto:contact@aquarc.org" className="contact-link">
               contact@aquarc.org
             </a>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
 
         {/* Right section */}
-        <motion.div 
-          className="footer-right"
-          variants={itemVariants}
-        >
-          <motion.div className="follow-section">
-            <motion.h3 
-              className="footer-heading"
-              variants={itemVariants}
-            >
+        <div className="footer-right">
+          <div className="follow-section">
+            <h3 className="footer-heading">
               Follow Us
-            </motion.h3>
+            </h3>
             
-            <motion.div 
-              className="social-icons"
-              variants={itemVariants}
-            >
-              <motion.a 
+            <div className="social-icons">
+              <a 
                 href="https://www.youtube.com/@aquarc_co" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                variants={socialVariants}
-                whileHover="hover"
                 className="social-icon-container"
               >
                 <Youtube className="social-icon" size={24} />
                 <span className="social-label">YouTube</span>
-              </motion.a>
+              </a>
               
-              <motion.a 
+              <a 
                 href="https://www.instagram.com/_aquarc_/" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                variants={socialVariants}
-                whileHover="hover"
                 className="social-icon-container"
               >
                 <Instagram className="social-icon" size={24} />
                 <span className="social-label">Instagram</span>
-              </motion.a>
+              </a>
               
-              <motion.a 
+              <a 
                 href="https://www.linkedin.com/company/aquarc/" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                variants={socialVariants}
-                whileHover="hover"
                 className="social-icon-container"
               >
                 <Linkedin className="social-icon" size={24} />
                 <span className="social-label">LinkedIn</span>
-              </motion.a>
-            </motion.div>
-          </motion.div>
-          
-         
-        </motion.div>
-      </motion.div>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
       
-      <motion.div 
-        className="copyright-container"
-        variants={itemVariants}
-      >
+      <div className="copyright-container">
         <div className="copyright">
           &copy; {new Date().getFullYear()} Aquarc. All rights reserved.
         </div>
-      </motion.div>
+      </div>
     </footer>
   );
 };
