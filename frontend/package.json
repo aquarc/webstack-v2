@@ -20,7 +20,7 @@
     "react-ga4": "^2.1.0",
     "react-markdown": "^10.1.0",
     "react-resizable": "^3.0.5",
-    "react-router-dom": "^7.0.1",
+    "react-router-dom": "^7.6.1",
     "react-scripts": "^5.0.1",
     "react-toastify": "^11.0.5",
     "web-vitals": "^4.2.4"

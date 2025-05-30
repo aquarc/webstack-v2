@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import './SignUp.css';
+import GoogleLoginButton from '../../Components/GoogleLoginButton.jsx';
 
 const SignUpPage = () => {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const [formData, setFormData] = useState({
         username: '',
         email: '',
@@ -14,6 +16,17 @@ const SignUpPage = () => {
     const [verificationStep, setVerificationStep] = useState(false);
     const [verificationCode, setVerificationCode] = useState('');
     const [apiError, setApiError] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
+
+    // Check for OAuth success parameter
+    useEffect(() => {
+        if (searchParams.get('auth') === 'success') {
+            setSuccessMessage('Successfully signed up with Google!');
+            setTimeout(() => {
+                navigate('/sat');
+            }, 2000);
+        }
+    }, [searchParams, navigate]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -96,7 +109,6 @@ const SignUpPage = () => {
                 return;
             }
 
-            // After successful verification, navigate to sat page
             navigate('/sat', { state: { username: formData.username } });
             
         } catch (error) {
@@ -110,7 +122,16 @@ const SignUpPage = () => {
             <div className="signup-container">
                 <form onSubmit={handleSubmit} className="signup-form">
                     <h2>Sign Up</h2>
+                    {successMessage && <p className="success-message">{successMessage}</p>}
                     {apiError && <p className="error api-error">{apiError}</p>}
+                    
+                    {/* Google OAuth Button */}
+                    <div className="oauth-section">
+                        <GoogleLoginButton text="Sign up with Google" />
+                        <div className="divider">
+                            <span>or</span>
+                        </div>
+                    </div>
                     
                     <div className="form-group">
                         <label htmlFor="username">Username</label>

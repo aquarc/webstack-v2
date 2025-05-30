@@ -20,8 +20,9 @@ import AuthRedirect from "./Components/AuthRedirect";
 
 import ReactGA from 'react-ga4';
 
-// Initialize GA
-if (process.env.NODE_ENV === 'production') {
+// Safely initialize GA only if ID exists
+const gaEnabled = process.env.NODE_ENV === 'production' && !!process.env.REACT_APP_GTAG;
+if (gaEnabled) {
   ReactGA.initialize(process.env.REACT_APP_GTAG);
 }
 
@@ -36,7 +37,7 @@ export function sendClickEvent(eventName, eventCategory = "") {
 
 // Global click handler
 const trackInteraction = (event) => {
-  if (process.env.NODE_ENV !== 'production') return;
+  if (!gaEnabled) return;
 
   const target = event.target.closest('button,a[href],.nav-item,[data-track]');
   
@@ -59,7 +60,7 @@ const AppContent = () => {
 
   // Track page views
   useEffect(() => {
-    if (process.env.NODE_ENV === 'production') {
+    if (gaEnabled) {
       ReactGA.send({
         hitType: "pageview",
         page: location.pathname
@@ -96,6 +97,8 @@ const AppContent = () => {
 
 const GlobalClickTracker = ({ children }) => {
   useEffect(() => {
+    if (!gaEnabled) return;
+    
     document.addEventListener('click', trackInteraction, true); // Use capture phase
     return () => document.removeEventListener('click', trackInteraction, true);
   }, []);
