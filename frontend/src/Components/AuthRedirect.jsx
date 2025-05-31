@@ -9,7 +9,12 @@ const AuthRedirect = () => {
     useEffect(() => {
         const user = Cookies.get('user');
         const publicRoutes = ['/login', '/signup'];
+        const oauthRoutes = ['/auth/google/login', '/auth/google/callback']; // Add OAuth routes
+
         const currentPath = location.pathname;
+
+
+        if (oauthRoutes.includes(currentPath)) return;
 
         // Only redirect if trying to access auth-related pages while logged in
         if (user && publicRoutes.includes(currentPath)) {

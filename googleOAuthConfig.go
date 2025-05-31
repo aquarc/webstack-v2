@@ -92,11 +92,13 @@ func googleOAuthLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 // Handler for Google OAuth callback
+// Updated googleOAuthCallback function with proper redirect handling
 func googleOAuthCallback(w http.ResponseWriter, r *http.Request) {
 	// Get state and code from query parameters
 	state := r.URL.Query().Get("state")
 	code := r.URL.Query().Get("code")
-
+	log.Println("OAuth callback received")
+	log.Printf("Request URL: %s", r.URL.String())
 	// Validate state
 	if timestamp, exists := oauthStateStore[state]; !exists || time.Since(timestamp) > 10*time.Minute {
 		http.Error(w, "Invalid or expired state parameter", http.StatusBadRequest)
@@ -171,6 +173,8 @@ func googleOAuthCallback(w http.ResponseWriter, r *http.Request) {
 			username,
 			googleUser.ID,
 		)
+		log.Printf("Google user info: %+v", googleUser)
+
 		if err != nil {
 			log.Printf("Failed to create OAuth user: %v", err)
 			http.Error(w, "Failed to create user account", http.StatusInternalServerError)
@@ -238,13 +242,26 @@ func googleOAuthCallback(w http.ResponseWriter, r *http.Request) {
 		MaxAge:   86400 * 7, // 7 days
 	})
 
-	// Redirect to frontend success page
+	// FIXED: Redirect to main landing page instead of /sat
 	frontendURL := os.Getenv("FRONTEND_URL")
 	if frontendURL == "" {
 		frontendURL = "http://localhost:3000" // Default for development
 	}
 
-	http.Redirect(w, r, frontendURL+"/sat?auth=success", http.StatusTemporaryRedirect)
+	// Redirect options - choose the one that matches your app structure:
+
+	// Option 1: Redirect to root/landing page
+	http.Redirect(w, r, frontendURL+"/?auth=success", http.StatusTemporaryRedirect)
+
+	// Option 2: Redirect to a dashboard page
+	// http.Redirect(w, r, frontendURL+"/dashboard?auth=success", http.StatusTemporaryRedirect)
+
+	// Option 3: Redirect to wherever the user was trying to go (if you store that info)
+	// redirectTo := r.URL.Query().Get("redirect_to")
+	// if redirectTo == "" {
+	//     redirectTo = "/"
+	// }
+	// http.Redirect(w, r, frontendURL+redirectTo+"?auth=success", http.StatusTemporaryRedirect)
 }
 
 // Update your initializeSat function to include OAuth routes and table modifications
@@ -274,6 +291,6 @@ func initializeGoogleOAuthTables(db *sql.DB) {
 // Add these routes to your initializeSat function
 func registerOAuthRoutes() {
 	http.HandleFunc("/auth/google/login", googleOAuthLogin)
-	http.HandleFunc("/auth/google/callback", googleOAuthCallback)
+	http.HandleFunc("/auth/google/callback", googleOAuthCallback) // This handles the callback
 	log.Println("✅ OAuth routes registered")
 }
