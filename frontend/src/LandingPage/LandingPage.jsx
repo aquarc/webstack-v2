@@ -88,7 +88,7 @@ const LandingPage = () => {
         </div>
 
         <div className="subheadline">
-          "We know that you want to make your parents proud, but you don't need to be tired and overwhelmed to succeed. Aquarc is how that happens."
+          You don't need to be tired and overwhelmed to succeed. Aquarc is how that happens.
         </div>
 
         <div className="sat-button">
@@ -200,7 +200,7 @@ const LandingPage = () => {
             <div className="step-card">
               <div className="step-number">📋</div>
               <h3 className="step-title">Choose Your Struggles</h3>
-              <p className="step-description">Practice only what you need to learn. Skip the stuff you already know.</p>
+              <p className="step-description">Practice only what you need to learn.</p>
             </div>
             
             <div className="step-card">
@@ -218,19 +218,10 @@ const LandingPage = () => {
         </div>
       </section>
 
-      <section className="SAT-section"></section>
+      
 
-      <section className="SAT-section">
-        <div className="SAT-content">
-          <h2 className="SAT-title">Start scoring higher</h2>
-          <p className="SAT-description">
-            Check out our question bank, no sign up needed.
-          </p>
-          <a href="/sat" className="cta-button">
-            Start Your Streak →
-          </a>
-        </div>
-      </section>
+
+      
     </div>
   );
 };
