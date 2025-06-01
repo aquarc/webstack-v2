@@ -122,7 +122,7 @@ const LandingPage = () => {
           <div className="feature-card">
             <div className="feature-text">
               <h2>Target your weak points</h2>
-              <p>Grind any specific skill from 27 categories with precision targeting that adapts to your learning patterns.</p>
+              <p>Grind specific SAT skills from 27 categories with precision targeting that adapts to your learning patterns.</p>
             </div>
             <div className="feature-visual">
               <div className="feature-image-wrapper">
