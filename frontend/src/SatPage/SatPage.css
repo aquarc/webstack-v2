@@ -108,75 +108,6 @@ html {
   padding: 0;
 }
 
-/* Custom Form Controls */
-.checkbox-group {
-  position: relative;
-  display: flex;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.checkbox-group input[type="radio"],
-.checkbox-group input[type="checkbox"] {
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  width: 18px;
-  height: 18px;
-  border: 2px solid #ccc;
-  border-radius: 3px;
-  margin-right: 8px;
-  cursor: pointer;
-  position: relative;
-  transition: all 0.2s ease-in-out;
-}
-
-.checkbox-group input[type="radio"] {
-  border-radius: 50%;
-}
-
-.checkbox-group input[type="radio"]:checked,
-.checkbox-group input[type="checkbox"]:checked {
-  border-color: #0044cc;
-  background-color: #0044cc;
-}
-
-.checkbox-group input[type="radio"]:checked::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background-color: white;
-}
-
-.checkbox-group input[type="checkbox"]:checked::after {
-  content: "";
-  position: absolute;
-  left: 4px;
-  width: 5px;
-  height: 10px;
-  border: solid white;
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
-}
-
-.checkbox-group input[type="radio"]:focus,
-.checkbox-group input[type="checkbox"]:focus {
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(0, 68, 204, 0.2);
-}
-
-.checkbox-group label {
-  cursor: pointer;
-  font-size: 14px;
-  color: #333;
-  user-select: none;
-}
-
 .top-section {
   display: flex;
   justify-content: space-between;
@@ -253,18 +184,6 @@ html {
 }
 
 /* Sidebar container */
-.checkbox-column {
-  position: fixed;
-  right: 0;
-  top: 0;
-  width: 35%;
-  height: 100vh;
-  background-color: #f4f4f4;
-  padding: 40px 20px 20px;
-  transition: transform 0.3s ease;
-  z-index: 1000;
-  overflow-y: auto;
-}
 
 .checkbox-column.collapsed {
   transform: translateX(100%);
@@ -319,13 +238,6 @@ html {
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 1000;
   padding: 20px;
-}
-
-.sidebar-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-right: 10px;
 }
 
 .sidebar-close-button {
@@ -417,13 +329,6 @@ html {
   margin: 0px 3px;
 }
 
-.sidebar-header {
-  display: flex;
-  align-items: center; /* Vertical alignment */
-  justify-content: space-between;
-  gap: 12px; /* Space between text and button */
-}
-
 .sidebar-header h2 {
   margin: 0;
   line-height: 1;
@@ -452,11 +357,6 @@ html {
 
   .calculator-icon-button:hover {
     color: #ffffff;
-  }
-
-  .checkbox-group input[type="radio"]:hover,
-  .checkbox-group input[type="checkbox"]:hover {
-    border-color: #0044cc;
   }
 
   .sidebar-close-button:hover {
@@ -495,12 +395,6 @@ html {
     background-color: rgba(0, 68, 204, 0.1);
   }
 
-  .checkbox-group input[type="radio"]:active,
-  .checkbox-group input[type="checkbox"]:active {
-    border-color: #0044cc;
-    background-color: rgba(0, 68, 204, 0.1);
-  }
-
   .sidebar-close-button:active {
     color: #0044cc;
     background-color: rgba(0, 68, 204, 0.1);
@@ -522,7 +416,6 @@ html {
     right: 20px !important;
   }
   .checkbox-column {
-    width: 100%;
     padding: 15px;
   }
 
@@ -1138,3 +1031,9 @@ html {
   background: #1a1a1a;
   color: black;
 }
+
+.close-sidebar-button {
+    padding: 0px 2px;
+    background: none;
+    color: black;
+} 

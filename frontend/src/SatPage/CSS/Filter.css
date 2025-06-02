@@ -1,5 +1,5 @@
 .checkbox-column {
-  width: 35%;
+  width: 100%;
   padding: 20px;
   background-color: white;
   border-left: 1px solid #e0e0e0;
@@ -17,9 +17,9 @@
 }
 
 .filter-group {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
+    display: flex;
+    width: max-content;
+    white-space: nowrap;
 }
 
 .filter-group h3 {
@@ -36,9 +36,9 @@
 
 .checkbox-group {
   display: flex;
-  align-items: center;
   gap: 10px;
   width: fit-content;
+  margin-bottom: 8px;
 }
 
 .checkbox-group input {
@@ -55,7 +55,9 @@
   font-size: 16px;
   color: #333;
   flex-shrink: 0;
+  cursor: pointer;
 }
+
 
 @media (max-width: 768px) {
   .checkbox-column {
@@ -68,3 +70,153 @@
     padding-bottom: 100px;
   }
 }
+
+
+.checkbox-group input[type="radio"],
+.checkbox-group input[type="checkbox"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #ccc;
+  border-radius: 3px;
+  margin-right: 8px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease-in-out;
+}
+
+.checkbox-group input[type="radio"] {
+  border-radius: 50%;
+}
+
+.checkbox-group input[type="radio"]:checked,
+.checkbox-group input[type="checkbox"]:checked {
+  border-color: #0044cc;
+  background-color: #0044cc;
+}
+
+.checkbox-group input[type="radio"]:checked::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: white;
+}
+
+.checkbox-group input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.checkbox-group input[type="radio"]:focus,
+.checkbox-group input[type="checkbox"]:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 68, 204, 0.2);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .checkbox-group input[type="radio"]:hover,
+  .checkbox-group input[type="checkbox"]:hover {
+    border-color: #0044cc;
+  }
+} 
+
+@media (hover: none) and (pointer: coarse) {
+  .checkbox-group input[type="radio"]:active,
+  .checkbox-group input[type="checkbox"]:active {
+    border-color: #0044cc;
+    background-color: rgba(0, 68, 204, 0.1);
+  }
+}
+
+        .horizontal-checkbox-group {
+            flex: 1;
+            padding: .3rem .5rem;
+            background-color: #f8f9fa;
+            border: 1px solid #000;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.25s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            user-select: none;
+            margin-right: 8px;
+            background-color: white;
+            width: max-content;
+        }
+        
+        .horizontal-checkbox-group:hover {
+            background-color: #000;
+            border-color: #000;
+            color: #fff;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+        }
+        
+        .horizontal-checkbox-group.selected {
+            background-color: #000;
+            color: white;
+            border-color: #000;
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+        }
+        
+        .horizontal-checkbox-group.selected:hover {
+            background-color: #3a56d4;
+            transform: translateY(0);
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .filter-group {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .horizontal-checkbox-group {
+                padding: 12px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .horizontal-checkbox-group {
+                font-size: 14px;
+                padding: 10px;
+            }
+        }
+
+.horizontal-checkbox-group input {
+    width: auto;
+    margin-right: 5px;
+} 
+
+.horizontal-checkbox-group label {
+    display: contents;
+    color: black;
+}
+
+.horizontal-checkbox-group label:hover {
+    color: white;
+} 
+
+.filter-sections {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    background-color: #dcdcdc;
+    padding: 10px;
+    border-radius: 8px;
+} 

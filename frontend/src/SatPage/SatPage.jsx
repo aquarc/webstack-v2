@@ -61,8 +61,6 @@ function SATPage() {
   const [attemptLogs, setAttemptLogs] = useState({});
   const [currentQuestionAttempts, setCurrentQuestionAttempts] = useState([]);
 
-  const [activeFilterTab, setActiveFilterTab] = useState("assessment");
-
   const [userEmail, setUserEmail] = useState(() => {
     const user = Cookies.get('user');
     return user ? JSON.parse(user).email : null;
@@ -82,7 +80,7 @@ function SATPage() {
   const [showQuestionGrid, setShowQuestionGrid] = useState(false);
 
   // practice test mode
-  const [practiceTestMode, setPracticeTestMode] = useState(true);
+  const [practiceTestMode, setPracticeTestMode] = useState(userEmail !== null);
   // review screen for practice mode
   const [showReviewScreen, setShowReviewScreen] = useState(false);
   // review mode so you can go back and check your answers
@@ -1446,7 +1444,7 @@ const handleSimilarQuestions = async () => {
 
       <div
         className="sidebar-tab"
-        style={{ right: showSidebar ? '35%' : '0' }}
+        style={{ display: showSidebar ? 'none' : 'grid' }}
         onClick={toggleSidebar}
       >
         <ListFilter size={20} />
@@ -1488,18 +1486,7 @@ const handleSimilarQuestions = async () => {
           {/* Search button inside sidebar header */}
           <div className="sidebar-header">
             <div className="filter-tabs">
-              <button
-                className={`filter-tab ${activeFilterTab === 'assessment' ? 'active' : ''}`}
-                onClick={() => setActiveFilterTab('assessment')}
-              >
-                Assessment
-              </button>
-              <button
-                className={`filter-tab ${activeFilterTab === 'analytics' ? 'active' : ''}`}
-                onClick={() => setActiveFilterTab('analytics')}
-              >
-                Analytics
-              </button>
+              <h2 class="sidebar-header">Practice Questions</h2>
               <button
                 className="close-sidebar-button"
                 onClick={toggleSidebar}
@@ -1510,117 +1497,80 @@ const handleSimilarQuestions = async () => {
 
           </div>
 
-          {activeFilterTab === 'analytics' && (
-            <div className="analytics-tab-content">
-              <h3>Question Analytics</h3>
+          <div class="filter-sections">
+              <div>
+                  <h3>Test</h3>
+                  <div className="filter-group">
+                    {["SAT", "PSAT 10/11", "PSAT 8/9"].map((test) => (
+                      <button key={test} className={`horizontal-checkbox-group ${selectedTest == test ? 'selected' : ''}`} onClick={() => setSelectedTest(test)}>
+                        {test}
+                      </button>
+                    ))}
+                  </div>
+              </div>
 
-              {userEmail ? (
-                <>
-                  <div className="user-info">
-                    <span className="user-email">{userEmail}</span>
-                    <button
-                      className="auth-button auth-button-secondary"
-                      onClick={() => {
-                        Cookies.remove('user');
-                        setUserEmail(null);
-                        // Instead of navigating immediately, let the user stay on current page
-                        if (window.location.pathname === '/sat') {
-                          navigate('/');
-                        }
-                      }}
-                    >
-                      Log Out
+              <div>
+                  <h3>Difficulty</h3>
+                  <div className="filter-group">
+                    {["Easy", "Medium", "Hard"].map((difficulty) => (
+                      <div key={difficulty} className="horizontal-checkbox-group">
+                        <input
+                          type="checkbox"
+                          id={difficulty.toLowerCase()}
+                          checked={selectedDifficulties[difficulty]}
+                          onChange={() => handleDifficultyChange(difficulty)}
+                        />
+                        <label htmlFor={difficulty.toLowerCase()}>{difficulty}</label>
+                      </div>
+                    ))}
+                  </div>
+              </div>
+          
+
+              <div>
+                  <h3>15-Question Practice Set</h3>
+                  <div className="filter-group">
+                    <button 
+                        key="practice-test-mode-yes"
+                        className={`horizontal-checkbox-group 
+                            ${practiceTestMode ? 'selected' : ''}`} 
+                        onClick={() => setPracticeTestMode(true)}
+                        disabled={!userEmail}>
+                      Yes
+                    </button>
+                    <button 
+                        key="practice-test-mode-no" 
+                        className={`horizontal-checkbox-group 
+                            ${!practiceTestMode ? 'selected' : ''}`} 
+                        onClick={() => setPracticeTestMode(false)}>
+                      No
                     </button>
                   </div>
-                  <div className="analytics-placeholder">
-                    <p>Your practice statistics will appear here after completing questions.</p>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <p className="analytics-message">
-                    Track your progress, see performance trends, and get personalized recommendations by signing in.
-                  </p>
+              </div>
+          </div>
 
-                  {renderSignUpForm()}
-
-                  <div className="auth-divider">or</div>
-
-                  <p className="analytics-message text-center" style={{ marginTop: '1rem' }}>
-                    Continue practicing without saving your progress.
-                  </p>
-                </>
-              )}
-            </div>
-          )}
-
-          {activeFilterTab === 'assessment' && (
+          {!userEmail && (
             <>
-              <div className="filter-group">
-                {["SAT", "PSAT 10/11", "PSAT 8/9"].map((test) => (
-                  <div key={test} className="checkbox-group">
-                    <input
-                      type="radio"
-                      id={test}
-                      name="assessment"
-                      onChange={() => handleTestChange(test)}
-                      checked={selectedTest === test}
-                    />
-                    <label htmlFor={test}>{test}</label>
-                  </div>
-                ))}
-              </div>
-
-              {renderSubdomainInputs()}
-
-              <div class="sidebar-standalone-content">
-                <h2 class="sidebar-standalone-header">Difficulty</h2>
-                {["Easy", "Medium", "Hard"].map((difficulty) => (
-                  <div key={difficulty} className="checkbox-group">
-                    <input
-                      type="checkbox"
-                      id={difficulty.toLowerCase()}
-                      checked={selectedDifficulties[difficulty]}
-                      onChange={() => handleDifficultyChange(difficulty)}
-                    />
-                    <label htmlFor={difficulty.toLowerCase()}>{difficulty}</label>
-                  </div>
-                ))}
-              </div>
-
-              <div className="checkbox-group" style={{ marginTop: '1rem' }}>
-                <input
-                  type="checkbox"
-                  id="practice-test-mode"
-                  checked={userEmail && practiceTestMode}
-                  onChange={() => setPracticeTestMode(!practiceTestMode)}
-                  disabled={!userEmail}
-                />
-                <label htmlFor="practice-test-mode">
-                  Practice Test Mode (15 questions)
-                </label>
-              </div>
-              {!userEmail && (
-                <>
-                  <p><i style={{ color: 'red' }}>Please sign in to practice test mode.</i></p>
-                  {renderSignUpForm()}
-                </>
-              )}
-
-              {questionDisplay.type === "error" && (
-                <div className="error-message">{questionDisplay.content}</div>
-              )}
-              <div className="button-group">
-                <button
-                  className="search-button"
-                  onClick={handleSearch}
-                  disabled={isLoading}
-                >
-                  {isLoading ? "Searching..." : "Search Questions"}
-                </button>
-              </div>
+              <p><i style={{ color: 'red' }}>Please sign in to practice test mode.</i></p>
+              {renderSignUpForm()}
             </>
           )}
+
+
+          {renderSubdomainInputs()}
+
+          {questionDisplay.type === "error" && (
+            <div className="error-message">{questionDisplay.content}</div>
+          )}
+          <div className="button-group">
+            <button
+              className="search-button"
+              onClick={handleSearch}
+              disabled={isLoading}
+            >
+              {isLoading ? "Searching..." : "Search Questions"}
+            </button>
+          </div>
         </div>
       </div>
       {currentQuestions.length > 0 && renderNavigationView()}
