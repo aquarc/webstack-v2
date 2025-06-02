@@ -240,3 +240,21 @@
 .horizontal-checkbox-group.easy label {
     color: #00a61a;
 } 
+
+.horizontal-checkbox-group.medium {
+    border: 1px solid #ff9206;
+    color: #ff9206;
+}
+
+.horizontal-checkbox-group.medium label {
+    color: #ff9206;
+}
+
+.horizontal-checkbox-group.hard {
+    border: 1px solid #f00;
+    color: #f00;
+}
+
+.horizontal-checkbox-group.hard label {
+    color: #f00;
+}

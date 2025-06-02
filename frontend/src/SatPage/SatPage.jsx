@@ -1549,7 +1549,7 @@ const handleSimilarQuestions = async () => {
                   <div class="filter-group action-buttons"> 
                     {userEmail ? (
                       <button
-                        className="auth-button auth-button-secondary"
+                        className="horizontal-checkbox-group auth-button-secondary"
                         onClick={() => {
                           Cookies.remove('user');
                           setUserEmail(null);
