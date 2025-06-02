@@ -22,6 +22,11 @@
     white-space: nowrap;
 }
 
+.filter-main-group {
+    display: flex;
+    flex-direction: row;
+}
+
 .filter-group h3 {
   margin: 0;
   font-size: 18px;
@@ -216,7 +221,22 @@
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
+} 
+
+.filter-container {
     background-color: #dcdcdc;
     padding: 10px;
     border-radius: 8px;
+} 
+.filter-group.action-buttons {
+    margin-left: auto;
+}
+
+.horizontal-checkbox-group.easy {
+    border: 1px solid #00a61a;
+    color: #00a61a;
+} 
+
+.horizontal-checkbox-group.easy label {
+    color: #00a61a;
 } 

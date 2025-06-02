@@ -763,26 +763,6 @@ function SATPage() {
    );
   };
 
-  const renderSignUpForm = () => {
-    return (
-      <div className="auth-buttons-container">
-        <button
-          className="auth-button auth-button-primary"
-          onClick={() => navigate('/signup')}
-        >
-          Create Account
-        </button>
-        <button
-          className="auth-button auth-button-secondary"
-          onClick={() => navigate('/login')}
-        >
-          Sign In
-        </button>
-      </div>
-    );
-  };
-
-
   // Update the renderQuestionView function
   const renderQuestionView = () => {
     switch (questionDisplay.type) {
@@ -1497,80 +1477,124 @@ const handleSimilarQuestions = async () => {
 
           </div>
 
-          <div class="filter-sections">
-              <div>
-                  <h3>Test</h3>
-                  <div className="filter-group">
-                    {["SAT", "PSAT 10/11", "PSAT 8/9"].map((test) => (
-                      <button key={test} className={`horizontal-checkbox-group ${selectedTest == test ? 'selected' : ''}`} onClick={() => setSelectedTest(test)}>
-                        {test}
-                      </button>
-                    ))}
-                  </div>
-              </div>
-
-              <div>
-                  <h3>Difficulty</h3>
-                  <div className="filter-group">
-                    {["Easy", "Medium", "Hard"].map((difficulty) => (
-                      <div key={difficulty} className="horizontal-checkbox-group">
-                        <input
-                          type="checkbox"
-                          id={difficulty.toLowerCase()}
-                          checked={selectedDifficulties[difficulty]}
-                          onChange={() => handleDifficultyChange(difficulty)}
-                        />
-                        <label htmlFor={difficulty.toLowerCase()}>{difficulty}</label>
+          <div className="filter-container">
+              <div class="filter-sections">
+                  <div>
+                      <h3>Test</h3>
+                      <div className="filter-group">
+                        {["SAT", "PSAT 10/11", "PSAT 8/9"].map((test) => (
+                          <button key={test} className={`horizontal-checkbox-group ${selectedTest == test ? 'selected' : ''}`} onClick={() => setSelectedTest(test)}>
+                            {test}
+                          </button>
+                        ))}
                       </div>
-                    ))}
+                  </div>
+
+                  <div>
+                      <h3>Difficulty</h3>
+                      <div className="filter-group">
+                        {["Easy", "Medium", "Hard"].map((difficulty) => (
+                          <div 
+                            key={difficulty} 
+                            className={`horizontal-checkbox-group ${difficulty.toLowerCase()}`}
+                          >
+                            <input
+                              type="checkbox"
+                              id={difficulty.toLowerCase()}
+                              checked={selectedDifficulties[difficulty]}
+                              onChange={() => handleDifficultyChange(difficulty)}
+                            />
+                            <label htmlFor={difficulty.toLowerCase()}>{difficulty}</label>
+                          </div>
+                        ))}
+                      </div>
+                  </div>
+              
+
+                  <div>
+                      <h3>15-Question Practice Set</h3>
+                      <div className="filter-group">
+                        <button 
+                            key="practice-test-mode-yes"
+                            className={`horizontal-checkbox-group 
+                                ${practiceTestMode ? 'selected' : ''}`} 
+                            onClick={() => setPracticeTestMode(true)}
+                            disabled={!userEmail}>
+                          Yes
+                        </button>
+                        <button 
+                            key="practice-test-mode-no" 
+                            className={`horizontal-checkbox-group 
+                                ${!practiceTestMode ? 'selected' : ''}`} 
+                            onClick={() => setPracticeTestMode(false)}>
+                          No
+                        </button>
+                      </div>
                   </div>
               </div>
-          
+              {questionDisplay.type === "error" && (
+                <div className="error-message">{questionDisplay.content}</div>
+              )}
 
-              <div>
-                  <h3>15-Question Practice Set</h3>
-                  <div className="filter-group">
-                    <button 
-                        key="practice-test-mode-yes"
-                        className={`horizontal-checkbox-group 
-                            ${practiceTestMode ? 'selected' : ''}`} 
-                        onClick={() => setPracticeTestMode(true)}
-                        disabled={!userEmail}>
-                      Yes
-                    </button>
-                    <button 
-                        key="practice-test-mode-no" 
-                        className={`horizontal-checkbox-group 
-                            ${!practiceTestMode ? 'selected' : ''}`} 
-                        onClick={() => setPracticeTestMode(false)}>
-                      No
+              <br/>
+              <div class="filter-main-group">
+                  {!userEmail && (
+                    <>
+                          <i style={{ color: 'red' }}>
+                              Please sign in for 15-question practice sets.
+                          </i>
+                    </>
+                  )} 
+                  <br/>
+                  <div class="filter-group action-buttons"> 
+                    {userEmail ? (
+                      <button
+                        className="auth-button auth-button-secondary"
+                        onClick={() => {
+                          Cookies.remove('user');
+                          setUserEmail(null);
+                          // Instead of navigating immediately, let the user stay on current page
+                          if (window.location.pathname === '/sat') {
+                            navigate('/');
+                          }
+                        }}
+                      >
+                        Log Out
+                      </button>
+                    ) : (
+                      <>
+                        <div className="auth-buttons-container">
+                          <button
+                            className="horizontal-checkbox-group auth-button-primary"
+                            onClick={() => navigate('/signup')}
+                          >
+                           Sign Up 
+                          </button>
+                          <button
+                            className="horizontal-checkbox-group auth-button-secondary"
+                            onClick={() => navigate('/login')}
+                          >
+                            Login
+                          </button>
+                        </div>
+                      </>
+                    )}
+                    <button
+                      className="horizontal-checkbox-group easy"
+                      onClick={handleSearch}
+                      disabled={isLoading}
+                    >
+                      {isLoading ? "Starting..." : "Start Practicing"}
                     </button>
                   </div>
               </div>
           </div>
 
-          {!userEmail && (
-            <>
-              <p><i style={{ color: 'red' }}>Please sign in for 15-question practice sets.</i></p>
-              {renderSignUpForm()}
-            </>
-          )}
+
+
 
 
           {renderSubdomainInputs()}
-
-          {questionDisplay.type === "error" && (
-            <div className="error-message">{questionDisplay.content}</div>
-          )}
-          <div className="button-group">
-            <button
-              className="search-button"
-              onClick={handleSearch}
-              disabled={isLoading}
-            >
-              {isLoading ? "Searching..." : "Search Questions"}
-            </button>
-          </div>
         </div>
       </div>
       {currentQuestions.length > 0 && renderNavigationView()}
