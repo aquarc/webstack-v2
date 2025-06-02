@@ -1551,7 +1551,7 @@ const handleSimilarQuestions = async () => {
 
           {!userEmail && (
             <>
-              <p><i style={{ color: 'red' }}>Please sign in to practice test mode.</i></p>
+              <p><i style={{ color: 'red' }}>Please sign in for practice test mode.</i></p>
               {renderSignUpForm()}
             </>
           )}
