@@ -96,3 +96,8 @@ DB_SSLMODE=enable
 PASSWORD=...
 ```
 
+you will have to make a second one inside the frontend directory
+```sh
+echo "REACT_APP_GTAG=G-..." >> ../frontend/.env
+```
+

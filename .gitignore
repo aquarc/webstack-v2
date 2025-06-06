@@ -21,6 +21,7 @@ yarn-debug.log*
 yarn-error.log*
 main.db
 .env
+frontend/.env
 main.db
 
 serve

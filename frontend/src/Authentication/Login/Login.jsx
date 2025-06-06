@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import './Login.css';
 import Cookies from 'js-cookie';
+import GoogleLoginButton from '../../Components/GoogleLoginButton.jsx';
 
 const LoginPage = () => {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const [formData, setFormData] = useState({
         email: '',
         password: ''
@@ -12,6 +14,18 @@ const LoginPage = () => {
     const [errors, setErrors] = useState({});
     const [apiError, setApiError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [successMessage, setSuccessMessage] = useState('');
+
+    // Check for OAuth success parameter
+    useEffect(() => {
+        if (searchParams.get('auth') === 'success') {
+            setSuccessMessage('Successfully logged in with Google!');
+            // Optional: redirect after a brief delay
+            setTimeout(() => {
+                navigate('/sat');
+            }, 2000);
+        }
+    }, [searchParams, navigate]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -58,13 +72,12 @@ const LoginPage = () => {
                 throw new Error(errorText || 'Login failed');
             }
             const userData = await response.json();
-            Cookies.set('user', JSON.stringify(userData), { expires: 7 }); // Set cookie for 7 days
-            // On successful login, navigate to sat page
+            Cookies.set('user', JSON.stringify(userData), { expires: 7 });
             navigate('/sat');
             
         } catch (error) {
             console.error('Login error:', error);
-            setApiError('Network error. Please try again.');
+            setApiError(error.message || 'Network error. Please try again.');
         } finally {
             setIsLoading(false);
         }
@@ -74,7 +87,16 @@ const LoginPage = () => {
         <div className="login-container">
             <form onSubmit={handleSubmit} className="login-form">
                 <h2>Login</h2>
+                {successMessage && <p className="success-message">{successMessage}</p>}
                 {apiError && <p className="error api-error">{apiError}</p>}
+                
+                {/* Google OAuth Button */}
+                <div className="oauth-section">
+                    <GoogleLoginButton />
+                    <div className="divider">
+                        <span>or</span>
+                    </div>
+                </div>
                 
                 <div className="form-group">
                     <label htmlFor="email">Email</label>

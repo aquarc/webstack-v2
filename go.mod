@@ -3,6 +3,7 @@ module serve
 go 1.22.5
 
 require (
+	golang.org/x/oauth2 v0.21.0
 	github.com/JohannesKaufmann/html-to-markdown/v2 v2.3.1
 	github.com/google/generative-ai-go v0.19.0
 	github.com/joho/godotenv v1.5.1

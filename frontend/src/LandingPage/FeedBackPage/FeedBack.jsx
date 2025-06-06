@@ -1,13 +1,18 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import './FeedBack.css';
 
 const Feedback = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const questionId = searchParams.get('questionId');
+  
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    feedback: '',
+    feedback: questionId 
+      ? `I had an error, question id was ${questionId}\n\n` 
+      : '',
   });
 
   const handleChange = (e) => {
@@ -22,17 +27,19 @@ const Feedback = () => {
     e.preventDefault();
 
     try {
-      const response = await fetch('https://submit-form.com/VaXdTtgHh', {
+      const response = await fetch('https://formsubmit.co/contact@aquarc.org', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Accept: 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          questionId: questionId || 'N/A'
+        }),
       });
 
       if (response.ok) {
-        // Navigate to the landing page and show a toast message
         navigate('/', {
           state: { showToast: true },
         });
@@ -47,6 +54,7 @@ const Feedback = () => {
   return (
     <div className="container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 'calc(100vh - 100px)' }}>
       <h1>Share Your Feedback</h1>
+      {questionId && <p className="question-id-notice">Reporting issue for question: {questionId}</p>}
 
       <form onSubmit={handleSubmit} style={{ width: '100%', maxWidth: '500px' }}>
         <div className="form-group">
@@ -83,7 +91,8 @@ const Feedback = () => {
             value={formData.feedback}
             onChange={handleChange}
             required
-            placeholder="Share your thoughts with us..."
+            placeholder="Describe the issue you encountered..."
+            rows="6"
           />
         </div>
 

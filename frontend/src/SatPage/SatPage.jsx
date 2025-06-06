@@ -11,17 +11,25 @@ import {
 } from "./SatPageFunctions";
 import Desmos from "desmos";
 import Collapsible from "../Components/Collapsible";
-import { Bookmark, Calculator, ListFilter, X, HelpCircle } from "lucide-react";
+import {
+  Bookmark,
+  Calculator,
+  ListFilter,
+  X,
+  HelpCircle,
+  ChevronDown,
+} from "lucide-react";
 import PomodoroTimer from "./PomodoroTimer";
 import Draggable from "react-draggable";
 import { ResizableBox } from "react-resizable";
 import "react-resizable/css/styles.css";
-import Cookies from 'js-cookie';
-import Markdown from 'react-markdown'
+import Cookies from "js-cookie";
+import Markdown from "react-markdown";
 
 function SATPage() {
   // navbar
   const navigate = useNavigate();
+  const pomodoroTimerRef = useRef();
 
   // State variables for managing the SAT question interface
   const [selectedTest, setSelectedTest] = useState("SAT");
@@ -40,10 +48,8 @@ function SATPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showSidebar, setShowSidebar] = useState(true);
-  // Add this state declaration near other useState hooks
   const [selectedTestSections, setSelectedTestSections] = useState([]);
 
-  // Add this function definition (placeholder implementation)
   const sendClickEvent = (eventName) => {
     // Implement actual analytics tracking here
     console.log(`Event tracked: ${eventName}`);
@@ -62,10 +68,8 @@ function SATPage() {
   const [attemptLogs, setAttemptLogs] = useState({});
   const [currentQuestionAttempts, setCurrentQuestionAttempts] = useState([]);
 
-  const [activeFilterTab, setActiveFilterTab] = useState("assessment");
-
   const [userEmail, setUserEmail] = useState(() => {
-    const user = Cookies.get('user');
+    const user = Cookies.get("user");
     return user ? JSON.parse(user).email : null;
   });
 
@@ -73,12 +77,61 @@ function SATPage() {
 
   const [showChat, setShowChat] = useState(false);
   const [messages, setMessages] = useState([]);
-  const [inputMessage, setInputMessage] = useState('');
+  const [inputMessage, setInputMessage] = useState("");
 
-  const [fetchedSimilarQuestions, setFetchedSimilarQuestions] = useState(new Set());
+  const [fetchedSimilarQuestions, setFetchedSimilarQuestions] = useState(
+    new Set(),
+  );
+
+  const [excludedQuestionIds, setExcludedQuestionIds] = useState(new Set());
+
+  // question grid on the middle of the bottom navbar
+  const [showQuestionGrid, setShowQuestionGrid] = useState(false);
+
+  // practice test mode
+  const [practiceTestMode, setPracticeTestMode] = useState(userEmail !== null);
+  // review screen for practice mode
+  const [showReviewScreen, setShowReviewScreen] = useState(false);
+  // review mode so you can go back and check your answers
+  const [reviewMode, setReviewMode] = useState(false);
+
+  // Timer completion handler
+  const handleTimeUp = async () => {
+    setReviewMode(true);
+    pomodoroTimerRef.current.stop();
+    const results = getLastSubmittedAnswers();
+    console.log("Practice Test Results:", results);
+    setCurrentQuestionIndex(0);
+
+    try {
+      const response = await fetch("/sat/set-results", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(results),
+      });
+
+      if (!response.ok) {
+        let errorMessage;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || `HTTP error ${response.status}`;
+        } catch (parseError) {
+          errorMessage = `HTTP error ${response.status}`;
+        }
+        throw new Error(errorMessage);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching questions:", error);
+      throw error;
+    }
+  };
 
   const toggleSidebar = () => {
-    setShowSidebar(prev => !prev);
+    setShowSidebar((prev) => !prev);
   };
 
   // Toggle function for the calculator
@@ -157,7 +210,6 @@ function SATPage() {
     setHasSelectedAnswer(false); // Add this line
   }, [currentQuestions]);
 
-
   // Event handlers for selection changes
   const handleTestChange = (test) => {
     setSelectedTest(test);
@@ -205,26 +257,34 @@ function SATPage() {
     if (attempts.length === 0) return;
 
     // Extract all attempt data
-    const attemptsList = attempts.map(a => a.answer);
-    const timestamps = attempts.map(a => a.timestamp);
-    const correctFlags = attempts.map(a => a.correct); // Store each attempt's correctness
-    const correct = attempts.some(a => a.correct); // Overall question correctness
+    const attemptsList = attempts.map((a) => a.answer);
+    const timestamps = attempts.map((a) => a.timestamp);
+    const correctFlags = attempts.map((a) => a.correct); // Store each attempt's correctness
+    const correct = attempts.some((a) => a.correct); // Overall question correctness
 
-    fetch('/sat/log-attempt', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    fetch("/sat/log-attempt", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         questionId: questionId,
-        attempts: attemptsList,  // Array of all attempts like [b, a, c]
-        timestamps: timestamps,  // Array of timestamps for each attempt
+        attempts: attemptsList, // Array of all attempts like [b, a, c]
+        timestamps: timestamps, // Array of timestamps for each attempt
         correctFlags: correctFlags, // Array of boolean flags for each attempt [false, false, true]
-        correct: correct,        // Overall question correctness (true if any attempt was correct)
+        correct: correct, // Overall question correctness (true if any attempt was correct)
       }),
     });
   };
 
   const handleNavigateNext = () => {
     if (currentQuestions.length === 0) return;
+
+    if (
+      practiceTestMode &&
+      currentQuestionIndex === currentQuestions.length - 1
+    ) {
+      setShowReviewScreen(true);
+      return;
+    }
 
     setShowChat(false);
 
@@ -236,7 +296,9 @@ function SATPage() {
 
     // Reset attempts and navigate
     setCurrentQuestionAttempts([]);
-    setCurrentQuestionIndex(prev => (prev < currentQuestions.length - 1 ? prev + 1 : 0));
+    setCurrentQuestionIndex((prev) =>
+      prev < currentQuestions.length - 1 ? prev + 1 : 0,
+    );
     clearChanges();
   };
 
@@ -245,12 +307,13 @@ function SATPage() {
       setCurrentQuestionIndex(currentQuestionIndex - 1);
     else setCurrentQuestionIndex(currentQuestions.length - 1);
 
-
     setShowChat(false);
     clearChanges();
   };
 
   const clearChanges = () => {
+    setHasSelectedAnswer(false);
+    if (!practiceTestMode) pomodoroTimerRef.current?.stopwatchReset();
     setSelectedAnswer(null);
     setTempAnswer("");
     setIsCrossOutMode(false);
@@ -280,59 +343,84 @@ function SATPage() {
         timestamp: timestamp,
         correct: isCorrect,
       };
-      setCurrentQuestionAttempts(prev => [...prev, newAttempt]);
+      setCurrentQuestionAttempts((prev) => [...prev, newAttempt]);
       setHasSelectedAnswer(true);
 
       // Update local logs - keep this for backwards compatibility
-      setAttemptLogs(prev => ({
+      setAttemptLogs((prev) => ({
         ...prev,
         [currentQuestion.questionId]: [
           ...(prev[currentQuestion.questionId] || []),
-          { answer: finalAnswer, timestamp }
-        ]
+          { answer: finalAnswer, timestamp },
+        ],
       }));
-
-      // Update UI state based on answer correctness
-      if (isCorrect) {
-        setSelectedAnswer(tempAnswer);
-        setHasSelectedAnswer(true);
-        setAttempts(prev => {
-          const newAttempts = { ...prev };
-          delete newAttempts[currentQuestionIndex];
-          return newAttempts;
-        });
-      } else {
-        const currentAttempts = attempts[currentQuestionIndex] || 0;
-        if (currentAttempts < 1) {
-          setAttempts(prev => ({
-            ...prev,
-            [currentQuestionIndex]: currentAttempts + 1,
-          }));
-        } else {
-          setAttempts(prev => ({
-            ...prev,
-            [currentQuestionIndex]: currentAttempts + 1,
-          }));
-          setSelectedAnswer(tempAnswer);
-        }
-      }
     }
     sendClickEvent("submit-answer");
   };
 
+  const checkCorrectAnswer = (choice = null) => {
+    const currentQuestion = currentQuestions[currentQuestionIndex];
+    let isCorrect = false;
+
+    choice =
+      choice ||
+      (shouldShowFreeResponse(currentQuestion.answerChoices)
+        ? tempAnswer
+        : selectedAnswer);
+
+    // Determine correctness
+    if (shouldShowFreeResponse(currentQuestion.answerChoices)) {
+      // Free-response validation
+      if (choice.includes("/")) {
+        const [n, d] = choice.split("/");
+        isCorrect =
+          Math.abs((n / d).toFixed(4) - currentQuestion.answer) < 0.001;
+      } else {
+        isCorrect = choice === currentQuestion.answer;
+      }
+    } else {
+      // Multiple-choice validation
+      isCorrect =
+        choice?.toLowerCase() === currentQuestion.answer.toLowerCase();
+    }
+
+    return isCorrect;
+  };
+
+  const handleCheckAnswer = () => {
+    // Determine correctness
+    const isCorrect = checkCorrectAnswer();
+
+    // Always log the attempt
+    const attempt = {
+      answer: tempAnswer || selectedAnswer,
+      timestamp: Date.now(),
+      correct: isCorrect,
+    };
+    setCurrentQuestionAttempts((prev) => [...prev, attempt]);
+
+    // Force the answer to stay selected and show feedback
+    setHasSelectedAnswer(true);
+
+    // Update attempts counter
+    setAttempts((prev) => ({
+      ...prev,
+      [currentQuestionIndex]: (prev[currentQuestionIndex] || 0) + 1,
+    }));
+  };
+
   const handleSearch = async () => {
+    if (practiceTestMode) {
+      pomodoroTimerRef.current?.setPracticeTestMode(17);
+    }
+    setReviewMode(false);
     setSelectedAnswer(null);
     setTempAnswer("");
     if (!selectedTest) {
       setError("Please select a test type.");
       return;
     }
-    if (true /*selectedSubdomains.length > 0*/) {
-      // for each ref in selectedRef, console.log it
-      console.log("eeee:", selectedRef);
-    } else {
-      console.log("TODO: insert real error");
-    }
+
     if (
       !selectedDifficulties.Easy &&
       !selectedDifficulties.Medium &&
@@ -345,6 +433,7 @@ function SATPage() {
       selectedTest,
       selectedSubdomains,
       selectedDifficulties,
+      practiceTestMode,
     });
     console.log("Sending search request with payload:", searchPayload);
     setIsLoading(true);
@@ -354,6 +443,7 @@ function SATPage() {
       if (questions.length > 0) {
         setCurrentQuestions(questions);
         setCurrentQuestionIndex(0);
+        pomodoroTimerRef.current?.start(); // Start timer
         window.scrollTo(0, 0);
         setError(null);
       } else {
@@ -391,7 +481,6 @@ function SATPage() {
     if (subdomainData.length <= 0) {
       return null;
     }
-
 
     return Object.entries(subdomainData).map(([sectionName, section]) => (
       <div class="sidebar-standalone-content">
@@ -446,6 +535,8 @@ function SATPage() {
         }
       };
 
+      const isCorrect = Math.abs(selectedAnswer - correctAnswer) < 0.001;
+
       return (
         <>
           <input
@@ -454,12 +545,13 @@ function SATPage() {
             value={tempAnswer}
             onChange={(e) => setTempAnswer(e.target.value)}
             onKeyDown={handleKeyPress}
-            className={`flex-1 p-2 border rounded-md ${selectedAnswer
-              ? selectedAnswer === correctAnswer
-                ? "correct-answer"
-                : "incorrect-answer"
-              : ""
-              }`}
+            className={`flex-1 p-2 border rounded-md ${
+              hasSelectedAnswer
+                ? isCorrect
+                  ? "correct-answer"
+                  : "incorrect-answer"
+                : ""
+            }`}
             placeholder="Enter your answer..."
           />
           <br></br>
@@ -472,19 +564,20 @@ function SATPage() {
             Submit
           </button>
           <br></br>
-          {(selectedAnswer && (selectedAnswer === correctAnswer || currentAttempts >= 3)) && (
-            <div
-              className={`rationale-container ${selectedAnswer === correctAnswer ? "correct" : "incorrect"}`}
-            >
-              <h4 className="rationale-header">
-                {selectedAnswer === correctAnswer ? "Correct!" : "Incorrect"}
-              </h4>
+          {selectedAnswer &&
+            (selectedAnswer === correctAnswer || currentAttempts >= 3) && (
               <div
-                className="rationale-content"
-                dangerouslySetInnerHTML={{ __html: rationale }}
-              />
-            </div>
-          )}
+                className={`rationale-container ${selectedAnswer === correctAnswer ? "correct" : "incorrect"}`}
+              >
+                <h4 className="rationale-header">
+                  {selectedAnswer === correctAnswer ? "Correct!" : "Incorrect"}
+                </h4>
+                <div
+                  className="rationale-content"
+                  dangerouslySetInnerHTML={{ __html: rationale }}
+                />
+              </div>
+            )}
           <br></br>
         </>
       );
@@ -504,97 +597,24 @@ function SATPage() {
           <>
             <div className="multiple-choice-container">
               {["a", "b", "c", "d"]
-                .map((letterChoice, index) => { // Added index parameter here
+                .map((letterChoice, index) => {
+                  // Added index parameter here
                   if (!parsedChoices[letterChoice]) return null;
 
                   const content =
-                    parsedChoices[letterChoice].body || parsedChoices[letterChoice];
-                  const choiceKey = `choice-${letterChoice}`;
-                  const isSelected = selectedAnswer === letterChoice;
-                  const isCorrect =
-                    isSelected &&
-                    letterChoice.toLowerCase() === correctAnswer.toLowerCase();
+                    parsedChoices[letterChoice].body ||
+                    parsedChoices[letterChoice];
 
-                  const isCrossedOut =
-                    crossedOutAnswers[currentQuestionIndex]?.has(choiceKey);
-
-                  return (
-                    <div
-                      key={choiceKey}
-                      className={`answer-choice ${isCrossedOut ? "crossed-out" : ""} ${isCrossOutMode ? "eliminating" : ""}`}
-                      onClick={(e) => {
-                        if (isCrossOutMode) {
-                          // Cross out logic
-                          setCrossedOutAnswers((prev) => {
-                            const currentCrossouts = new Set(
-                              prev[currentQuestionIndex] || [],
-                            );
-
-                            if (currentCrossouts.has(choiceKey)) {
-                              currentCrossouts.delete(choiceKey);
-                            } else {
-                              if (selectedAnswer === letterChoice)
-                                setSelectedAnswer(null);
-                              currentCrossouts.add(choiceKey);
-                            }
-
-                            return {
-                              ...prev,
-                              [currentQuestionIndex]: currentCrossouts,
-                            };
-                          });
-                        } else {
-                          // Selection logic - fixed to use letterChoice directly
-                          setSelectedAnswer(letterChoice);
-                          setHasSelectedAnswer(true);
-
-                          // Log this attempt
-                          const timestamp = Date.now();
-                          const isCorrect = letterChoice.toLowerCase() === correctAnswer.toLowerCase();
-
-                          // Add to current question attempts
-                          setCurrentQuestionAttempts(prev => [...prev, {
-                            answer: letterChoice,
-                            timestamp: timestamp,
-                            correct: isCorrect
-                          }]);
-
-                          // Update attempt counter for UI display
-                          if (!isCorrect) {
-                            setAttempts(prev => ({
-                              ...prev,
-                              [currentQuestionIndex]: (prev[currentQuestionIndex] || 0) + 1,
-                            }));
-                          }
-
-                          // Keep legacy logging for backward compatibility
-                          setAttemptLogs(prev => ({
-                            ...prev,
-                            [currentQuestions[currentQuestionIndex]?.questionId]: [
-                              ...(prev[currentQuestions[currentQuestionIndex]?.questionId] || []),
-                              { answer: letterChoice, timestamp: timestamp }
-                            ]
-                          }));
-                        }
-                      }}
-                    >
-                      <label
-                        htmlFor={choiceKey}
-                        className={
-                          isSelected
-                            ? isCorrect
-                              ? " correct-answer"
-                              : " incorrect-answer"
-                            : "unselected-answer"
-                        }
-                        dangerouslySetInnerHTML={{ __html: content }}
-                      />
-                    </div>
+                  return renderMultipleChoiceAnswer(
+                    correctAnswer,
+                    letterChoice,
+                    isCrossOutMode,
+                    content,
                   );
                 })
                 .filter(Boolean)}
             </div>
-            {(selectedAnswer && (selectedAnswer.toLowerCase() === correctAnswer.toLowerCase() || currentAttempts >= 3)) && (
+            {selectedAnswer && hasSelectedAnswer && (
               <div
                 className={`rationale-container ${selectedAnswer.toLowerCase() === correctAnswer.toLowerCase() ? "correct" : "incorrect"}`}
               >
@@ -626,95 +646,35 @@ function SATPage() {
                 const letterChoice = String.fromCharCode(
                   65 + index,
                 ).toLowerCase();
-                const choiceKey = choice.id || `choice-${index}`;
-                const isSelected = selectedAnswer === letterChoice;
-                const isCorrect =
-                  isSelected && letterChoice === correctAnswer.toLowerCase();
 
-                const isCrossedOut =
-                  crossedOutAnswers[currentQuestionIndex]?.has(choiceKey);
-
-                return (
-                  <div
-                    key={choiceKey}
-                    className={`answer-choice ${isCrossedOut ? "crossed-out" : ""}`}
-                    onClick={(e) => {
-                      if (isCrossOutMode) {
-                        setCrossedOutAnswers((prev) => {
-                          const currentCrossouts = new Set(
-                            prev[currentQuestionIndex] || [],
-                          );
-
-                          if (currentCrossouts.has(choiceKey)) {
-                            currentCrossouts.delete(choiceKey);
-                          } else {
-                            if (selectedAnswer == letterChoice)
-                              setSelectedAnswer(null);
-                            currentCrossouts.add(choiceKey);
-                          }
-
-                          return {
-                            ...prev,
-                            [currentQuestionIndex]: currentCrossouts,
-                          };
-                        });
-                      } else {
-                        setSelectedAnswer(letterChoice);
-                        setHasSelectedAnswer(true);
-
-                        // Log this attempt
-                        const timestamp = Date.now();
-                        const isCorrect = letterChoice.toLowerCase() === correctAnswer.toLowerCase();
-
-                        // Add to current question attempts
-                        setCurrentQuestionAttempts(prev => [...prev, {
-                          answer: letterChoice,
-                          timestamp: timestamp,
-                          correct: isCorrect
-                        }]);
-
-                        // Update attempt counter for UI display
-                        if (!isCorrect) {
-                          setAttempts(prev => ({
-                            ...prev,
-                            [currentQuestionIndex]: (prev[currentQuestionIndex] || 0) + 1,
-                          }));
-                        }
-
-                        // Keep legacy logging for backward compatibility
-                        setAttemptLogs(prev => ({
-                          ...prev,
-                          [currentQuestions[currentQuestionIndex]?.questionId]: [
-                            ...(prev[currentQuestions[currentQuestionIndex]?.questionId] || []),
-                            { answer: letterChoice, timestamp: timestamp }
-                          ]
-                        }));
-                      }
-                    }}
-                  >
-                    <label
-                      htmlFor={choiceKey}
-                      className={
-                        isSelected
-                          ? isCorrect
-                            ? " correct-answer"
-                            : " incorrect-answer"
-                          : "unselected-answer"
-                      }
-                      dangerouslySetInnerHTML={{ __html: content }}
-                    />
-                  </div>
+                return renderMultipleChoiceAnswer(
+                  correctAnswer,
+                  letterChoice,
+                  isCrossOutMode,
+                  content,
                 );
               })}
             </div>
-            {(selectedAnswer && (selectedAnswer === correctAnswer.toLowerCase() || currentAttempts >= 3)) && (
+            {(reviewMode || (selectedAnswer && hasSelectedAnswer)) && (
               <div
-                className={`rationale-container ${selectedAnswer === correctAnswer.toLowerCase() ? "correct" : "incorrect"}`}
+                className={`rationale-container ${
+                  reviewMode
+                    ? isMCQCorrectReviewMode()
+                      ? "correct"
+                      : "incorrect"
+                    : selectedAnswer === correctAnswer.toLowerCase()
+                      ? "correct"
+                      : "incorrect"
+                }`}
               >
                 <h4 className="rationale-header">
-                  {selectedAnswer === correctAnswer.toLowerCase()
-                    ? "Correct!"
-                    : "Incorrect"}
+                  {reviewMode
+                    ? isMCQCorrectReviewMode()
+                      ? "Correct!"
+                      : "Incorrect"
+                    : selectedAnswer === correctAnswer.toLowerCase()
+                      ? "Correct!"
+                      : "Incorrect"}
                 </h4>
                 <div
                   className="rationale-content"
@@ -745,6 +705,113 @@ function SATPage() {
     );
   };
 
+  const isMCQCorrectReviewMode = () => {
+    const currentQuestionId =
+      currentQuestions[currentQuestionIndex]?.questionId;
+    const questionAttempts = attemptLogs[currentQuestionId] || [];
+    const lastAttempt = questionAttempts[questionAttempts.length - 1];
+    return (
+      currentQuestions[currentQuestionIndex]?.answer?.toLowerCase() ===
+      lastAttempt?.answer?.toLowerCase()
+    );
+  };
+
+  const renderMultipleChoiceAnswer = (
+    correctAnswer,
+    letterChoice,
+    isCrossOutMode,
+    content,
+  ) => {
+    const choiceKey = `choice-${letterChoice}`;
+    const isSelected = selectedAnswer === letterChoice;
+    let isCorrect = isSelected && letterChoice === correctAnswer.toLowerCase();
+
+    const isCrossedOut =
+      !reviewMode && crossedOutAnswers[currentQuestionIndex]?.has(choiceKey);
+
+    // In renderMultipleChoiceAnswer function
+    const currentQuestionId =
+      currentQuestions[currentQuestionIndex]?.questionId;
+    const questionAttempts = attemptLogs[currentQuestionId] || [];
+    const lastAttempt = questionAttempts[questionAttempts.length - 1];
+
+    if (reviewMode) {
+      isCorrect =
+        currentQuestions[currentQuestionIndex]?.answer?.toLowerCase() ===
+        letterChoice;
+    }
+
+    const isUserAnswer =
+      reviewMode && lastAttempt?.answer?.toLowerCase() === letterChoice;
+
+    return (
+      <>
+        <div
+          key={choiceKey}
+          className={`answer-choice ${isCrossedOut ? "crossed-out" : ""} ${isCrossOutMode ? "eliminating" : ""}`}
+          onClick={(e) => {
+            if (reviewMode) {
+              e.stopPropagation();
+              return;
+            }
+
+            if (isCrossOutMode) {
+              setCrossedOutAnswers((prev) => {
+                const currentCrossouts = new Set(
+                  prev[currentQuestionIndex] || [],
+                );
+
+                if (currentCrossouts.has(choiceKey)) {
+                  currentCrossouts.delete(choiceKey);
+                } else {
+                  if (selectedAnswer == letterChoice) setSelectedAnswer(null);
+                  currentCrossouts.add(choiceKey);
+                }
+
+                return {
+                  ...prev,
+                  [currentQuestionIndex]: currentCrossouts,
+                };
+              });
+            } else {
+              setSelectedAnswer(letterChoice);
+              if (practiceTestMode) {
+                handleSilentAttempt(letterChoice);
+              }
+            }
+          }}
+        >
+          <label
+            className={
+              reviewMode
+                ? isCorrect
+                  ? "correct-answer"
+                  : isUserAnswer
+                    ? "incorrect-answer"
+                    : "unselected-answer"
+                : practiceTestMode
+                  ? lastAttempt?.answer?.toLowerCase() === letterChoice
+                    ? "selected-answer"
+                    : "unselected-answer"
+                  : hasSelectedAnswer
+                    ? letterChoice === correctAnswer.toLowerCase()
+                      ? "correct-answer"
+                      : selectedAnswer === letterChoice
+                        ? "incorrect-answer"
+                        : "unselected-answer"
+                    : selectedAnswer === letterChoice
+                      ? "selected-answer"
+                      : "unselected-answer"
+            }
+            dangerouslySetInnerHTML={{ __html: content }}
+          />
+        </div>
+        {reviewMode && !lastAttempt?.answer?.toLowerCase() && isCorrect && (
+          <p>You did not select any answer for this question.</p>
+        )}
+      </>
+    );
+  };
 
   // Update the renderQuestionView function
   const renderQuestionView = () => {
@@ -753,6 +820,11 @@ function SATPage() {
         return <div>{questionDisplay.content}</div>;
       case "question":
         const { questionDetails, navigation } = questionDisplay.content;
+        {
+          excludedQuestionIds.has(questionDetails.questionId) && (
+            <div className="ai-question-tag">AI-Suggested Question</div>
+          );
+        }
         if (questionDetails.category === "Math") {
           return (
             <div className={`question-container math-layout`}>
@@ -772,16 +844,18 @@ function SATPage() {
                         <span>Eliminate Answer</span>
                       </button>
                     )}
+
                     {/* Show Ask AI button for all question types after incorrect attempt */}
-                    {hasSelectedAnswer && (
-                      <button
-                        className="control-button ai-help-button"
-                        onClick={() => handleAIHelp()}
-                      >
-                        <HelpCircle size={18} />
-                        <span>Ask AI</span>
-                      </button>
-                    )}
+                    {attempts[currentQuestionIndex] &&
+                      attempts[currentQuestionIndex] > 0 && (
+                        <button
+                          className="control-button ai-help-button"
+                          onClick={() => handleAIHelp()}
+                        >
+                          <HelpCircle size={18} />
+                          <span>Ask AI</span>
+                        </button>
+                      )}
                   </div>
                   <div
                     className="question-additional-details"
@@ -808,15 +882,16 @@ function SATPage() {
                       </button>
                     )}
                     {/* Show AI button after any attempt */}
-                    {(attempts[currentQuestionIndex] > 0) && (
-                      <button
-                        className="control-button ai-help-button"
-                        onClick={() => handleAIHelp()}
-                      >
-                        <HelpCircle size={18} />
-                        <span>Ask AI</span>
-                      </button>
-                    )}
+                    {attempts[currentQuestionIndex] &&
+                      attempts[currentQuestionIndex] > 0 && (
+                        <button
+                          className="control-button ai-help-button"
+                          onClick={() => handleAIHelp()}
+                        >
+                          <HelpCircle size={18} />
+                          <span>Ask AI</span>
+                        </button>
+                      )}
                   </div>
                 )}
 
@@ -836,6 +911,17 @@ function SATPage() {
                     questionDetails.questionType,
                     questionDetails.externalId,
                   )}
+                </div>
+                <div
+                  className={`feedback-link ${showSidebar ? "with-sidebar" : ""}`}
+                >
+                  <a
+                    href={`/feedback?questionId=${questionDetails.questionId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Feedback
+                  </a>
                 </div>
               </div>
             </div>
@@ -869,15 +955,16 @@ function SATPage() {
                     <span>Eliminate Answer</span>
                   </button>
                   {/* Add AI Help button for English */}
-                  {hasSelectedAnswer && (
-                    <button
-                      className="control-button ai-help-button"
-                      onClick={() => handleAIHelp()}
-                    >
-                      <HelpCircle size={18} />
-                      <span>Ask AI</span>
-                    </button>
-                  )}
+                  {attempts[currentQuestionIndex] &&
+                    attempts[currentQuestionIndex] > 0 && (
+                      <button
+                        className="control-button ai-help-button"
+                        onClick={() => handleAIHelp()}
+                      >
+                        <HelpCircle size={18} />
+                        <span>Ask AI</span>
+                      </button>
+                    )}
                 </div>
                 <div className="question-text">
                   <div
@@ -896,6 +983,17 @@ function SATPage() {
                     questionDetails.externalId,
                   )}
                 </div>
+                <div
+                  className={`feedback-link ${showSidebar ? "with-sidebar" : ""}`}
+                >
+                  <a
+                    href={`/feedback?questionId=${questionDetails.questionId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Feedback
+                  </a>
+                </div>
               </div>
             </div>
           );
@@ -905,6 +1003,7 @@ function SATPage() {
     }
   };
 
+  // In the renderNavigationView function
   const renderNavigationView = () => {
     switch (questionDisplay.type) {
       case "loading":
@@ -914,25 +1013,171 @@ function SATPage() {
         const { questionDetails, navigation } = questionDisplay.content;
 
         return (
-          <div class="fixed-bottom-bar">
-            <button
-              onClick={handleNavigatePrevious}
-              disabled={!navigation.hasPrevious}
-            >
-              Previous
-            </button>
-            <span class="progress-text">
-              {`${navigation.currentIndex} / ${navigation.totalQuestions}`}
-            </span>
-            <button onClick={handleNavigateNext} disabled={!navigation.hasNext}>
-              Next
-            </button>
-          </div>
+          <div className="fixed-bottom-bar">
+            <div className="left-section">
+              {userEmail ? (
+                <span className="user-email-bottom">{userEmail}</span>
+              ) : (
+                <span className="login-status">Not Logged In</span>
+              )}
+            </div>
 
+            <div className="middle-section">
+              <button
+                className="progress-button"
+                onClick={() => setShowQuestionGrid(true)}
+              >
+                {`${navigation.currentIndex} / ${navigation.totalQuestions}`}
+                <ChevronDown size={16} className="dropdown-icon" />
+              </button>
+            </div>
+
+            <div className="right-section">
+              <button
+                onClick={handleNavigatePrevious}
+                disabled={!navigation.hasPrevious}
+                className="nav-button"
+              >
+                Previous
+              </button>
+              <button
+                onClick={handleNavigateNext}
+                disabled={showReviewScreen ? !navigation.hasNext : false}
+                className="nav-button"
+              >
+                Next
+              </button>
+              {!practiceTestMode && (
+                <button onClick={handleCheckAnswer}>Check</button>
+              )}
+            </div>
+          </div>
         );
       default:
         return null;
     }
+  };
+
+  // Add new component inside SATPage component
+  const renderQuestionGrid = () => {
+    if (!showQuestionGrid) return null;
+
+    return (
+      <div
+        className="question-grid-overlay"
+        onClick={() => setShowQuestionGrid(false)}
+      >
+        <div
+          className="question-grid-container"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="question-grid-header">
+            <h3>Questions</h3>
+            <button
+              className="close-grid-button"
+              onClick={() => setShowQuestionGrid(false)}
+            >
+              <X size={20} />
+            </button>
+          </div>
+          <QuestionGrid
+            questions={currentQuestions}
+            attempts={attempts}
+            currentQuestionIndex={currentQuestionIndex}
+          />
+        </div>
+      </div>
+    );
+  };
+
+  const QuestionGrid = ({ questions, attempts, currentQuestionIndex }) => {
+    return (
+      <div className="question-grid">
+        {questions.map((_, index) => (
+          <button
+            key={index}
+            className={`question-grid-item ${
+              attempts[index] ? "answered" : "unanswered"
+            } ${currentQuestionIndex === index ? "current" : ""}`}
+            onClick={() => {
+              setCurrentQuestionIndex(index);
+              setShowQuestionGrid(false);
+              setShowReviewScreen(false);
+              clearChanges();
+            }}
+          >
+            {index + 1}
+          </button>
+        ))}
+      </div>
+    );
+  };
+
+  // helper for practice test mode
+  const handleSilentAttempt = (answer) => {
+    const currentQuestion = currentQuestions[currentQuestionIndex];
+    const isCorrect = checkCorrectAnswer(answer);
+
+    const attempt = {
+      answer: answer,
+      timestamp: Date.now(),
+      correct: isCorrect,
+    };
+
+    setCurrentQuestionAttempts((prev) => [...prev, attempt]);
+    setAttemptLogs((prev) => ({
+      ...prev,
+      [currentQuestion.questionId]: [
+        ...(prev[currentQuestion.questionId] || []),
+        attempt,
+      ],
+    }));
+  };
+
+  const getLastSubmittedAnswers = () => {
+    return currentQuestions.map((question, index) => {
+      const questionId = question.questionId;
+      const questionAttempts = attemptLogs[questionId] || [];
+      const lastAttempt = questionAttempts[questionAttempts.length - 1];
+
+      return {
+        questionId: questionId,
+        lastAnswer: lastAttempt?.answer || null,
+        correct: lastAttempt?.correct || false,
+      };
+    });
+  };
+
+  const ReviewScreen = ({ questions, attempts, onClose, setReviewMode }) => {
+    const navigate = useNavigate();
+
+    return (
+      <div className="review-screen">
+        <div className="review-content">
+          <h2>Review Your Answers</h2>
+          <QuestionGrid
+            questions={questions}
+            attempts={attempts}
+            currentQuestionIndex={-1}
+            onQuestionSelect={() => {}} // No-op for now
+          />
+          <div className="review-buttons">
+            <button className="review-button" onClick={onClose}>
+              Back
+            </button>
+            <button
+              className="review-button submit-button"
+              onClick={() => {
+                handleTimeUp();
+                onClose();
+              }}
+            >
+              Submit
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   const handleAIHelp = () => {
@@ -940,9 +1185,13 @@ function SATPage() {
       // Add initial instructions when opening the chat
       setMessages([
         {
-          parts: ["Why did you select the answer " + selectedAnswer?.toUpperCase() + "?"],
-          role: "model"
-        }
+          parts: [
+            "Why did you select the answer " +
+              selectedAnswer?.toUpperCase() +
+              "?",
+          ],
+          role: "model",
+        },
       ]);
     }
     setShowChat(!showChat);
@@ -954,20 +1203,25 @@ function SATPage() {
 
     try {
       // Add user message immediately
-      const newMessages = [...messages, { parts: [inputMessage], role: "user" }];
+      const newMessages = [
+        ...messages,
+        { parts: [inputMessage], role: "user" },
+      ];
       setMessages(newMessages);
-      setInputMessage('');
+      setInputMessage("");
 
       // Get current question data
       const currentQuestion = currentQuestions[currentQuestionIndex];
-      
+
       // Check if this is the first response to the initial question
-      const isFirstResponse = messages.length === 1 && messages[0].role == "model";
+      const isFirstResponse =
+        messages.length === 1 && messages[0].role == "model";
 
       // Prepare the payload based on context
-      const apiPayload = isFirstResponse ? {
-        history: [],
-        message: `Evaluate my answer choice for this SAT question:
+      const apiPayload = isFirstResponse
+        ? {
+            history: [],
+            message: `Evaluate my answer choice for this SAT question:
         
         Question: ${currentQuestion.question}
         My Answer: ${selectedAnswer?.toUpperCase()}
@@ -980,253 +1234,252 @@ function SATPage() {
         2. Present the strongest argument AGAINST my answer
         3. Explain why the correct answer is better
 
-        And use only markdown in your answer! Even if it is math. No HTML. No LaTeX. Nothing.`
-      } : {
-        history: messages,
-        message: inputMessage
+        And use only markdown in your answer! Even if it is math. No HTML. No LaTeX. Nothing.`,
+          }
+        : {
+            history: messages,
+            message: inputMessage,
+          };
+
+      // API call
+      const response = await fetch("/ai/chat", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(apiPayload),
+      });
+
+      if (!response.ok)
+        throw new Error(`HTTP error! status: ${response.status}`);
+
+      const data = await response.json();
+
+      // Add AI response
+      setMessages((prev) => [
+        ...prev,
+        { parts: [data.response], role: "model" },
+      ]);
+    } catch (error) {
+      console.error("Chat error:", error);
+      setMessages((prev) => [
+        ...prev,
+        {
+          parts: ["Sorry, there was an error processing your request"],
+          role: "model",
+        },
+      ]);
+    }
+  };
+
+  // Implement the handler function
+  const handleApproaches = async () => {
+    //      try {
+    // Convert messages to the required format
+
+    const requestBody = { history: messages };
+
+    setMessages((prev) => [
+      ...prev,
+      { parts: ["Generate Alternative Approaches"], role: "user" },
+    ]);
+    console.log(requestBody);
+
+    const response = await fetch("/ai/think", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(requestBody),
+    });
+
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+    const data = await response.json();
+
+    console.log(data.response);
+
+    // Update state with the AI response
+    setMessages((prev) => [
+      ...prev,
+      {
+        parts: [data.response],
+        role: "model",
+      },
+    ]);
+  };
+
+  // Add this function to check if a message contains thinking processes
+  const isThinking = (text) => {
+    try {
+      console.log(text);
+      const data = JSON.parse(text);
+      return (
+        Array.isArray(data) &&
+        data.every((item) => "leads_to" in item && "thinking_process" in item)
+      );
+    } catch {
+      return false;
+    }
+  };
+
+  const renderThinking = (message) => {
+    console.log("Message is: " + message);
+    console.log(typeof message);
+
+    const data = JSON.parse(message);
+    return (
+      <div>
+        {data.map((item, index) => {
+          console.log(item.thinking_process);
+          return (
+            <Collapsible
+              key={item.leads_to}
+              title={item.leads_to == "user" ? "Your Answer" : "Correct Answer"}
+            >
+              <Markdown>{item.thinking_process}</Markdown>
+            </Collapsible>
+          );
+        })}
+      </div>
+    );
+  };
+
+  // In SatPage.jsx - Update handleSimilarQuestions function
+  const handleSimilarQuestions = async () => {
+    try {
+      const currentQuestion = currentQuestions[currentQuestionIndex];
+
+      // Use a Set for more efficient lookups and guaranteed uniqueness
+      const allExistingIds = new Set();
+
+      // Add all current question IDs
+      currentQuestions.forEach((q) => {
+        if (q.questionId) allExistingIds.add(q.questionId);
+        // Also add internal ID as fallback
+        if (q.id) allExistingIds.add(q.id);
+      });
+
+      // Add all previously excluded IDs
+      excludedQuestionIds.forEach((id) => allExistingIds.add(id));
+
+      console.log("Excluding these question IDs:", Array.from(allExistingIds));
+
+      const requestBody = {
+        query: currentQuestion.question,
+        exclude: Array.from(allExistingIds), // Now excludes all known IDs
       };
 
-        // API call
-        const response = await fetch('/ai/chat', {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(apiPayload)
-        });
-
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-
-        const data = await response.json();
-        
-        // Add AI response
-        setMessages(prev => [
-          ...prev,
-          { parts: [data.response], role: "model" },
-        ]);
-
-      } catch (error) {
-        console.error("Chat error:", error);
-        setMessages(prev => [
-          ...prev,
-          { parts: ["Sorry, there was an error processing your request"], role: "model" },
-        ]);
-      }
-    };
-
-
-    // Implement the handler function
-    const handleApproaches = async () => {
-//      try {
-        // Convert messages to the required format
-
-        const requestBody: ThinkingConversationRequest = { "history": messages};
-
-        setMessages(prev => [
-          ...prev,
-          { parts: ["Generate Alternative Approaches"], role: "user"},
-        ]);
-        console.log(requestBody);
-
-        const response = await fetch('/ai/think', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(requestBody)
-        });
-
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-
-        const data = await response.json();
-
-        console.log(data.response);
-        
-        // Update state with the AI response
-        setMessages(prev => [
-          ...prev,
-          { 
-            parts: [data.response],
-            role: "model",
-          }
-        ]);
-
-/*      } catch (error) {
-        console.error("Error getting thinking process:", error);
-        setMessages(prev => [
-          ...prev,
-          { parts: ["Generate Alternative Approaches"], role: "model"},
-          { 
-            text: "Sorry, I couldn't generate the thinking process right now",
-            isAI: true 
-          }
-        ]);
-      } */
-    };
-
-    // Add this function to check if a message contains thinking processes
-    const isThinking = (text) => {
-      try {
-        console.log(text);
-        const data = JSON.parse(text);
-        return Array.isArray(data) && data.every(item => 
-          'leads_to' in item && 'thinking_process' in item
-        );
-      } catch {
-        return false;
-      }
-      
-    };
-
-    const renderThinking = (message) => {
-      console.log("Message is: " + message);
-      console.log(typeof message);
-
-      const data = JSON.parse(message);
-      return (
-        <div>
-          {data.map((item: any, index: number) =>  {
-            console.log(item.thinking_process);
-            return  (
-            <Collapsible key={item.leads_to} title={item.leads_to == "user" ? "Your Answer" : "Correct Answer"}>
-              <Markdown>{item.thinking_process}</Markdown>
-            </Collapsible>);
-          }
-          )}
-        </div>
+      setFetchedSimilarQuestions(
+        (prev) => new Set([...prev, currentQuestionIndex]),
       );
-    };
 
-    /*
-    const handleSimilarQuestions = async () => {
-      try {
-        const currentQuestion = currentQuestions[currentQuestionIndex];
-        
-        // Prepare the request payload using the current question text
-        const requestBody = {
-          query: currentQuestion.question
-        };
+      setMessages((prev) => [
+        ...prev,
+        { parts: ["Searching for similar questions..."], role: "model" },
+      ]);
 
-        // Show loading state in chat
-        setMessages(prev => [
-          ...prev,
-          { parts: ["Searching for similar questions..."], role: "model" }
-        ]);
+      const response = await fetch("/ai/similarquestions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestBody),
+      });
 
-        // Call the similar questions endpoint
-        const response = await fetch('/ai/similarquestions', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(requestBody)
-        });
+      if (!response.ok)
+        throw new Error(`HTTP error! status: ${response.status}`);
+      const data = await response.json();
 
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        const data = await response.json();
+      if (data.similar_questions?.length > 0) {
+        // Enhanced duplicate detection
+        const uniqueNewQuestions = [];
+        const seenIds = new Set(allExistingIds);
 
-        // Process the similar questions
-        if (data.similar_questions && data.similar_questions.length > 0) {
-          // Insert new questions after current index
-          const updatedQuestions = [...currentQuestions];
-          updatedQuestions.splice(currentQuestionIndex + 1, 0, ...data.similar_questions);
-          
-          // Update state with new questions
-          setCurrentQuestions(updatedQuestions);
-          setAttempts({});
-          setCurrentQuestionAttempts([]);
+        // More thorough duplicate check
+        for (const question of data.similar_questions) {
+          const idToCheck = question.questionId || question.id;
 
-          // Show success message
-          setMessages(prev => [
-            ...prev,
-            { 
-              parts: [`Found ${data.similar_questions.length} similar questions. They've been inserted after this one!`], 
-              role: "model" 
-            }
-          ]);
-        } else {
-          setMessages(prev => [
-            ...prev,
-            { parts: ["No similar questions found"], role: "model" }
-          ]);
-        }
-      } catch (error) {
-        console.error("Error finding similar questions:", error);
-        setMessages(prev => [
-          ...prev,
-          { 
-            parts: ["Failed to retrieve similar questions. Please try again later."], 
-            role: "model" 
+          // Skip if we've seen this ID before
+          if (!idToCheck || seenIds.has(idToCheck)) {
+            console.log("Skipping duplicate question:", idToCheck);
+            continue;
           }
-        ]);
-      }
-    };
-    */
 
-    const handleSimilarQuestions = async () => {
-      try {
-        const currentQuestion = currentQuestions[currentQuestionIndex];
-        
-        // Disable button immediately
-        setFetchedSimilarQuestions(prev => new Set([...prev, currentQuestionIndex]));
+          // Also check for questions with the same content
+          const isDuplicateContent = currentQuestions.some(
+            (q) =>
+              q.question === question.question ||
+              (q.question &&
+                question.question &&
+                q.question.trim() === question.question.trim()),
+          );
 
-        // Rest of the function remains the same...
-        const requestBody = {
-          query: currentQuestion.question
-        };
+          if (isDuplicateContent) {
+            console.log("Skipping question with duplicate content");
+            continue;
+          }
 
-        setMessages(prev => [
-          ...prev,
-          { parts: ["Searching for similar questions..."], role: "model" }
-        ]);
+          // This is a new unique question
+          seenIds.add(idToCheck);
+          uniqueNewQuestions.push(question);
+        }
 
-        const response = await fetch('/ai/similarquestions', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(requestBody)
-        });
-
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        const data = await response.json();
-
-        if (data.similar_questions?.length > 0) {
+        if (uniqueNewQuestions.length > 0) {
           const updatedQuestions = [...currentQuestions];
-          updatedQuestions.splice(currentQuestionIndex + 1, 0, ...data.similar_questions);
-          setCurrentQuestions(updatedQuestions);
-          setAttempts({});
-          setCurrentQuestionAttempts([]);
+          updatedQuestions.splice(
+            currentQuestionIndex + 1,
+            0,
+            ...uniqueNewQuestions,
+          );
 
-          setMessages(prev => [
-            ...prev,
-            { 
-              parts: [`Found ${data.similar_questions.length} similar questions. They've been inserted after this one!`], 
-              role: "model" 
-            }
-          ]);
-        } else {
-          setMessages(prev => [
-            ...prev,
-            { parts: ["No similar questions found"], role: "model" }
-          ]);
-          // Re-enable button if no questions found
-          setFetchedSimilarQuestions(prev => {
-            const newSet = new Set(prev);
-            newSet.delete(currentQuestionIndex);
-            return newSet;
+          // Update excluded IDs with the new questions
+          const newExcluded = new Set(allExistingIds);
+          uniqueNewQuestions.forEach((q) => {
+            if (q.questionId) newExcluded.add(q.questionId);
+            if (q.id) newExcluded.add(q.id);
           });
+          setExcludedQuestionIds(newExcluded);
+
+          setCurrentQuestions(updatedQuestions);
+          setAttempts({});
+          setCurrentQuestionAttempts([]);
+
+          setMessages((prev) => [
+            ...prev,
+            {
+              parts: [
+                `Added ${uniqueNewQuestions.length} new similar questions`,
+              ],
+              role: "model",
+            },
+          ]);
+        } else {
+          setMessages((prev) => [
+            ...prev,
+            { parts: ["No new similar questions found"], role: "model" },
+          ]);
         }
-      } catch (error) {
-        console.error("Error finding similar questions:", error);
-        setMessages(prev => [
+      } else {
+        setMessages((prev) => [
           ...prev,
-          { 
-            parts: ["Failed to retrieve similar questions. Please try again later."], 
-            role: "model" 
-          }
+          { parts: ["No similar questions found"], role: "model" },
         ]);
-        // Re-enable button on error
-        setFetchedSimilarQuestions(prev => {
-          const newSet = new Set(prev);
-          newSet.delete(currentQuestionIndex);
-          return newSet;
-        });
       }
-    };
+    } catch (error) {
+      console.error("Error finding similar questions:", error);
+      setMessages((prev) => [
+        ...prev,
+        {
+          parts: [
+            "Failed to retrieve similar questions. Please try again later.",
+          ],
+          role: "model",
+        },
+      ]);
+    } finally {
+      setFetchedSimilarQuestions((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(currentQuestionIndex);
+        return newSet;
+      });
+    }
+  };
 
   return (
     <>
@@ -1234,13 +1487,13 @@ function SATPage() {
         <nav className={`nav sat-nav`}>
           <div
             className="logo"
-            onClick={() => navigate('/')}
+            onClick={() => navigate("/")}
             style={{ cursor: "pointer" }}
           >
             <img src="/aquLogo.png" alt="Aquarc Logo" className="logo-image" />
           </div>
 
-          <PomodoroTimer />
+          <PomodoroTimer ref={pomodoroTimerRef} onTimeUp={handleTimeUp} />
 
           <div>
             {questionDisplay.content?.questionDetails?.category == "Math" && (
@@ -1251,14 +1504,13 @@ function SATPage() {
                 <Calculator size={24} />
               </button>
             )}
-
           </div>
         </nav>
       </div>
 
       <div
         className="sidebar-tab"
-        style={{ right: showSidebar ? '35%' : '0' }}
+        style={{ display: showSidebar ? "none" : "grid" }}
         onClick={toggleSidebar}
       >
         <ListFilter size={20} />
@@ -1300,133 +1552,134 @@ function SATPage() {
           {/* Search button inside sidebar header */}
           <div className="sidebar-header">
             <div className="filter-tabs">
-              <button
-                className={`filter-tab ${activeFilterTab === 'assessment' ? 'active' : ''}`}
-                onClick={() => setActiveFilterTab('assessment')}
-              >
-                Assessment
-              </button>
-              <button
-                className={`filter-tab ${activeFilterTab === 'analytics' ? 'active' : ''}`}
-                onClick={() => setActiveFilterTab('analytics')}
-              >
-                Analytics
-              </button>
-              <button 
-                className="close-sidebar-button"
-                onClick={toggleSidebar}
-              >
+              <h2 class="sidebar-header">Practice Questions</h2>
+              <button className="close-sidebar-button" onClick={toggleSidebar}>
                 <X size={18} />
               </button>
             </div>
-
           </div>
 
-          {activeFilterTab === 'analytics' && (
-            <div className="analytics-tab-content">
-              <h3>Question Analytics</h3>
-
-              {userEmail ? (
-                <>
-                  <div className="user-info">
-                    <span className="user-email">{userEmail}</span>
+          <div className="filter-container">
+            <div class="filter-sections">
+              <div>
+                <h3>Test</h3>
+                <div className="filter-group">
+                  {["SAT", "PSAT 10/11", "PSAT 8/9"].map((test) => (
                     <button
-                      className="auth-button auth-button-secondary"
-                      onClick={() => {
-                        Cookies.remove('user');
-                        setUserEmail(null);
-                        // Instead of navigating immediately, let the user stay on current page
-                        if (window.location.pathname === '/sat') {
-                          navigate('/');
-                        }
-                      }}
+                      key={test}
+                      className={`horizontal-checkbox-group ${selectedTest == test ? "selected" : ""}`}
+                      onClick={() => setSelectedTest(test)}
                     >
-                      Log Out
+                      {test}
                     </button>
-                  </div>
-                  <div className="analytics-placeholder">
-                    <p>Your practice statistics will appear here after completing questions.</p>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <p className="analytics-message">
-                    Track your progress, see performance trends, and get personalized recommendations by signing in.
-                  </p>
+                  ))}
+                </div>
+              </div>
 
-                  <div className="auth-buttons-container">
-                    <button
-                      className="auth-button auth-button-primary"
-                      onClick={() => navigate('/signup')}
+              <div>
+                <h3>Difficulty</h3>
+                <div className="filter-group">
+                  {["Easy", "Medium", "Hard"].map((difficulty) => (
+                    <div
+                      key={difficulty}
+                      className={`horizontal-checkbox-group ${difficulty.toLowerCase()}`}
                     >
-                      Create Account
-                    </button>
-                    <button
-                      className="auth-button auth-button-secondary"
-                      onClick={() => navigate('/login')}
-                    >
-                      Sign In
-                    </button>
-                  </div>
+                      <input
+                        type="checkbox"
+                        id={difficulty.toLowerCase()}
+                        checked={selectedDifficulties[difficulty]}
+                        onChange={() => handleDifficultyChange(difficulty)}
+                      />
+                      <label htmlFor={difficulty.toLowerCase()}>
+                        {difficulty}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-                  <div className="auth-divider">or</div>
-
-                  <p className="analytics-message text-center" style={{ marginTop: '1rem' }}>
-                    Continue practicing without saving your progress.
-                  </p>
-                </>
-              )}
+              <div>
+                <h3>15-Question Practice Set</h3>
+                <div className="filter-group">
+                  <button
+                    key="practice-test-mode-yes"
+                    className={`horizontal-checkbox-group 
+                                ${practiceTestMode ? "selected" : ""}`}
+                    onClick={() => setPracticeTestMode(true)}
+                    disabled={!userEmail}
+                  >
+                    Yes
+                  </button>
+                  <button
+                    key="practice-test-mode-no"
+                    className={`horizontal-checkbox-group 
+                                ${!practiceTestMode ? "selected" : ""}`}
+                    onClick={() => setPracticeTestMode(false)}
+                  >
+                    No
+                  </button>
+                </div>
+              </div>
             </div>
-          )}
+            {questionDisplay.type === "error" && (
+              <div className="error-message">{questionDisplay.content}</div>
+            )}
 
-          {activeFilterTab === 'assessment' && (
-            <>
-              <div className="filter-group">
-                {["SAT", "PSAT 10/11", "PSAT 8/9"].map((test) => (
-                  <div key={test} className="checkbox-group">
-                    <input
-                      type="radio"
-                      id={test}
-                      name="assessment"
-                      onChange={() => handleTestChange(test)}
-                      checked={selectedTest === test}
-                    />
-                    <label htmlFor={test}>{test}</label>
-                  </div>
-                ))}
-              </div>
-
-              {renderSubdomainInputs()}
-
-              <div class="sidebar-standalone-content">
-                <h2 class="sidebar-standalone-header">Difficulty</h2>
-                {["Easy", "Medium", "Hard"].map((difficulty) => (
-                  <div key={difficulty} className="checkbox-group">
-                    <input
-                      type="checkbox"
-                      id={difficulty.toLowerCase()}
-                      checked={selectedDifficulties[difficulty]}
-                      onChange={() => handleDifficultyChange(difficulty)}
-                    />
-                    <label htmlFor={difficulty.toLowerCase()}>{difficulty}</label>
-                  </div>
-                ))}
-              </div>
-
-              {questionDisplay.type === "error" && (
-                <div className="error-message">{questionDisplay.content}</div>
+            <br />
+            <div class="filter-main-group">
+              {!userEmail && (
+                <>
+                  <i style={{ color: "red" }}>
+                    Please sign in for 15-question practice sets.
+                  </i>
+                </>
               )}
-              <div className="button-group">
+              <br />
+              <div class="filter-group action-buttons">
+                {userEmail ? (
+                  <button
+                    className="horizontal-checkbox-group auth-button-secondary"
+                    onClick={() => {
+                      Cookies.remove("user");
+                      setUserEmail(null);
+                      // Instead of navigating immediately, let the user stay on current page
+                      if (window.location.pathname === "/sat") {
+                        navigate("/");
+                      }
+                    }}
+                  >
+                    Log Out
+                  </button>
+                ) : (
+                  <>
+                    <div className="auth-buttons-container">
+                      <button
+                        className="horizontal-checkbox-group auth-button-primary"
+                        onClick={() => navigate("/signup")}
+                      >
+                        Sign Up
+                      </button>
+                      <button
+                        className="horizontal-checkbox-group auth-button-secondary"
+                        onClick={() => navigate("/login")}
+                      >
+                        Login
+                      </button>
+                    </div>
+                  </>
+                )}
                 <button
-                  className="search-button"
+                  className="horizontal-checkbox-group easy"
                   onClick={handleSearch}
                   disabled={isLoading}
                 >
-                  {isLoading ? "Searching..." : "Search Questions"}
+                  {isLoading ? "Starting..." : "Start Practicing"}
                 </button>
               </div>
-            </>
-          )}
+            </div>
+          </div>
+
+          {renderSubdomainInputs()}
         </div>
       </div>
       {currentQuestions.length > 0 && renderNavigationView()}
@@ -1437,15 +1690,19 @@ function SATPage() {
             {messages.map((message, index) => (
               <div
                 key={index}
-                className={message.role == "model" ? "ai-message" : "user-message"}
+                className={
+                  message.role == "model" ? "ai-message" : "user-message"
+                }
               >
-                {message.role == "model" ? 
-                  (isThinking(message.parts[0]) ? 
+                {message.role == "model" ? (
+                  isThinking(message.parts[0]) ? (
                     renderThinking(message.parts[0])
-                    :
-                    <Markdown>{message.parts[0]}</Markdown>)
-                  : 
-                  message.parts[0]}
+                  ) : (
+                    <Markdown>{message.parts[0]}</Markdown>
+                  )
+                ) : (
+                  message.parts[0]
+                )}
               </div>
             ))}
           </div>
@@ -1458,13 +1715,16 @@ function SATPage() {
                 onClick={() => handleApproaches()}
                 disabled={messages.length <= 1}
               >
-                Approaches 
+                Approaches
               </button>
               <button
                 type="button"
                 className="approach-button"
                 onClick={() => handleSimilarQuestions()}
-                disabled={fetchedSimilarQuestions.has(currentQuestionIndex) || !currentQuestions.length}
+                disabled={
+                  fetchedSimilarQuestions.has(currentQuestionIndex) ||
+                  !currentQuestions.length
+                }
               >
                 Get Similar Questions
               </button>
@@ -1485,6 +1745,15 @@ function SATPage() {
             </div>
           </form>
         </div>
+      )}
+      {renderQuestionGrid()}
+      {showReviewScreen && (
+        <ReviewScreen
+          questions={currentQuestions}
+          attempts={attempts}
+          onClose={() => setShowReviewScreen(false)}
+          setReviewMode={setReviewMode}
+        />
       )}
     </>
   );
