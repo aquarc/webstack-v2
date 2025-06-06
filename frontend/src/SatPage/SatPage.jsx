@@ -521,7 +521,7 @@ function SATPage() {
                   return (
                     <div
                       key={choiceKey}
-                      className={`answer-choice ${isCrossedOut ? "crossed-out" : ""}`}
+                      className={`answer-choice ${isCrossedOut ? "crossed-out" : ""} ${isCrossOutMode ? "eliminating" : ""}`}
                       onClick={(e) => {
                         if (isCrossOutMode) {
                           // Cross out logic
