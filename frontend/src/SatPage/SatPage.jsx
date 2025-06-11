@@ -306,7 +306,7 @@ function SATPage() {
     setIsCrossOutMode(false);
     setShowCalculator(false);
   };
-  
+
 
   const handleSubmitAnswer = () => {
     if (tempAnswer.trim()) {
@@ -381,7 +381,7 @@ function SATPage() {
       correct: isCorrect 
     };
     setCurrentQuestionAttempts(prev => [...prev, attempt]);
-    
+
     // Force the answer to stay selected and show feedback
     setHasSelectedAnswer(true);
 
@@ -468,27 +468,27 @@ function SATPage() {
 
     return (
       <div class="sidebar-standalone-content-container">
-        {Object.entries(subdomainData).map(([sectionName, section]) => (
-          <div class="sidebar-standalone-content">
-            <h2 class="sidebar-standalone-header">{sectionName}</h2>
-            {section.map(({ category, subdomains }) => (
-              <React.Fragment key={category}>
-                <h4>{category}</h4>
-                {subdomains.map((subdomain) => (
-                  <div key={subdomain.id} className="checkbox-group">
-                    <input
-                      type="checkbox"
-                      id={subdomain.id}
-                      onChange={subdomain.onChange}
-                      checked={subdomain.checked}
-                    />
-                    <label htmlFor={subdomain.id}>{subdomain.label}</label>
-                  </div>
-                ))}
-              </React.Fragment>
-            ))}
-          </div>
+      {Object.entries(subdomainData).map(([sectionName, section]) => (
+        <div class="sidebar-standalone-content">
+        <h2 class="sidebar-standalone-header">{sectionName}</h2>
+        {section.map(({ category, subdomains }) => (
+          <React.Fragment key={category}>
+          <h4>{category}</h4>
+          {subdomains.map((subdomain) => (
+            <div key={subdomain.id} className="checkbox-group">
+            <input
+            type="checkbox"
+            id={subdomain.id}
+            onChange={subdomain.onChange}
+            checked={subdomain.checked}
+            />
+            <label htmlFor={subdomain.id}>{subdomain.label}</label>
+            </div>
+          ))}
+          </React.Fragment>
         ))}
+        </div>
+      ))}
       </div>
     );
   };
@@ -527,42 +527,42 @@ function SATPage() {
 
       return (
         <>
-          <input
-            type="text"
-            id="free-response-input"
-            value={tempAnswer}
-            onChange={(e) => setTempAnswer(e.target.value)}
-            onKeyDown={handleKeyPress}
-            className={`flex-1 p-2 border rounded-md ${hasSelectedAnswer ? 
-                (isCorrect ? "correct-answer" : "incorrect-answer") : 
-                "" 
-              }`}
-            placeholder="Enter your answer..."
-          />
-          <br></br>
-          <br></br>
-          <button
-            onClick={handleSubmitAnswer}
-            className="bg-[#6366F1] hover:bg-[#4F46E5] text-white px-4 py-2 rounded-md transition-colors duration-200"
-            disabled={!tempAnswer.trim()}
+        <input
+        type="text"
+        id="free-response-input"
+        value={tempAnswer}
+        onChange={(e) => setTempAnswer(e.target.value)}
+        onKeyDown={handleKeyPress}
+        className={`flex-1 p-2 border rounded-md ${hasSelectedAnswer ? 
+            (isCorrect ? "correct-answer" : "incorrect-answer") : 
+            "" 
+        }`}
+        placeholder="Enter your answer..."
+        />
+        <br></br>
+        <br></br>
+        <button
+        onClick={handleSubmitAnswer}
+        className="bg-[#6366F1] hover:bg-[#4F46E5] text-white px-4 py-2 rounded-md transition-colors duration-200"
+        disabled={!tempAnswer.trim()}
+        >
+        Submit
+        </button>
+        <br></br>
+        {(selectedAnswer && (selectedAnswer === correctAnswer || currentAttempts >= 3)) && (
+          <div
+          className={`rationale-container ${selectedAnswer === correctAnswer ? "correct" : "incorrect"}`}
           >
-            Submit
-          </button>
-          <br></br>
-          {(selectedAnswer && (selectedAnswer === correctAnswer || currentAttempts >= 3)) && (
-            <div
-              className={`rationale-container ${selectedAnswer === correctAnswer ? "correct" : "incorrect"}`}
-            >
-              <h4 className="rationale-header">
-                {selectedAnswer === correctAnswer ? "Correct!" : "Incorrect"}
-              </h4>
-              <div
-                className="rationale-content"
-                dangerouslySetInnerHTML={{ __html: rationale }}
-              />
-            </div>
-          )}
-          <br></br>
+          <h4 className="rationale-header">
+          {selectedAnswer === correctAnswer ? "Correct!" : "Incorrect"}
+          </h4>
+          <div
+          className="rationale-content"
+          dangerouslySetInnerHTML={{ __html: rationale }}
+          />
+          </div>
+        )}
+        <br></br>
         </>
       );
     }
@@ -580,33 +580,33 @@ function SATPage() {
 
         return (
           <>
-            <div className="multiple-choice-container">
-              {["a", "b", "c", "d"]
-                .map((letterChoice, index) => { // Added index parameter here
-                  if (!parsedChoices[letterChoice]) return null;
+          <div className="multiple-choice-container">
+          {["a", "b", "c", "d"]
+            .map((letterChoice, index) => { // Added index parameter here
+              if (!parsedChoices[letterChoice]) return null;
 
-                  const content =
-                    parsedChoices[letterChoice].body || parsedChoices[letterChoice];
+              const content =
+                parsedChoices[letterChoice].body || parsedChoices[letterChoice];
 
-                  return renderMultipleChoiceAnswer(correctAnswer, letterChoice, isCrossOutMode, content);
-                })
-                .filter(Boolean)}
+              return renderMultipleChoiceAnswer(correctAnswer, letterChoice, isCrossOutMode, content);
+            })
+            .filter(Boolean)}
+          </div>
+          {(selectedAnswer && hasSelectedAnswer) && (
+            <div
+            className={`rationale-container ${selectedAnswer.toLowerCase() === correctAnswer.toLowerCase() ? "correct" : "incorrect"}`}
+            >
+            <h4 className="rationale-header">
+            {selectedAnswer.toLowerCase() === correctAnswer.toLowerCase()
+              ? "Correct!"
+              : "Incorrect"}
+            </h4>
+            <div
+            className="rationale-content"
+            dangerouslySetInnerHTML={{ __html: rationale }}
+            />
             </div>
-            {(selectedAnswer && hasSelectedAnswer) && (
-              <div
-                className={`rationale-container ${selectedAnswer.toLowerCase() === correctAnswer.toLowerCase() ? "correct" : "incorrect"}`}
-              >
-                <h4 className="rationale-header">
-                  {selectedAnswer.toLowerCase() === correctAnswer.toLowerCase()
-                    ? "Correct!"
-                    : "Incorrect"}
-                </h4>
-                <div
-                  className="rationale-content"
-                  dangerouslySetInnerHTML={{ __html: rationale }}
-                />
-              </div>
-            )}
+          )}
           </>
         );
       }
@@ -614,39 +614,39 @@ function SATPage() {
       if (Array.isArray(parsedChoices)) {
         return (
           <>
-            <div className="multiple-choice-container">
-              {parsedChoices.map((choice, index) => {
-                const content =
-                  typeof choice === "object"
-                    ? choice.content || choice.body || choice
-                    : choice;
+          <div className="multiple-choice-container">
+          {parsedChoices.map((choice, index) => {
+            const content =
+              typeof choice === "object"
+              ? choice.content || choice.body || choice
+              : choice;
 
-                const letterChoice = String.fromCharCode(
-                  65 + index,
-                ).toLowerCase();
+            const letterChoice = String.fromCharCode(
+              65 + index,
+            ).toLowerCase();
 
-                return renderMultipleChoiceAnswer(correctAnswer, letterChoice, isCrossOutMode, content);
-              })}
+            return renderMultipleChoiceAnswer(correctAnswer, letterChoice, isCrossOutMode, content);
+          })}
+          </div>
+          {(reviewMode || ( selectedAnswer && hasSelectedAnswer)) && (
+            <div
+            className={`rationale-container ${reviewMode ? 
+                (isMCQCorrectReviewMode() ? "correct" : "incorrect")
+                : (selectedAnswer === correctAnswer.toLowerCase() ? "correct" : "incorrect")}`}
+            >
+            <h4 className="rationale-header">
+            {reviewMode ? 
+              (isMCQCorrectReviewMode() ? "Correct!" : "Incorrect") :
+              (selectedAnswer === correctAnswer.toLowerCase()
+                ? "Correct!"
+                : "Incorrect")}
+            </h4>
+            <div
+            className="rationale-content"
+            dangerouslySetInnerHTML={{ __html: rationale }}
+            />
             </div>
-            {(reviewMode || ( selectedAnswer && hasSelectedAnswer)) && (
-              <div
-                className={`rationale-container ${reviewMode ? 
-                  (isMCQCorrectReviewMode() ? "correct" : "incorrect")
-                  : (selectedAnswer === correctAnswer.toLowerCase() ? "correct" : "incorrect")}`}
-              >
-                <h4 className="rationale-header">
-                  {reviewMode ? 
-                    (isMCQCorrectReviewMode() ? "Correct!" : "Incorrect") :
-                    (selectedAnswer === correctAnswer.toLowerCase()
-                    ? "Correct!"
-                    : "Incorrect")}
-                </h4>
-                <div
-                  className="rationale-content"
-                  dangerouslySetInnerHTML={{ __html: rationale }}
-                />
-              </div>
-            )}
+          )}
           </>
         );
       }
@@ -675,8 +675,8 @@ function SATPage() {
     const questionAttempts = attemptLogs[currentQuestionId] || [];
     const lastAttempt = questionAttempts[questionAttempts.length - 1];
     return currentQuestions[currentQuestionIndex]?.answer?.toLowerCase() ===
-            lastAttempt?.answer?.toLowerCase();
- 
+      lastAttempt?.answer?.toLowerCase();
+
   };
 
 
@@ -697,74 +697,74 @@ function SATPage() {
 
     if (reviewMode) {
       isCorrect = currentQuestions[currentQuestionIndex]?.answer?.toLowerCase()
-            === letterChoice;
+        === letterChoice;
     }
-    
+
     const isUserAnswer = 
-          reviewMode && lastAttempt?.answer?.toLowerCase() === letterChoice;
+      reviewMode && lastAttempt?.answer?.toLowerCase() === letterChoice;
 
     return (
       <>
-        <div
-          key={choiceKey}
-          className={`answer-choice ${isCrossedOut ? "crossed-out" : ""}`}
-          onClick={(e) => {
-            if (reviewMode) {
-                e.stopPropagation();
-                return;
-            }
+      <div
+      key={choiceKey}
+      className={`answer-choice ${isCrossedOut ? "crossed-out" : ""}`}
+      onClick={(e) => {
+        if (reviewMode) {
+          e.stopPropagation();
+          return;
+        }
 
-            if (isCrossOutMode) {
-              setCrossedOutAnswers((prev) => {
-                const currentCrossouts = new Set(
-                  prev[currentQuestionIndex] || [],
-                );
+        if (isCrossOutMode) {
+          setCrossedOutAnswers((prev) => {
+            const currentCrossouts = new Set(
+              prev[currentQuestionIndex] || [],
+            );
 
-                if (currentCrossouts.has(choiceKey)) {
-                  currentCrossouts.delete(choiceKey);
-                } else {
-                  if (selectedAnswer == letterChoice)
-                    setSelectedAnswer(null);
-                  currentCrossouts.add(choiceKey);
-                }
-
-                return {
-                  ...prev,
-                  [currentQuestionIndex]: currentCrossouts,
-                };
-              });
+            if (currentCrossouts.has(choiceKey)) {
+              currentCrossouts.delete(choiceKey);
             } else {
-              setSelectedAnswer(letterChoice);
-              if (practiceTestMode) {
-                handleSilentAttempt(letterChoice);
-              }
+              if (selectedAnswer == letterChoice)
+                setSelectedAnswer(null);
+              currentCrossouts.add(choiceKey);
             }
-          }}
-        >
-         <label
-           className={
-             reviewMode ? 
-               (isCorrect ? "correct-answer" : 
-                (isUserAnswer ? "incorrect-answer" : "unselected-answer")) :
-               (practiceTestMode ? 
-                 (lastAttempt?.answer?.toLowerCase() === letterChoice ?
-                   "selected-answer" : "unselected-answer") :
-                 (hasSelectedAnswer ? 
-                   (letterChoice === correctAnswer.toLowerCase() ? "correct-answer" : 
-                    selectedAnswer === letterChoice ? 
-                       "incorrect-answer" : "unselected-answer") :
-                   (selectedAnswer === letterChoice ? 
-                       "selected-answer" : "unselected-answer"))
-               )
-           }
-           dangerouslySetInnerHTML={{ __html: content }}
-         />
-        </div>
-        { reviewMode && !(lastAttempt?.answer?.toLowerCase()) && isCorrect && (
-            <p>You did not select any answer for this question.</p>
-        )}
+
+            return {
+              ...prev,
+              [currentQuestionIndex]: currentCrossouts,
+            };
+          });
+        } else {
+          setSelectedAnswer(letterChoice);
+          if (practiceTestMode) {
+            handleSilentAttempt(letterChoice);
+          }
+        }
+      }}
+      >
+      <label
+      className={
+        reviewMode ? 
+        (isCorrect ? "correct-answer" : 
+          (isUserAnswer ? "incorrect-answer" : "unselected-answer")) :
+        (practiceTestMode ? 
+          (lastAttempt?.answer?.toLowerCase() === letterChoice ?
+            "selected-answer" : "unselected-answer") :
+          (hasSelectedAnswer ? 
+            (letterChoice === correctAnswer.toLowerCase() ? "correct-answer" : 
+              selectedAnswer === letterChoice ? 
+              "incorrect-answer" : "unselected-answer") :
+            (selectedAnswer === letterChoice ? 
+              "selected-answer" : "unselected-answer"))
+        )
+      }
+      dangerouslySetInnerHTML={{ __html: content }}
+      />
+      </div>
+      { reviewMode && !(lastAttempt?.answer?.toLowerCase()) && isCorrect && (
+        <p>You did not select any answer for this question.</p>
+      )}
       </>
-   );
+    );
   };
 
   // Update the renderQuestionView function
@@ -777,165 +777,165 @@ function SATPage() {
         {
           excludedQuestionIds.has(questionDetails.questionId) && (
             <div className="ai-question-tag">
-              AI-Suggested Question
+            AI-Suggested Question
             </div>
           )
         }
         if (questionDetails.category === "Math") {
           return (
             <div className={`question-container math-layout`}>
-              {questionDetails.details && (
-                <>
-                  <div className="question-control-header">
-                    <button className="control-button save-button">
-                      <Bookmark size={18} />
-                      <span>Coming Soon</span>
-                    </button>
-                    {!shouldShowFreeResponse(questionDetails.answerChoices) && (
-                      <button
-                        className={`control-button eliminate-button ${isCrossOutMode ? "active" : ""}`}
-                        onClick={() => setIsCrossOutMode(!isCrossOutMode)}
-                      >
-                        <X size={18} />
-                        <span>Eliminate Answer</span>
-                      </button>
-                    )}
-
-                    {/* Show Ask AI button for all question types after incorrect attempt */}
-                    {attempts[currentQuestionIndex] && attempts[currentQuestionIndex] > 0 && (
-                      <button
-                        className="control-button ai-help-button"
-                        onClick={() => handleAIHelp()}
-                      >
-                        <HelpCircle size={18} />
-                        <span>Ask AI</span>
-                      </button>
-                    )}
-                  </div>
-                  <div
-                    className="question-additional-details"
-                    dangerouslySetInnerHTML={{
-                      __html: questionDetails.details,
-                    }}
-                  />
-                </>
+            {questionDetails.details && (
+              <>
+              <div className="question-control-header">
+              <button className="control-button save-button">
+              <Bookmark size={18} />
+              <span>Coming Soon</span>
+              </button>
+              {!shouldShowFreeResponse(questionDetails.answerChoices) && (
+                <button
+                className={`control-button eliminate-button ${isCrossOutMode ? "active" : ""}`}
+                onClick={() => setIsCrossOutMode(!isCrossOutMode)}
+                >
+                <X size={18} />
+                <span>Eliminate Answer</span>
+                </button>
               )}
-              <div className="question-right-side">
-                {!questionDetails.details && (
-                  <div className="question-control-header">
-                    <button className="control-button save-button">
-                      <Bookmark size={18} />
-                      <span>Coming Soon</span>
-                    </button>
-                    {!shouldShowFreeResponse(questionDetails.answerChoices) && (
-                      <button
-                        className={`control-button eliminate-button ${isCrossOutMode ? "active" : ""}`}
-                        onClick={() => setIsCrossOutMode(!isCrossOutMode)}
-                      >
-                        <X size={18} />
-                        <span>Eliminate Answer</span>
-                      </button>
-                    )}
-                    {/* Show AI button after any attempt */}
-                    {attempts[currentQuestionIndex] && attempts[currentQuestionIndex] > 0 && (
-                      <button
-                        className="control-button ai-help-button"
-                        onClick={() => handleAIHelp()}
-                      >
-                        <HelpCircle size={18} />
-                        <span>Ask AI</span>
-                      </button>
-                    )}
-                  </div>
-                )}
 
-                <div className="question-text">
-                  <div
-                    dangerouslySetInnerHTML={{
-                      __html: questionDetails.question,
-                    }}
-                  />
-                </div>
-                <br />
-                <div className="answer-choices">
-                  {renderAnswerChoices(
-                    questionDetails.answerChoices,
-                    questionDetails.answer,
-                    questionDetails.rationale,
-                    questionDetails.questionType,
-                    questionDetails.externalId,
-                  )}
-                </div>
-                <div className={`feedback-link ${showSidebar ? "with-sidebar" : ""}`}>
-                  <a href={`/feedback?questionId=${questionDetails.questionId}`} target="_blank" rel="noopener noreferrer">
-                    Feedback
-                  </a>
-                </div>
+              {/* Show Ask AI button for all question types after incorrect attempt */}
+              {attempts[currentQuestionIndex] && attempts[currentQuestionIndex] > 0 && (
+                <button
+                className="control-button ai-help-button"
+                onClick={() => handleAIHelp()}
+                >
+                <HelpCircle size={18} />
+                <span>Ask AI</span>
+                </button>
+              )}
               </div>
+              <div
+              className="question-additional-details"
+              dangerouslySetInnerHTML={{
+                __html: questionDetails.details,
+              }}
+              />
+              </>
+            )}
+            <div className="question-right-side">
+            {!questionDetails.details && (
+              <div className="question-control-header">
+              <button className="control-button save-button">
+              <Bookmark size={18} />
+              <span>Coming Soon</span>
+              </button>
+              {!shouldShowFreeResponse(questionDetails.answerChoices) && (
+                <button
+                className={`control-button eliminate-button ${isCrossOutMode ? "active" : ""}`}
+                onClick={() => setIsCrossOutMode(!isCrossOutMode)}
+                >
+                <X size={18} />
+                <span>Eliminate Answer</span>
+                </button>
+              )}
+              {/* Show AI button after any attempt */}
+              {attempts[currentQuestionIndex] && attempts[currentQuestionIndex] > 0 && (
+                <button
+                className="control-button ai-help-button"
+                onClick={() => handleAIHelp()}
+                >
+                <HelpCircle size={18} />
+                <span>Ask AI</span>
+                </button>
+              )}
+              </div>
+            )}
+
+            <div className="question-text">
+            <div
+            dangerouslySetInnerHTML={{
+              __html: questionDetails.question,
+            }}
+            />
+            </div>
+            <br />
+            <div className="answer-choices">
+            {renderAnswerChoices(
+              questionDetails.answerChoices,
+              questionDetails.answer,
+              questionDetails.rationale,
+              questionDetails.questionType,
+              questionDetails.externalId,
+            )}
+            </div>
+            <div className={`feedback-link ${showSidebar ? "with-sidebar" : ""}`}>
+            <a href={`/feedback?questionId=${questionDetails.questionId}`} target="_blank" rel="noopener noreferrer">
+            Feedback
+            </a>
+            </div>
+            </div>
             </div>
           );
         } else {
           return (
             <div className={`question-container`}>
-              {questionDetails.details && (
-                <>
-                  <div
-                    className="question-additional-details"
-                    dangerouslySetInnerHTML={{
-                      __html: questionDetails.details,
-                    }}
-                  />
-                  <div className="vertical-bar"></div>
-                </>
-              )}
-              <div className="question-right-side">
-                <div className="question-control-header">
-                  <button className="control-button save-button">
-                    <Bookmark size={18} />
-                    <span>Coming Soon</span>
-                  </button>
-                  <button
-                    className={`control-button eliminate-button 
+            {questionDetails.details && (
+              <>
+              <div
+              className="question-additional-details"
+              dangerouslySetInnerHTML={{
+                __html: questionDetails.details,
+              }}
+              />
+              <div className="vertical-bar"></div>
+              </>
+            )}
+            <div className="question-right-side">
+            <div className="question-control-header">
+            <button className="control-button save-button">
+            <Bookmark size={18} />
+            <span>Coming Soon</span>
+            </button>
+            <button
+            className={`control-button eliminate-button 
         ${isCrossOutMode ? "active" : ""}`}
-                    onClick={() => setIsCrossOutMode(!isCrossOutMode)}
-                  >
-                    <X size={18} />
-                    <span>Eliminate Answer</span>
-                  </button>
-                  {/* Add AI Help button for English */}
-                  {attempts[currentQuestionIndex] && attempts[currentQuestionIndex] > 0 && (
-                    <button
-                      className="control-button ai-help-button"
-                      onClick={() => handleAIHelp()}
-                    >
-                      <HelpCircle size={18} />
-                      <span>Ask AI</span>
-                    </button>
-                  )}
-                </div>
-                <div className="question-text">
-                  <div
-                    dangerouslySetInnerHTML={{
-                      __html: questionDetails.question,
-                    }}
-                  />
-                </div>
-                <br />
-                <div className="answer-choices">
-                  {renderAnswerChoices(
-                    questionDetails.answerChoices,
-                    questionDetails.answer,
-                    questionDetails.rationale,
-                    questionDetails.questionType,
-                    questionDetails.externalId,
-                  )}
-                </div>
-                <div className={`feedback-link ${showSidebar ? "with-sidebar" : ""}`}>
-                  <a href={`/feedback?questionId=${questionDetails.questionId}`} target="_blank" rel="noopener noreferrer">
-                    Feedback
-                  </a>
-                </div>
-              </div>
+            onClick={() => setIsCrossOutMode(!isCrossOutMode)}
+            >
+            <X size={18} />
+            <span>Eliminate Answer</span>
+            </button>
+            {/* Add AI Help button for English */}
+            {attempts[currentQuestionIndex] && attempts[currentQuestionIndex] > 0 && (
+              <button
+              className="control-button ai-help-button"
+              onClick={() => handleAIHelp()}
+              >
+              <HelpCircle size={18} />
+              <span>Ask AI</span>
+              </button>
+            )}
+            </div>
+            <div className="question-text">
+            <div
+            dangerouslySetInnerHTML={{
+              __html: questionDetails.question,
+            }}
+            />
+            </div>
+            <br />
+            <div className="answer-choices">
+            {renderAnswerChoices(
+              questionDetails.answerChoices,
+              questionDetails.answer,
+              questionDetails.rationale,
+              questionDetails.questionType,
+              questionDetails.externalId,
+            )}
+            </div>
+            <div className={`feedback-link ${showSidebar ? "with-sidebar" : ""}`}>
+            <a href={`/feedback?questionId=${questionDetails.questionId}`} target="_blank" rel="noopener noreferrer">
+            Feedback
+            </a>
+            </div>
+            </div>
             </div>
           );
         }
@@ -955,43 +955,43 @@ function SATPage() {
 
         return (
           <div className="fixed-bottom-bar">
-            <div className="left-section">
-              {userEmail ? (
-                <span className="user-email-bottom">{userEmail}</span>
-              ) : (
-                <span className="login-status">Not Logged In</span>
-              )}
-            </div>
-            
-            <div className="middle-section">
-              <button
-                className="progress-button"
-                onClick={() => setShowQuestionGrid(true)}
-              >
-                {`${navigation.currentIndex} / ${navigation.totalQuestions}`}
-                <ChevronDown size={16} className="dropdown-icon" />
-              </button>
-            </div>
+          <div className="left-section">
+          {userEmail ? (
+            <span className="user-email-bottom">{userEmail}</span>
+          ) : (
+            <span className="login-status">Not Logged In</span>
+          )}
+          </div>
 
-            <div className="right-section">
-              <button
-                onClick={handleNavigatePrevious}
-                disabled={!navigation.hasPrevious}
-                className="nav-button"
-              >
-                Previous
-              </button>
-              <button 
-                onClick={handleNavigateNext} 
-                disabled={showReviewScreen ? !navigation.hasNext : false}
-                className="nav-button"
-              >
-                Next
-              </button>
-              {!practiceTestMode && (
-                <button onClick={handleCheckAnswer}>Check</button>
-              )}
-            </div>
+          <div className="middle-section">
+          <button
+          className="progress-button"
+          onClick={() => setShowQuestionGrid(true)}
+          >
+          {`${navigation.currentIndex} / ${navigation.totalQuestions}`}
+          <ChevronDown size={16} className="dropdown-icon" />
+          </button>
+          </div>
+
+          <div className="right-section">
+          <button
+          onClick={handleNavigatePrevious}
+          disabled={!navigation.hasPrevious}
+          className="nav-button"
+          >
+          Previous
+          </button>
+          <button 
+          onClick={handleNavigateNext} 
+          disabled={showReviewScreen ? !navigation.hasNext : false}
+          className="nav-button"
+          >
+          Next
+          </button>
+          {!practiceTestMode && (
+            <button onClick={handleCheckAnswer}>Check</button>
+          )}
+          </div>
           </div>
         );
       default:
@@ -1005,22 +1005,22 @@ function SATPage() {
 
     return (
       <div className="question-grid-overlay" onClick={() => setShowQuestionGrid(false)}>
-        <div className="question-grid-container" onClick={(e) => e.stopPropagation()}>
-          <div className="question-grid-header">
-            <h3>Questions</h3>
-            <button 
-              className="close-grid-button"
-              onClick={() => setShowQuestionGrid(false)}
-            >
-              <X size={20} />
-            </button>
-          </div>
-          <QuestionGrid
-            questions={currentQuestions}
-            attempts={attempts}
-            currentQuestionIndex={currentQuestionIndex}
-          />
-        </div>
+      <div className="question-grid-container" onClick={(e) => e.stopPropagation()}>
+      <div className="question-grid-header">
+      <h3>Questions</h3>
+      <button 
+      className="close-grid-button"
+      onClick={() => setShowQuestionGrid(false)}
+      >
+      <X size={20} />
+      </button>
+      </div>
+      <QuestionGrid
+      questions={currentQuestions}
+      attempts={attempts}
+      currentQuestionIndex={currentQuestionIndex}
+      />
+      </div>
       </div>
     );
   };
@@ -1032,22 +1032,22 @@ function SATPage() {
   }) => {
     return (
       <div className="question-grid">
-        {questions.map((_, index) => (
-          <button
-            key={index}
-            className={`question-grid-item ${
-              attempts[index] ? 'answered' : 'unanswered'
-            } ${currentQuestionIndex === index ? 'current' : ''}`}
-            onClick={() => {
-                setCurrentQuestionIndex(index);
-                setShowQuestionGrid(false);
-                setShowReviewScreen(false);
-                clearChanges();
-            }}
-          >
-            {index + 1}
-          </button>
-        ))}
+      {questions.map((_, index) => (
+        <button
+        key={index}
+        className={`question-grid-item ${
+          attempts[index] ? 'answered' : 'unanswered'
+        } ${currentQuestionIndex === index ? 'current' : ''}`}
+        onClick={() => {
+          setCurrentQuestionIndex(index);
+          setShowQuestionGrid(false);
+          setShowReviewScreen(false);
+          clearChanges();
+        }}
+        >
+        {index + 1}
+        </button>
+      ))}
       </div>
     );
   };
@@ -1056,13 +1056,13 @@ function SATPage() {
   const handleSilentAttempt = (answer) => {
     const currentQuestion = currentQuestions[currentQuestionIndex];
     const isCorrect = checkCorrectAnswer(answer);
-    
+
     const attempt = {
       answer: answer,
       timestamp: Date.now(),
       correct: isCorrect
     };
-    
+
     setCurrentQuestionAttempts(prev => [...prev, attempt]);
     setAttemptLogs(prev => ({
       ...prev,
@@ -1078,7 +1078,7 @@ function SATPage() {
       const questionId = question.questionId;
       const questionAttempts = attemptLogs[questionId] || [];
       const lastAttempt = questionAttempts[questionAttempts.length - 1];
-      
+
       return {
         questionId: questionId,
         lastAnswer: lastAttempt?.answer || null,
@@ -1092,32 +1092,32 @@ function SATPage() {
 
     return (
       <div className="review-screen">
-        <div className="review-content">
-          <h2>Review Your Answers</h2>
-          <QuestionGrid
-            questions={questions}
-            attempts={attempts}
-            currentQuestionIndex={-1}
-            onQuestionSelect={() => {}} // No-op for now
-          />
-          <div className="review-buttons">
-            <button 
-              className="review-button"
-              onClick={onClose}
-            >
-              Back
-            </button>
-            <button
-              className="review-button submit-button"
-              onClick={() => {
-                handleTimeUp();
-                onClose();
-              }}
-            >
-              Submit
-            </button>
-          </div>
-        </div>
+      <div className="review-content">
+      <h2>Review Your Answers</h2>
+      <QuestionGrid
+      questions={questions}
+      attempts={attempts}
+      currentQuestionIndex={-1}
+      onQuestionSelect={() => {}} // No-op for now
+      />
+      <div className="review-buttons">
+      <button 
+      className="review-button"
+      onClick={onClose}
+      >
+      Back
+      </button>
+      <button
+      className="review-button submit-button"
+      onClick={() => {
+        handleTimeUp();
+        onClose();
+      }}
+      >
+      Submit
+      </button>
+      </div>
+      </div>
       </div>
     );
   };
@@ -1155,13 +1155,13 @@ function SATPage() {
       const apiPayload = isFirstResponse ? {
         history: [],
         message: `Evaluate my answer choice for this SAT question:
-        
+
         Question: ${currentQuestion.question}
         My Answer: ${selectedAnswer?.toUpperCase()}
         My Reasoning: ${inputMessage}
         Correct Answer: ${currentQuestion.answer}
         Official Rationale: ${currentQuestion.rationale}
-        
+
         Please:
         1. Present the strongest argument FOR my answer
         2. Present the strongest argument AGAINST my answer
@@ -1257,151 +1257,176 @@ function SATPage() {
     const data = JSON.parse(message);
     return (
       <div>
-        {data.map((item, index) => {
-          console.log(item.thinking_process);
-          return (
-            <Collapsible key={item.leads_to} title={item.leads_to == "user" ? "Your Answer" : "Correct Answer"}>
-              <Markdown>{item.thinking_process}</Markdown>
-            </Collapsible>);
-        }
-        )}
+      {data.map((item, index) => {
+        console.log(item.thinking_process);
+        return (
+          <Collapsible key={item.leads_to} title={item.leads_to == "user" ? "Your Answer" : "Correct Answer"}>
+          <Markdown>{item.thinking_process}</Markdown>
+          </Collapsible>);
+      }
+      )}
       </div>
     );
   };
 
-// In SatPage.jsx - Update handleSimilarQuestions function
-const handleSimilarQuestions = async () => {
-  try {
-    const currentQuestion = currentQuestions[currentQuestionIndex];
-    
-    // Use a Set for more efficient lookups and guaranteed uniqueness
-    const allExistingIds = new Set();
-    
-    // Add all current question IDs
-    currentQuestions.forEach(q => {
-      if (q.questionId) allExistingIds.add(q.questionId);
-      // Also add internal ID as fallback
-      if (q.id) allExistingIds.add(q.id);
-    });
-    
-    // Add all previously excluded IDs
-    excludedQuestionIds.forEach(id => allExistingIds.add(id));
+  // In SatPage.jsx - Update handleSimilarQuestions function
+  const handleSimilarQuestions = async () => {
+    try {
+      const currentQuestion = currentQuestions[currentQuestionIndex];
 
-    console.log("Excluding these question IDs:", Array.from(allExistingIds));
-    
-    const requestBody = {
-      query: currentQuestion.question,
-      exclude: Array.from(allExistingIds), // Now excludes all known IDs
-    };
+      // Use a Set for more efficient lookups and guaranteed uniqueness
+      const allExistingIds = new Set();
 
-    setFetchedSimilarQuestions(prev => new Set([...prev, currentQuestionIndex]));
+      // Add all current question IDs
+      currentQuestions.forEach(q => {
+        if (q.questionId) allExistingIds.add(q.questionId);
+        // Also add internal ID as fallback
+        if (q.id) allExistingIds.add(q.id);
+      });
 
-    setMessages(prev => [
-      ...prev,
-      { parts: ["Searching for similar questions..."], role: "model" }
-    ]);
+      // Add all previously excluded IDs
+      excludedQuestionIds.forEach(id => allExistingIds.add(id));
 
-    const response = await fetch('/ai/similarquestions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(requestBody)
-    });
+      console.log("Excluding these question IDs:", Array.from(allExistingIds));
 
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    const data = await response.json();
+      const requestBody = {
+        query: currentQuestion.question,
+        exclude: Array.from(allExistingIds), // Now excludes all known IDs
+      };
 
-    if (data.similar_questions?.length > 0) {
-      // Enhanced duplicate detection
-      const uniqueNewQuestions = [];
-      const seenIds = new Set(allExistingIds);
-      
-      // More thorough duplicate check
-      for (const question of data.similar_questions) {
-        const idToCheck = question.questionId || question.id;
-        
-        // Skip if we've seen this ID before
-        if (!idToCheck || seenIds.has(idToCheck)) {
-          console.log("Skipping duplicate question:", idToCheck);
-          continue;
-        }
-        
-        // Also check for questions with the same content
-        const isDuplicateContent = currentQuestions.some(q => 
-          q.question === question.question || 
-          (q.question && question.question && 
-           q.question.trim() === question.question.trim())
-        );
-        
-        if (isDuplicateContent) {
-          console.log("Skipping question with duplicate content");
-          continue;
-        }
-        
-        // This is a new unique question
-        seenIds.add(idToCheck);
-        uniqueNewQuestions.push(question);
-      }
+      setFetchedSimilarQuestions(prev => new Set([...prev, currentQuestionIndex]));
 
-      if (uniqueNewQuestions.length > 0) {
-        const updatedQuestions = [...currentQuestions];
-        updatedQuestions.splice(currentQuestionIndex + 1, 0, ...uniqueNewQuestions);
-        
-        // Update excluded IDs with the new questions
-        const newExcluded = new Set(allExistingIds);
-        uniqueNewQuestions.forEach(q => {
-          if (q.questionId) newExcluded.add(q.questionId);
-          if (q.id) newExcluded.add(q.id);
-        });
-        setExcludedQuestionIds(newExcluded);
+      setMessages(prev => [
+        ...prev,
+        { parts: ["Searching for similar questions..."], role: "model" }
+      ]);
 
-        setCurrentQuestions(updatedQuestions);
-        setAttempts({});
-        setCurrentQuestionAttempts([]);
+      const response = await fetch('/ai/similarquestions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody)
+      });
 
-        setMessages(prev => [
-          ...prev,
-          {
-            parts: [`Added ${uniqueNewQuestions.length} new similar questions`],
-            role: "model"
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      const data = await response.json();
+
+      if (data.similar_questions?.length > 0) {
+        // Enhanced duplicate detection
+        const uniqueNewQuestions = [];
+        const seenIds = new Set(allExistingIds);
+
+        // More thorough duplicate check
+        for (const question of data.similar_questions) {
+          const idToCheck = question.questionId || question.id;
+
+          // Skip if we've seen this ID before
+          if (!idToCheck || seenIds.has(idToCheck)) {
+            console.log("Skipping duplicate question:", idToCheck);
+            continue;
           }
-        ]);
+
+          // Also check for questions with the same content
+          const isDuplicateContent = currentQuestions.some(q => 
+            q.question === question.question || 
+            (q.question && question.question && 
+              q.question.trim() === question.question.trim())
+          );
+
+          if (isDuplicateContent) {
+            console.log("Skipping question with duplicate content");
+            continue;
+          }
+
+          // This is a new unique question
+          seenIds.add(idToCheck);
+          uniqueNewQuestions.push(question);
+        }
+
+        if (uniqueNewQuestions.length > 0) {
+          const updatedQuestions = [...currentQuestions];
+          updatedQuestions.splice(currentQuestionIndex + 1, 0, ...uniqueNewQuestions);
+
+          // Update excluded IDs with the new questions
+          const newExcluded = new Set(allExistingIds);
+          uniqueNewQuestions.forEach(q => {
+            if (q.questionId) newExcluded.add(q.questionId);
+            if (q.id) newExcluded.add(q.id);
+          });
+          setExcludedQuestionIds(newExcluded);
+
+          setCurrentQuestions(updatedQuestions);
+          setAttempts({});
+          setCurrentQuestionAttempts([]);
+
+          setMessages(prev => [
+            ...prev,
+            {
+              parts: [`Added ${uniqueNewQuestions.length} new similar questions`],
+              role: "model"
+            }
+          ]);
+        } else {
+          setMessages(prev => [
+            ...prev,
+            { parts: ["No new similar questions found"], role: "model" }
+          ]);
+        }
       } else {
         setMessages(prev => [
           ...prev,
-          { parts: ["No new similar questions found"], role: "model" }
+          { parts: ["No similar questions found"], role: "model" }
         ]);
       }
-    } else {
+    } catch (error) {
+      console.error("Error finding similar questions:", error);
       setMessages(prev => [
         ...prev,
-        { parts: ["No similar questions found"], role: "model" }
+        {
+          parts: ["Failed to retrieve similar questions. Please try again later."],
+          role: "model"
+        }
       ]);
+    } finally {
+      setFetchedSimilarQuestions(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(currentQuestionIndex);
+        return newSet;
+      });
     }
-  } catch (error) {
-    console.error("Error finding similar questions:", error);
-    setMessages(prev => [
-      ...prev,
-      {
-        parts: ["Failed to retrieve similar questions. Please try again later."],
-        role: "model"
-      }
-    ]);
-  } finally {
-    setFetchedSimilarQuestions(prev => {
-      const newSet = new Set(prev);
-      newSet.delete(currentQuestionIndex);
-      return newSet;
-    });
-  }
-};
+  };
+
+  const [showWarning, setShowWarning] = useState(false);
+
+  const handleLogoClick = () => {
+    setShowWarning(true); // Show the warning popup
+  };
+
+  const handleConfirmNavigation = () => {
+    setShowWarning(false); // Hide the warning
+    navigate('/'); // Proceed with navigation
+  };
+
+  const handleCancelNavigation = () => {
+    setShowWarning(false); // Hide the warning
+  };
 
   return (
     <>
       <div style={{ position: "relative" }}>
+        {showWarning && (
+          <div className="warning-popup-overlay"> {/* Overlay for dimming background */}
+            <div className="warning-popup">
+              <p>Are you sure you want to return to the main page? Your progress will not be saved.</p>
+              <button onClick={handleConfirmNavigation}>Proceed</button>
+              <button onClick={handleCancelNavigation}>Cancel</button>
+            </div>
+          </div>
+        )}
+
         <nav className={`nav sat-nav`}>
           <div
             className="logo"
-            onClick={() => navigate('/')}
+            onClick={handleLogoClick}
             style={{ cursor: "pointer" }}
           >
             <img src="/aquLogo.png" alt="Aquarc Logo" className="logo-image" />
@@ -1421,7 +1446,6 @@ const handleSimilarQuestions = async () => {
                 <Calculator size={24} />
               </button>
             )}
-
           </div>
         </nav>
       </div>
@@ -1446,6 +1470,7 @@ const handleSimilarQuestions = async () => {
             </>
           )}
         </div>
+
         {showCalculator && (
           <Draggable bounds="html" handle=".calculator-handle">
             <div className="calculator-wrapper">
@@ -1466,6 +1491,7 @@ const handleSimilarQuestions = async () => {
             </div>
           </Draggable>
         )}
+
         <div className={`checkbox-column ${showSidebar ? "" : "collapsed"}`}>
           {/* Search button inside sidebar header */}
           <div className="sidebar-header">
@@ -1478,128 +1504,141 @@ const handleSimilarQuestions = async () => {
                 <X size={18} />
               </button>
             </div>
-
           </div>
 
           <div className="filter-container">
-              <div class="filter-sections">
-                  <div>
-                      <h3>Test</h3>
-                      <div className="filter-group">
-                        {["SAT", "PSAT 10/11", "PSAT 8/9"].map((test) => (
-                          <button key={test} className={`horizontal-checkbox-group ${selectedTest == test ? 'selected' : ''}`} onClick={() => setSelectedTest(test)}>
-                            {test}
-                          </button>
-                        ))}
-                      </div>
-                  </div>
-
-                  <div>
-                      <h3>Difficulty</h3>
-                      <div className="filter-group">
-                        {["Easy", "Medium", "Hard"].map((difficulty) => (
-                          <div 
-                            key={difficulty} 
-                            className={`horizontal-checkbox-group ${difficulty.toLowerCase()}`}
-                          >
-                            <input
-                              type="checkbox"
-                              id={difficulty.toLowerCase()}
-                              checked={selectedDifficulties[difficulty]}
-                              onChange={() => handleDifficultyChange(difficulty)}
-                            />
-                            <label htmlFor={difficulty.toLowerCase()}>{difficulty}</label>
-                          </div>
-                        ))}
-                      </div>
-                  </div>
-              
-
-                  <div>
-                      <h3>15-Question Practice Set</h3>
-                      <div className="filter-group">
-                        <button 
-                            key="practice-test-mode-yes"
-                            className={`horizontal-checkbox-group 
-                                ${practiceTestMode ? 'selected' : ''}`} 
-                            onClick={() => setPracticeTestMode(true)}
-                            disabled={!userEmail}>
-                          Yes
-                        </button>
-                        <button 
-                            key="practice-test-mode-no" 
-                            className={`horizontal-checkbox-group 
-                                ${!practiceTestMode ? 'selected' : ''}`} 
-                            onClick={() => setPracticeTestMode(false)}>
-                          No
-                        </button>
-                      </div>
-                  </div>
+            <div class="filter-sections">
+              <div>
+                <h3>Test</h3>
+                <div className="filter-group">
+                  {["SAT", "PSAT 10/11", "PSAT 8/9"].map((test) => (
+                    <button
+                      key={test}
+                      className={`horizontal-checkbox-group ${selectedTest == test ? 'selected' : ''}`}
+                      onClick={() => setSelectedTest(test)}
+                    >
+                      {test}
+                    </button>
+                  ))}
+                </div>
               </div>
-              {questionDisplay.type === "error" && (
-                <div className="error-message">{questionDisplay.content}</div>
-              )}
+
+              <div>
+                <h3>Difficulty</h3>
+                <div className="filter-group">
+                  {["Easy", "Medium", "Hard"].map((difficulty) => (
+                    <div 
+                      key={difficulty} 
+                      className={`horizontal-checkbox-group ${difficulty.toLowerCase()}`}
+                    >
+                      <input
+                        type="checkbox"
+                        id={difficulty.toLowerCase()}
+                        checked={selectedDifficulties[difficulty]}
+                        onChange={() => handleDifficultyChange(difficulty)}
+                      />
+                      <label htmlFor={difficulty.toLowerCase()}>{difficulty}</label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h3>15-Question Practice Set</h3>
+                <div className="filter-group">
+                  <button 
+                    key="practice-test-mode-yes"
+                    className={`horizontal-checkbox-group 
+                                                ${practiceTestMode ? 'selected' : ''}`} 
+                    onClick={() => setPracticeTestMode(true)}
+                    disabled={!userEmail}
+                  >
+                    Yes
+                  </button>
+                  <button 
+                    key="practice-test-mode-no" 
+                    className={`horizontal-checkbox-group 
+                                                ${!practiceTestMode ? 'selected' : ''}`} 
+                    onClick={() => setPracticeTestMode(false)}
+                  >
+                    No
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {questionDisplay.type === "error" && (
+              <div className="error-message">{questionDisplay.content}</div>
+            )}
+
+            <br/>
+
+            <div class="filter-main-group">
+              {!userEmail && (
+                <>
+                  <i style={{ color: 'black' }}>
+                    Please sign in for 15-question practice sets.
+                  </i>
+                </>
+              )} 
 
               <br/>
-              <div class="filter-main-group">
-                  {!userEmail && (
-                    <>
-                          <i style={{ color: 'black' }}>
-                              Please sign in for 15-question practice sets.
-                          </i>
-                    </>
-                  )} 
-                  <br/>
-                  <div class="filter-group action-buttons"> 
-                    {userEmail ? (
-                      <button
-                        className="horizontal-checkbox-group auth-button-secondary"
-                        onClick={() => {
-                          Cookies.remove('user');
-                          setUserEmail(null);
-                          // Instead of navigating immediately, let the user stay on current page
-                          if (window.location.pathname === '/sat') {
+
+              <div class="filter-group action-buttons"> 
+                {userEmail ? (
+                  <button
+                    className="horizontal-checkbox-group auth-button-secondary"
+                    onClick={() => {
+                      Cookies.remove('user');
+                      setUserEmail(null);
+                        // Instead of navigating immediately, let the user stay on current page
+                        if (window.location.pathname === '/sat') {
                             navigate('/');
                           }
-                        }}
+                    }}
+                  >
+                    Log Out
+                  </button>
+                ) : (
+                  <>
+                    <div className="auth-buttons-container">
+                      <button
+                        className="horizontal-checkbox-group auth-button-primary"
+                        onClick={() => navigate('/signup')}
                       >
-                        Log Out
+                        Sign Up 
                       </button>
-                    ) : (
-                      <>
-                        <div className="auth-buttons-container">
-                          <button
-                            className="horizontal-checkbox-group auth-button-primary"
-                            onClick={() => navigate('/signup')}
-                          >
-                           Sign Up 
-                          </button>
-                          <button
-                            className="horizontal-checkbox-group auth-button-secondary"
-                            onClick={() => navigate('/login')}
-                          >
-                            Login
-                          </button>
-                        </div>
-                      </>
-                    )}
-                    <button
-                      className="horizontal-checkbox-group easy"
-                      onClick={handleSearch}
-                      disabled={isLoading}
-                    >
-                      {isLoading ? "Starting..." : "Start Practicing"}
-                    </button>
-                  </div>
+                      <button
+                        className="horizontal-checkbox-group auth-button-secondary"
+                        onClick={() => navigate('/login')}
+                      >
+                        Login
+                      </button>
+                    </div>
+                  </>
+                )}
+
+                <button
+                  className="horizontal-checkbox-group easy"
+                  onClick={handleSearch}
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Starting..." : "Start Practicing"}
+                </button>
               </div>
+            </div>
           </div>
+
           {renderSubdomainInputs()}
         </div>
       </div>
+
       {currentQuestions.length > 0 && renderNavigationView()}
+
       {showChat && (
         <div className="ai-chat-sidebar">
           <div className="ai-chat-header">SAT AI Tutor</div>
+
           <div className="ai-chat-messages">
             {messages.map((message, index) => (
               <div
@@ -1612,10 +1651,11 @@ const handleSimilarQuestions = async () => {
                     :
                     <Markdown>{message.parts[0]}</Markdown>)
                   :
-                  message.parts[0]}
+                    message.parts[0]}
               </div>
             ))}
           </div>
+
           <form onSubmit={handleChatSubmit} className="ai-chat-input-container">
             {/* Approach buttons row */}
             <div className="approach-buttons">
@@ -1627,6 +1667,7 @@ const handleSimilarQuestions = async () => {
               >
                 Approaches
               </button>
+
               <button
                 type="button"
                 className="approach-button"
@@ -1653,7 +1694,9 @@ const handleSimilarQuestions = async () => {
           </form>
         </div>
       )}
+
       {renderQuestionGrid()}
+
       {showReviewScreen && (
         <ReviewScreen
           questions={currentQuestions}
