@@ -168,10 +168,17 @@ html {
   cursor: se-resize;
 }
 
+.sidebar-standalone-content-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
 .sidebar-standalone-content {
   padding: 1rem;
   border: 1px solid #ccc;
   border-radius: 8px;
+  flex: 1;
 }
 
 .sidebar-standalone-header {

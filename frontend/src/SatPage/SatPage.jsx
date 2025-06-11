@@ -466,27 +466,31 @@ function SATPage() {
     }
 
 
-    return Object.entries(subdomainData).map(([sectionName, section]) => (
-      <div class="sidebar-standalone-content">
-        <h2 class="sidebar-standalone-header">{sectionName}</h2>
-        {section.map(({ category, subdomains }) => (
-          <React.Fragment key={category}>
-            <h4>{category}</h4>
-            {subdomains.map((subdomain) => (
-              <div key={subdomain.id} className="checkbox-group">
-                <input
-                  type="checkbox"
-                  id={subdomain.id}
-                  onChange={subdomain.onChange}
-                  checked={subdomain.checked}
-                />
-                <label htmlFor={subdomain.id}>{subdomain.label}</label>
-              </div>
+    return (
+      <div class="sidebar-standalone-content-container">
+        {Object.entries(subdomainData).map(([sectionName, section]) => (
+          <div class="sidebar-standalone-content">
+            <h2 class="sidebar-standalone-header">{sectionName}</h2>
+            {section.map(({ category, subdomains }) => (
+              <React.Fragment key={category}>
+                <h4>{category}</h4>
+                {subdomains.map((subdomain) => (
+                  <div key={subdomain.id} className="checkbox-group">
+                    <input
+                      type="checkbox"
+                      id={subdomain.id}
+                      onChange={subdomain.onChange}
+                      checked={subdomain.checked}
+                    />
+                    <label htmlFor={subdomain.id}>{subdomain.label}</label>
+                  </div>
+                ))}
+              </React.Fragment>
             ))}
-          </React.Fragment>
+          </div>
         ))}
       </div>
-    ));
+    );
   };
 
   const shouldShowFreeResponse = (choices) => {
@@ -1540,7 +1544,7 @@ const handleSimilarQuestions = async () => {
               <div class="filter-main-group">
                   {!userEmail && (
                     <>
-                          <i style={{ color: 'red' }}>
+                          <i style={{ color: 'black' }}>
                               Please sign in for 15-question practice sets.
                           </i>
                     </>
@@ -1589,11 +1593,6 @@ const handleSimilarQuestions = async () => {
                   </div>
               </div>
           </div>
-
-
-
-
-
           {renderSubdomainInputs()}
         </div>
       </div>
