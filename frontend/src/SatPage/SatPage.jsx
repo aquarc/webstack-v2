@@ -1496,6 +1496,13 @@ function SATPage() {
           {/* Search button inside sidebar header */}
           <div className="sidebar-header">
             <div className="filter-tabs">
+              <div
+                className="logo"
+                onClick={handleConfirmNavigation}
+                style={{ cursor: "pointer" }}
+              >
+                <img src="/aquLogo.png" alt="Aquarc Logo" className="logo-image" />
+              </div>
               <h2 class="sidebar-header">Practice Questions</h2>
               <button
                 className="close-sidebar-button"
