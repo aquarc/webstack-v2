@@ -790,144 +790,23 @@ function SATPage() {
 
   // Update the renderQuestionView function
   const renderQuestionView = () => {
-    switch (questionDisplay.type) {
-      case "loading":
-        return <div>{questionDisplay.content}</div>;
-      case "question":
-        const { questionDetails, navigation } = questionDisplay.content;
-        {
-          excludedQuestionIds.has(questionDetails.questionId) && (
-            <div className="ai-question-tag">
-              AI-Suggested Question
-            </div>
-          )
-        }
-        if (questionDetails.category === "Math") {
-          return (
-            <div className={`question-container math-layout`}>
-              {questionDetails.details && (
-                <>
-                  <div className="question-control-header">
-                    <button className="control-button save-button">
-                      <Bookmark size={18} />
-                      <span>Coming Soon</span>
-                    </button>
-
-                      <a
-                        href={`/feedback?questionId=${questionDetails.questionId}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="control-button feedback-button"
-                      >
-                        <MessageSquare size={18} /> {/* Changed from Bookmark to MessageSquare */}
-                        <span>Feedback</span>
-                      </a>
-                    {!shouldShowFreeResponse(questionDetails.answerChoices) && (
-                      <button
-                        className={`control-button eliminate-button ${isCrossOutMode ? "active" : ""}`}
-                        onClick={() => setIsCrossOutMode(!isCrossOutMode)}
-                      >
-                        <X size={18} />
-                        <span>Eliminate Answer</span>
-                      </button>
-
-                    )}
-
-                    {/* Show Ask AI button for all question types after incorrect attempt */}
-                    {attempts[currentQuestionIndex] && attempts[currentQuestionIndex] > 0 && (
-                      <button
-                        className="control-button ai-help-button"
-                        onClick={() => handleAIHelp()}
-                      >
-                        <HelpCircle size={18} />
-                        <span>Ask AI</span>
-                      </button>
-                    )}
-                  </div>
-                  <div
-                    className="question-additional-details"
-                    dangerouslySetInnerHTML={{
-                      __html: questionDetails.details,
-                    }}
-                  />
-                </>
-              )}
-              <div className="question-right-side">
-                {!questionDetails.details && (
-                  <div className="question-control-header">
-                    <button className="control-button save-button">
-                      <Bookmark size={18} />
-                      <span>Coming Soon</span>
-                    </button>
-
-                      <a
-                        href={`/feedback?questionId=${questionDetails.questionId}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="control-button feedback-button"
-                      >
-                        <MessageSquare size={18} /> {/* Changed from Bookmark to MessageSquare */}
-                        <span>Feedback</span>
-                      </a>
-
-                    {!shouldShowFreeResponse(questionDetails.answerChoices) && (
-                      <button
-                        className={`control-button eliminate-button ${isCrossOutMode ? "active" : ""}`}
-                        onClick={() => setIsCrossOutMode(!isCrossOutMode)}
-                      >
-                        <X size={18} />
-                        <span>Eliminate Answer</span>
-                      </button>
-                    )}
-                    {/* Show AI button after any attempt */}
-                    {attempts[currentQuestionIndex] && attempts[currentQuestionIndex] > 0 && (
-                      <button
-                        className="control-button ai-help-button"
-                        onClick={() => handleAIHelp()}
-                      >
-                        <HelpCircle size={18} />
-                        <span>Ask AI</span>
-                      </button>
-                    )}
-                  </div>
-                )}
-
-                <div className="question-text">
-                  <div
-                    dangerouslySetInnerHTML={{
-                      __html: questionDetails.question,
-                    }}
-                  />
-                </div>
-                <br />
-                <div className="answer-choices">
-                  {renderAnswerChoices(
-                    questionDetails.answerChoices,
-                    questionDetails.answer,
-                    questionDetails.rationale,
-                    questionDetails.questionType,
-                    questionDetails.externalId,
-                  )}
-                </div>
-                
-              </div>
-            </div>
-          );
-        } else {
-          return (
-            <div className={`question-container`}>
-              {questionDetails.details && (
-                <>
-                  <div
-                    className="question-additional-details"
-                    dangerouslySetInnerHTML={{
-                      __html: questionDetails.details,
-                    }}
-                  />
-                  <div className="vertical-bar"></div>
-                </>
-              )}
-              <div className="question-right-side">
+  switch (questionDisplay.type) {
+    case "loading":
+      return <div>{questionDisplay.content}</div>;
+    case "question":
+      const { questionDetails, navigation } = questionDisplay.content;
+      {
+        excludedQuestionIds.has(questionDetails.questionId) && (
+          <div className="ai-question-tag">
+            AI-Suggested Question
+          </div>
+        )
+      }
+      if (questionDetails.category === "Math") {
+        return (
+          <div className={`question-container math-layout`}>
+            {questionDetails.details && (
+              <>
                 <div className="question-control-header">
                   <button className="control-button save-button">
                     <Bookmark size={18} />
@@ -940,18 +819,18 @@ function SATPage() {
                       rel="noopener noreferrer"
                       className="control-button feedback-button"
                     >
-                      <MessageSquare size={18} /> {/* Changed from Bookmark to MessageSquare */}
+                      <MessageSquare size={18} />
                       <span>Feedback</span>
                     </a>
-                  <button
-                    className={`control-button eliminate-button 
-        ${isCrossOutMode ? "active" : ""}`}
-                    onClick={() => setIsCrossOutMode(!isCrossOutMode)}
-                  >
-                    <X size={18} />
-                    <span>Eliminate Answer</span>
-                  </button>
-                  {/* Add AI Help button for English */}
+                  {!shouldShowFreeResponse(questionDetails.answerChoices) && (
+                    <button
+                      className={`control-button eliminate-button ${isCrossOutMode ? "active" : ""}`}
+                      onClick={() => setIsCrossOutMode(!isCrossOutMode)}
+                    >
+                      <X size={18} />
+                      <span>Eliminate Answer</span>
+                    </button>
+                  )}
                   {attempts[currentQuestionIndex] && attempts[currentQuestionIndex] > 0 && (
                     <button
                       className="control-button ai-help-button"
@@ -962,87 +841,216 @@ function SATPage() {
                     </button>
                   )}
                 </div>
-                <div className="question-text">
-                  <div
-                    dangerouslySetInnerHTML={{
-                      __html: questionDetails.question,
-                    }}
-                  />
-                </div>
-                <br />
-                <div className="answer-choices">
-                  {renderAnswerChoices(
-                    questionDetails.answerChoices,
-                    questionDetails.answer,
-                    questionDetails.rationale,
-                    questionDetails.questionType,
-                    questionDetails.externalId,
+                <div
+                  className="question-additional-details"
+                  dangerouslySetInnerHTML={{
+                    __html: questionDetails.details,
+                  }}
+                />
+              </>
+            )}
+            <div className="question-right-side">
+              {!questionDetails.details && (
+                <div className="question-control-header">
+                  <button className="control-button save-button">
+                    <Bookmark size={18} />
+                    <span>Coming Soon</span>
+                  </button>
+
+                    <a
+                      href={`/feedback?questionId=${questionDetails.questionId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="control-button feedback-button"
+                    >
+                      <MessageSquare size={18} />
+                      <span>Feedback</span>
+                    </a>
+                  {!shouldShowFreeResponse(questionDetails.answerChoices) && (
+                    <button
+                      className={`control-button eliminate-button ${isCrossOutMode ? "active" : ""}`}
+                      onClick={() => setIsCrossOutMode(!isCrossOutMode)}
+                    >
+                      <X size={18} />
+                      <span>Eliminate Answer</span>
+                    </button>
+                  )}
+                  {attempts[currentQuestionIndex] && attempts[currentQuestionIndex] > 0 && (
+                    <button
+                      className="control-button ai-help-button"
+                      onClick={() => handleAIHelp()}
+                    >
+                      <HelpCircle size={18} />
+                      <span>Ask AI</span>
+                    </button>
                   )}
                 </div>
-               
-              </div>
-            </div>
-          );
-        }
-      default:
-        return null;
-    }
-  };
-
-  // In the renderNavigationView function
-  const renderNavigationView = () => {
-    switch (questionDisplay.type) {
-      case "loading":
-      case "error":
-        return null;
-      case "question":
-        const { questionDetails, navigation } = questionDisplay.content;
-
-        return (
-          <div className="fixed-bottom-bar">
-            <div className="left-section">
-              {userEmail ? (
-                <span className="user-email-bottom">{userEmail}</span>
-              ) : (
-                <span className="login-status">Not Logged In</span>
               )}
-            </div>
 
-            <div className="middle-section">
-              <button
-                className="progress-button"
-                onClick={() => setShowQuestionGrid(true)}
-              >
-                {`${navigation.currentIndex} / ${navigation.totalQuestions}`}
-                <ChevronDown size={16} className="dropdown-icon" />
-              </button>
-            </div>
-
-            <div className="right-section">
-              <button
-                onClick={handleNavigatePrevious}
-                disabled={!navigation.hasPrevious}
-                className="nav-button"
-              >
-                Previous
-              </button>
-              <button
-                onClick={handleNavigateNext}
-                disabled={showReviewScreen ? !navigation.hasNext : false}
-                className="nav-button"
-              >
-                Next
-              </button>
-              {!practiceTestMode && (
-                <button onClick={handleCheckAnswer}>Check</button>
+              <div className="question-text">
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: questionDetails.question,
+                  }}
+                />
+              </div>
+              <br />
+              <div className="answer-choices">
+                {renderAnswerChoices(
+                  questionDetails.answerChoices,
+                  questionDetails.answer,
+                  questionDetails.rationale,
+                  questionDetails.questionType,
+                  questionDetails.externalId,
+                )}
+              </div>
+              {/* Add Check button for Math multiple-choice */}
+              {!practiceTestMode && !shouldShowFreeResponse(questionDetails.answerChoices) && (
+                <button 
+                  onClick={handleCheckAnswer}
+                  className="check-answer-button"
+                  disabled={!selectedAnswer}
+                >
+                  Check Answer
+                </button>
               )}
             </div>
           </div>
         );
-      default:
-        return null;
-    }
-  };
+      } else {
+        return (
+          <div className={`question-container`}>
+            {questionDetails.details && (
+              <>
+                <div
+                  className="question-additional-details"
+                  dangerouslySetInnerHTML={{
+                    __html: questionDetails.details,
+                  }}
+                />
+                <div className="vertical-bar"></div>
+              </>
+            )}
+            <div className="question-right-side">
+              <div className="question-control-header">
+                <button className="control-button save-button">
+                  <Bookmark size={18} />
+                  <span>Coming Soon</span>
+                </button>
+
+                  <a
+                    href={`/feedback?questionId=${questionDetails.questionId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="control-button feedback-button"
+                  >
+                    <MessageSquare size={18} />
+                    <span>Feedback</span>
+                  </a>
+                <button
+                  className={`control-button eliminate-button ${isCrossOutMode ? "active" : ""}`}
+                  onClick={() => setIsCrossOutMode(!isCrossOutMode)}
+                >
+                  <X size={18} />
+                  <span>Eliminate Answer</span>
+                </button>
+                {attempts[currentQuestionIndex] && attempts[currentQuestionIndex] > 0 && (
+                  <button
+                    className="control-button ai-help-button"
+                    onClick={() => handleAIHelp()}
+                  >
+                    <HelpCircle size={18} />
+                    <span>Ask AI</span>
+                  </button>
+                )}
+              </div>
+              <div className="question-text">
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: questionDetails.question,
+                  }}
+                />
+              </div>
+              <br />
+              <div className="answer-choices">
+                {renderAnswerChoices(
+                  questionDetails.answerChoices,
+                  questionDetails.answer,
+                  questionDetails.rationale,
+                  questionDetails.questionType,
+                  questionDetails.externalId,
+                )}
+              </div>
+              {/* Add Check button for English multiple-choice */}
+              {!practiceTestMode && !shouldShowFreeResponse(questionDetails.answerChoices) && (
+                <button 
+                  onClick={handleCheckAnswer}
+                  className="check-answer-button"
+                  disabled={!selectedAnswer}
+                >
+                  Check Answer
+                </button>
+              )}
+            </div>
+          </div>
+        );
+      }
+    default:
+      return null;
+  }
+};
+
+  // In the renderNavigationView function
+  const renderNavigationView = () => {
+  switch (questionDisplay.type) {
+    case "loading":
+    case "error":
+      return null;
+    case "question":
+      const { questionDetails, navigation } = questionDisplay.content;
+
+      return (
+        <div className="fixed-bottom-bar">
+          <div className="left-section">
+            {userEmail ? (
+              <span className="user-email-bottom">{userEmail}</span>
+            ) : (
+              <span className="login-status">Not Logged In</span>
+            )}
+          </div>
+
+          <div className="middle-section">
+            <button
+              className="progress-button"
+              onClick={() => setShowQuestionGrid(true)}
+            >
+              {`${navigation.currentIndex} / ${navigation.totalQuestions}`}
+              <ChevronDown size={16} className="dropdown-icon" />
+            </button>
+          </div>
+
+          <div className="right-section">
+            <button
+              onClick={handleNavigatePrevious}
+              disabled={!navigation.hasPrevious}
+              className="nav-button"
+            >
+              Previous
+            </button>
+            <button
+              onClick={handleNavigateNext}
+              disabled={showReviewScreen ? !navigation.hasNext : false}
+              className="nav-button"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      );
+    default:
+      return null;
+  }
+};
 
   // Add new component inside SATPage component
   const renderQuestionGrid = () => {

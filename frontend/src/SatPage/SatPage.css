@@ -115,6 +115,27 @@ html {
   min-height: 40px;
 }
 
+.check-answer-button {
+  margin-top: 10px;
+  padding: 10px 20px;
+  background-color: #6366F1;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  align-self: flex-start;
+}
+
+.check-answer-button:hover {
+  background-color: #4F46E5;
+}
+
+.check-answer-button:disabled {
+  background-color: #adb5bd;
+  cursor: not-allowed;
+}
+
 /* Remove sr-only class since we want to show the text */
 .calculator-icon-button span {
   font-size: 14px;
