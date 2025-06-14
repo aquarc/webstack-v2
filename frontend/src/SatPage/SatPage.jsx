@@ -11,7 +11,7 @@ import {
 } from "./SatPageFunctions";
 import Desmos from "desmos";
 import Collapsible from "../Components/Collapsible";
-import { Bookmark, Calculator, ListFilter, X, HelpCircle, ChevronDown } from "lucide-react";
+import { Bookmark, Calculator, ListFilter, X, HelpCircle, ChevronDown, MessageSquare } from "lucide-react";
 import PomodoroTimer from "./PomodoroTimer";
 import Draggable from "react-draggable";
 import { ResizableBox } from "react-resizable";
@@ -812,6 +812,16 @@ function SATPage() {
                       <Bookmark size={18} />
                       <span>Coming Soon</span>
                     </button>
+
+                      <a
+                        href={`/feedback?questionId=${questionDetails.questionId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="control-button feedback-button"
+                      >
+                        <MessageSquare size={18} /> {/* Changed from Bookmark to MessageSquare */}
+                        <span>Feedback</span>
+                      </a>
                     {!shouldShowFreeResponse(questionDetails.answerChoices) && (
                       <button
                         className={`control-button eliminate-button ${isCrossOutMode ? "active" : ""}`}
@@ -820,6 +830,7 @@ function SATPage() {
                         <X size={18} />
                         <span>Eliminate Answer</span>
                       </button>
+
                     )}
 
                     {/* Show Ask AI button for all question types after incorrect attempt */}
@@ -848,6 +859,17 @@ function SATPage() {
                       <Bookmark size={18} />
                       <span>Coming Soon</span>
                     </button>
+
+                      <a
+                        href={`/feedback?questionId=${questionDetails.questionId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="control-button feedback-button"
+                      >
+                        <MessageSquare size={18} /> {/* Changed from Bookmark to MessageSquare */}
+                        <span>Feedback</span>
+                      </a>
+
                     {!shouldShowFreeResponse(questionDetails.answerChoices) && (
                       <button
                         className={`control-button eliminate-button ${isCrossOutMode ? "active" : ""}`}
@@ -887,11 +909,7 @@ function SATPage() {
                     questionDetails.externalId,
                   )}
                 </div>
-                <div className={`feedback-link ${showSidebar ? "with-sidebar" : ""}`}>
-                  <a href={`/feedback?questionId=${questionDetails.questionId}`} target="_blank" rel="noopener noreferrer">
-                    Feedback
-                  </a>
-                </div>
+                
               </div>
             </div>
           );
@@ -915,6 +933,16 @@ function SATPage() {
                     <Bookmark size={18} />
                     <span>Coming Soon</span>
                   </button>
+
+                    <a
+                      href={`/feedback?questionId=${questionDetails.questionId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="control-button feedback-button"
+                    >
+                      <MessageSquare size={18} /> {/* Changed from Bookmark to MessageSquare */}
+                      <span>Feedback</span>
+                    </a>
                   <button
                     className={`control-button eliminate-button 
         ${isCrossOutMode ? "active" : ""}`}
@@ -951,11 +979,7 @@ function SATPage() {
                     questionDetails.externalId,
                   )}
                 </div>
-                <div className={`feedback-link ${showSidebar ? "with-sidebar" : ""}`}>
-                  <a href={`/feedback?questionId=${questionDetails.questionId}`} target="_blank" rel="noopener noreferrer">
-                    Feedback
-                  </a>
-                </div>
+               
               </div>
             </div>
           );
@@ -1451,15 +1475,23 @@ function SATPage() {
             <img src="/aquLogo.png" alt="Aquarc Logo" className="logo-image" />
           </div>
 
-          <PomodoroTimer
-            ref={pomodoroTimerRef}
-            onTimeUp={handleTimeUp}
-          />
+          <div className="nav-tools">
+            <button
+              onClick={toggleSidebar}
+              className="calculator-icon-button"
+            >
+              <ListFilter size={24} />
+              <span>Filters</span>
+            </button>
 
-          <div>
+            <PomodoroTimer
+              ref={pomodoroTimerRef}
+              onTimeUp={handleTimeUp}
+            />
+
             {questionDisplay.content?.questionDetails?.category == "Math" && (
               <button
-                onClick={() => toggleCalculator()} // Fixed: Call toggleCalculator function when clicked
+                onClick={() => toggleCalculator()}
                 className={`calculator-icon-button format-time`}
               >
                 <Calculator size={24} />
@@ -1469,13 +1501,7 @@ function SATPage() {
         </nav>
       </div>
 
-      <div
-        className="sidebar-tab"
-        style={{ display: showSidebar ? 'none' : 'grid' }}
-        onClick={toggleSidebar}
-      >
-        <ListFilter size={20} />
-      </div>
+
 
       <div className="sat-page">
         <div className="sat-main-content">

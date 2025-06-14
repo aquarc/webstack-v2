@@ -12,6 +12,21 @@ html {
   width: 100%;
 }
 
+.sat-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.nav-tools {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
 /*imported fonts*/
 @import url("https://fonts.googleapis.com/css2?family=Archivo:ital,wght@1,600&display=swap");
 
@@ -94,18 +109,15 @@ html {
   border: none;
   cursor: pointer;
   color: #666;
-  /* Add these new styles */
   display: inline-flex;
   align-items: center;
   gap: 8px;
   min-height: 40px;
-  /* Match icon button height */
 }
 
 /* Remove sr-only class since we want to show the text */
 .calculator-icon-button span {
-  font-size: 24px;
-  /* Match clock icon size */
+  font-size: 14px;
   line-height: 1;
   margin: 0;
   padding: 0;
@@ -582,32 +594,6 @@ html {
   cursor: not-allowed;
 }
 
-.sidebar-tab {
-  position: fixed;
-  top: 50%;
-  right: 0;
-  transform: translateY(-50%);
-  background-color: #6366F1;
-  padding: 12px 8px;
-  border-radius: 8px 0 0 8px;
-  cursor: pointer;
-  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
-  transition: right 0.3s ease;
-  z-index: 1001;
-  /* Higher than checkbox-column's z-index */
-  display: flex;
-  align-items: center;
-  color: white;
-}
-
-.sidebar-tab:hover {
-  background-color: #4F46E5;
-}
-
-.sidebar-tab.hidden {
-  display: none;
-}
-
 .filter-tabs {
   display: flex;
   gap: 8px;
@@ -698,14 +684,14 @@ html {
 .horizontal-checkbox-group.auth-button-primary {
   color: rgb(255, 255, 255);
   background-color: #ec9595;
-  border: 1px solid #000000;
+  border: 1px solid #ec9595;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .horizontal-checkbox-group.auth-button-secondary {
   background-color: rgb(119, 223, 192);
   color: #ffffff;
-  border: 1px solid #000000;
+  border: 1px solid #7ed2c5;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
