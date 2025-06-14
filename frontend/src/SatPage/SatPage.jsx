@@ -846,7 +846,7 @@ function SATPage() {
                   dangerouslySetInnerHTML={{
                     __html: questionDetails.details,
                   }}
-                />
+                 />
               </>
             )}
             <div className="question-right-side">

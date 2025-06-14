@@ -716,6 +716,31 @@ html {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
+.auth-button-wrapper {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  gap: 8px;
+}
+
+@media (max-width: 850px) {
+  .auth-button-wrapper {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    top: auto;
+    right: auto;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 999;
+    background-color: white;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  }
+}
+
 /* Update hover states to match */
 @media (hover: hover) and (pointer: fine) {
   .auth-button-primary:hover {
@@ -1258,4 +1283,123 @@ html {
   border-width: 5px;
   border-style: solid;
   border-color: #333 transparent transparent transparent;
+}
+
+/* Add these media queries at the bottom of the file */
+
+@media (max-width: 1024px) {
+
+  /* Prevent overlap between auth buttons and practice set section */
+  .filter-sections>div {
+    margin-bottom: 1.5rem;
+  }
+
+  .auth-buttons-top-right {
+    position: static;
+    width: 100%;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .filter-group.action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+
+  /* Mobile-specific styles */
+  .checkbox-column {
+    width: 100%;
+    padding: 15px;
+    box-sizing: border-box;
+    overflow-y: auto;
+  }
+
+  .sidebar-standalone-content-container {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .sidebar-standalone-content {
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+
+  .filter-sections>div {
+    padding: 0 10px;
+  }
+
+  .filter-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  .horizontal-checkbox-group {
+    width: 100%;
+    text-align: center;
+    padding: 8px 12px;
+  }
+
+  .auth-buttons-top-right {
+    flex-direction: column;
+    height: auto;
+    gap: 0.5rem;
+  }
+
+  .auth-buttons-top-right button {
+    width: 100px;
+  }
+
+  @media (max-width: 768px) {
+    .auth-buttons-top-right {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      top: auto;
+      right: auto;
+      flex-direction: column;
+      z-index: 999;
+    }
+  }
+
+
+  .filter-main-group {
+    margin-top: 1rem;
+  }
+
+  .tooltip-container {
+    vertical-align: middle;
+    margin-left: 4px;
+  }
+
+  .tooltip-text {
+    max-width: 90vw;
+    width: 300px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+
+  /* Extra small devices */
+  .filter-group {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar-header h2 {
+    font-size: 1.2rem;
+  }
+
+  .filter-sections h3 {
+    font-size: 1rem;
+  }
+
+  .horizontal-checkbox-group {
+    padding: 6px 8px;
+    font-size: 0.9rem;
+  }
 }
