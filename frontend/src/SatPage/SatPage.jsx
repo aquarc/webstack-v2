@@ -347,7 +347,7 @@ function SATPage() {
     sendClickEvent("submit-answer");
   };
 
-  const checkCorrectAnswer = (choice=null) => {
+  const checkCorrectAnswer = (choice = null) => {
     const currentQuestion = currentQuestions[currentQuestionIndex];
     let isCorrect = false;
 
@@ -358,7 +358,7 @@ function SATPage() {
       // Free-response validation
       if (choice.includes("/")) {
         const [n, d] = choice.split("/");
-        isCorrect = Math.abs((n/d).toFixed(4) - currentQuestion.answer) < 0.001;
+        isCorrect = Math.abs((n / d).toFixed(4) - currentQuestion.answer) < 0.001;
       } else {
         isCorrect = choice === currentQuestion.answer;
       }
@@ -375,10 +375,10 @@ function SATPage() {
     const isCorrect = checkCorrectAnswer();
 
     // Always log the attempt
-    const attempt = { 
-      answer: tempAnswer || selectedAnswer, 
+    const attempt = {
+      answer: tempAnswer || selectedAnswer,
       timestamp: Date.now(),
-      correct: isCorrect 
+      correct: isCorrect
     };
     setCurrentQuestionAttempts(prev => [...prev, attempt]);
 
@@ -459,36 +459,57 @@ function SATPage() {
     handleNavigatePrevious,
     handleNavigateNext,
   );
+  function Collapsible({ title, children, initialOpen = false }) {
+    const [isOpen, setIsOpen] = useState(initialOpen);
 
+    return (
+      <div className="collapsible-container">
+        <div
+          className="collapsible-header"
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          <span>{title}</span>
+          <span>{isOpen ? '−' : '+'}</span>
+        </div>
+        {isOpen && (
+          <div className="collapsible-content">
+            {children}
+          </div>
+        )}
+      </div>
+    );
+  }
   const renderSubdomainInputs = () => {
     if (subdomainData.length <= 0) {
       return null;
     }
 
-
     return (
       <div class="sidebar-standalone-content-container">
-      {Object.entries(subdomainData).map(([sectionName, section]) => (
-        <div class="sidebar-standalone-content">
-        <h2 class="sidebar-standalone-header">{sectionName}</h2>
-        {section.map(({ category, subdomains }) => (
-          <React.Fragment key={category}>
-          <h4>{category}</h4>
-          {subdomains.map((subdomain) => (
-            <div key={subdomain.id} className="checkbox-group">
-            <input
-            type="checkbox"
-            id={subdomain.id}
-            onChange={subdomain.onChange}
-            checked={subdomain.checked}
-            />
-            <label htmlFor={subdomain.id}>{subdomain.label}</label>
-            </div>
-          ))}
-          </React.Fragment>
+        {Object.entries(subdomainData).map(([sectionName, section]) => (
+          <div class="sidebar-standalone-content">
+            <h2 class="sidebar-standalone-header">{sectionName}</h2>
+            {section.map(({ category, subdomains }) => (
+              <div key={category} className="subtopic-container"> {/* New container div */}
+                <Collapsible title={category} initialOpen={true}>
+                  <div className="subdomain-group">
+                    {subdomains.map((subdomain) => (
+                      <div key={subdomain.id} className="checkbox-group">
+                        <input
+                          type="checkbox"
+                          id={subdomain.id}
+                          onChange={subdomain.onChange}
+                          checked={subdomain.checked}
+                        />
+                        <label htmlFor={subdomain.id}>{subdomain.label}</label>
+                      </div>
+                    ))}
+                  </div>
+                </Collapsible>
+              </div>
+            ))}
+          </div>
         ))}
-        </div>
-      ))}
       </div>
     );
   };
@@ -527,42 +548,42 @@ function SATPage() {
 
       return (
         <>
-        <input
-        type="text"
-        id="free-response-input"
-        value={tempAnswer}
-        onChange={(e) => setTempAnswer(e.target.value)}
-        onKeyDown={handleKeyPress}
-        className={`flex-1 p-2 border rounded-md ${hasSelectedAnswer ? 
-            (isCorrect ? "correct-answer" : "incorrect-answer") : 
-            "" 
-        }`}
-        placeholder="Enter your answer..."
-        />
-        <br></br>
-        <br></br>
-        <button
-        onClick={handleSubmitAnswer}
-        className="bg-[#6366F1] hover:bg-[#4F46E5] text-white px-4 py-2 rounded-md transition-colors duration-200"
-        disabled={!tempAnswer.trim()}
-        >
-        Submit
-        </button>
-        <br></br>
-        {(selectedAnswer && (selectedAnswer === correctAnswer || currentAttempts >= 3)) && (
-          <div
-          className={`rationale-container ${selectedAnswer === correctAnswer ? "correct" : "incorrect"}`}
-          >
-          <h4 className="rationale-header">
-          {selectedAnswer === correctAnswer ? "Correct!" : "Incorrect"}
-          </h4>
-          <div
-          className="rationale-content"
-          dangerouslySetInnerHTML={{ __html: rationale }}
+          <input
+            type="text"
+            id="free-response-input"
+            value={tempAnswer}
+            onChange={(e) => setTempAnswer(e.target.value)}
+            onKeyDown={handleKeyPress}
+            className={`flex-1 p-2 border rounded-md ${hasSelectedAnswer ?
+              (isCorrect ? "correct-answer" : "incorrect-answer") :
+              ""
+              }`}
+            placeholder="Enter your answer..."
           />
-          </div>
-        )}
-        <br></br>
+          <br></br>
+          <br></br>
+          <button
+            onClick={handleSubmitAnswer}
+            className="bg-[#6366F1] hover:bg-[#4F46E5] text-white px-4 py-2 rounded-md transition-colors duration-200"
+            disabled={!tempAnswer.trim()}
+          >
+            Submit
+          </button>
+          <br></br>
+          {(selectedAnswer && (selectedAnswer === correctAnswer || currentAttempts >= 3)) && (
+            <div
+              className={`rationale-container ${selectedAnswer === correctAnswer ? "correct" : "incorrect"}`}
+            >
+              <h4 className="rationale-header">
+                {selectedAnswer === correctAnswer ? "Correct!" : "Incorrect"}
+              </h4>
+              <div
+                className="rationale-content"
+                dangerouslySetInnerHTML={{ __html: rationale }}
+              />
+            </div>
+          )}
+          <br></br>
         </>
       );
     }
@@ -580,33 +601,33 @@ function SATPage() {
 
         return (
           <>
-          <div className="multiple-choice-container">
-          {["a", "b", "c", "d"]
-            .map((letterChoice, index) => { // Added index parameter here
-              if (!parsedChoices[letterChoice]) return null;
+            <div className="multiple-choice-container">
+              {["a", "b", "c", "d"]
+                .map((letterChoice, index) => { // Added index parameter here
+                  if (!parsedChoices[letterChoice]) return null;
 
-              const content =
-                parsedChoices[letterChoice].body || parsedChoices[letterChoice];
+                  const content =
+                    parsedChoices[letterChoice].body || parsedChoices[letterChoice];
 
-              return renderMultipleChoiceAnswer(correctAnswer, letterChoice, isCrossOutMode, content);
-            })
-            .filter(Boolean)}
-          </div>
-          {(selectedAnswer && hasSelectedAnswer) && (
-            <div
-            className={`rationale-container ${selectedAnswer.toLowerCase() === correctAnswer.toLowerCase() ? "correct" : "incorrect"}`}
-            >
-            <h4 className="rationale-header">
-            {selectedAnswer.toLowerCase() === correctAnswer.toLowerCase()
-              ? "Correct!"
-              : "Incorrect"}
-            </h4>
-            <div
-            className="rationale-content"
-            dangerouslySetInnerHTML={{ __html: rationale }}
-            />
+                  return renderMultipleChoiceAnswer(correctAnswer, letterChoice, isCrossOutMode, content);
+                })
+                .filter(Boolean)}
             </div>
-          )}
+            {(selectedAnswer && hasSelectedAnswer) && (
+              <div
+                className={`rationale-container ${selectedAnswer.toLowerCase() === correctAnswer.toLowerCase() ? "correct" : "incorrect"}`}
+              >
+                <h4 className="rationale-header">
+                  {selectedAnswer.toLowerCase() === correctAnswer.toLowerCase()
+                    ? "Correct!"
+                    : "Incorrect"}
+                </h4>
+                <div
+                  className="rationale-content"
+                  dangerouslySetInnerHTML={{ __html: rationale }}
+                />
+              </div>
+            )}
           </>
         );
       }
@@ -614,39 +635,39 @@ function SATPage() {
       if (Array.isArray(parsedChoices)) {
         return (
           <>
-          <div className="multiple-choice-container">
-          {parsedChoices.map((choice, index) => {
-            const content =
-              typeof choice === "object"
-              ? choice.content || choice.body || choice
-              : choice;
+            <div className="multiple-choice-container">
+              {parsedChoices.map((choice, index) => {
+                const content =
+                  typeof choice === "object"
+                    ? choice.content || choice.body || choice
+                    : choice;
 
-            const letterChoice = String.fromCharCode(
-              65 + index,
-            ).toLowerCase();
+                const letterChoice = String.fromCharCode(
+                  65 + index,
+                ).toLowerCase();
 
-            return renderMultipleChoiceAnswer(correctAnswer, letterChoice, isCrossOutMode, content);
-          })}
-          </div>
-          {(reviewMode || ( selectedAnswer && hasSelectedAnswer)) && (
-            <div
-            className={`rationale-container ${reviewMode ? 
-                (isMCQCorrectReviewMode() ? "correct" : "incorrect")
-                : (selectedAnswer === correctAnswer.toLowerCase() ? "correct" : "incorrect")}`}
-            >
-            <h4 className="rationale-header">
-            {reviewMode ? 
-              (isMCQCorrectReviewMode() ? "Correct!" : "Incorrect") :
-              (selectedAnswer === correctAnswer.toLowerCase()
-                ? "Correct!"
-                : "Incorrect")}
-            </h4>
-            <div
-            className="rationale-content"
-            dangerouslySetInnerHTML={{ __html: rationale }}
-            />
+                return renderMultipleChoiceAnswer(correctAnswer, letterChoice, isCrossOutMode, content);
+              })}
             </div>
-          )}
+            {(reviewMode || (selectedAnswer && hasSelectedAnswer)) && (
+              <div
+                className={`rationale-container ${reviewMode ?
+                  (isMCQCorrectReviewMode() ? "correct" : "incorrect")
+                  : (selectedAnswer === correctAnswer.toLowerCase() ? "correct" : "incorrect")}`}
+              >
+                <h4 className="rationale-header">
+                  {reviewMode ?
+                    (isMCQCorrectReviewMode() ? "Correct!" : "Incorrect") :
+                    (selectedAnswer === correctAnswer.toLowerCase()
+                      ? "Correct!"
+                      : "Incorrect")}
+                </h4>
+                <div
+                  className="rationale-content"
+                  dangerouslySetInnerHTML={{ __html: rationale }}
+                />
+              </div>
+            )}
           </>
         );
       }
@@ -700,69 +721,69 @@ function SATPage() {
         === letterChoice;
     }
 
-    const isUserAnswer = 
+    const isUserAnswer =
       reviewMode && lastAttempt?.answer?.toLowerCase() === letterChoice;
 
     return (
       <>
-      <div
-      key={choiceKey}
-      className={`answer-choice ${isCrossedOut ? "crossed-out" : ""}`}
-      onClick={(e) => {
-        if (reviewMode) {
-          e.stopPropagation();
-          return;
-        }
-
-        if (isCrossOutMode) {
-          setCrossedOutAnswers((prev) => {
-            const currentCrossouts = new Set(
-              prev[currentQuestionIndex] || [],
-            );
-
-            if (currentCrossouts.has(choiceKey)) {
-              currentCrossouts.delete(choiceKey);
-            } else {
-              if (selectedAnswer == letterChoice)
-                setSelectedAnswer(null);
-              currentCrossouts.add(choiceKey);
+        <div
+          key={choiceKey}
+          className={`answer-choice ${isCrossedOut ? "crossed-out" : ""}`}
+          onClick={(e) => {
+            if (reviewMode) {
+              e.stopPropagation();
+              return;
             }
 
-            return {
-              ...prev,
-              [currentQuestionIndex]: currentCrossouts,
-            };
-          });
-        } else {
-          setSelectedAnswer(letterChoice);
-          if (practiceTestMode) {
-            handleSilentAttempt(letterChoice);
-          }
-        }
-      }}
-      >
-      <label
-      className={
-        reviewMode ? 
-        (isCorrect ? "correct-answer" : 
-          (isUserAnswer ? "incorrect-answer" : "unselected-answer")) :
-        (practiceTestMode ? 
-          (lastAttempt?.answer?.toLowerCase() === letterChoice ?
-            "selected-answer" : "unselected-answer") :
-          (hasSelectedAnswer ? 
-            (letterChoice === correctAnswer.toLowerCase() ? "correct-answer" : 
-              selectedAnswer === letterChoice ? 
-              "incorrect-answer" : "unselected-answer") :
-            (selectedAnswer === letterChoice ? 
-              "selected-answer" : "unselected-answer"))
-        )
-      }
-      dangerouslySetInnerHTML={{ __html: content }}
-      />
-      </div>
-      { reviewMode && !(lastAttempt?.answer?.toLowerCase()) && isCorrect && (
-        <p>You did not select any answer for this question.</p>
-      )}
+            if (isCrossOutMode) {
+              setCrossedOutAnswers((prev) => {
+                const currentCrossouts = new Set(
+                  prev[currentQuestionIndex] || [],
+                );
+
+                if (currentCrossouts.has(choiceKey)) {
+                  currentCrossouts.delete(choiceKey);
+                } else {
+                  if (selectedAnswer == letterChoice)
+                    setSelectedAnswer(null);
+                  currentCrossouts.add(choiceKey);
+                }
+
+                return {
+                  ...prev,
+                  [currentQuestionIndex]: currentCrossouts,
+                };
+              });
+            } else {
+              setSelectedAnswer(letterChoice);
+              if (practiceTestMode) {
+                handleSilentAttempt(letterChoice);
+              }
+            }
+          }}
+        >
+          <label
+            className={
+              reviewMode ?
+                (isCorrect ? "correct-answer" :
+                  (isUserAnswer ? "incorrect-answer" : "unselected-answer")) :
+                (practiceTestMode ?
+                  (lastAttempt?.answer?.toLowerCase() === letterChoice ?
+                    "selected-answer" : "unselected-answer") :
+                  (hasSelectedAnswer ?
+                    (letterChoice === correctAnswer.toLowerCase() ? "correct-answer" :
+                      selectedAnswer === letterChoice ?
+                        "incorrect-answer" : "unselected-answer") :
+                    (selectedAnswer === letterChoice ?
+                      "selected-answer" : "unselected-answer"))
+                )
+            }
+            dangerouslySetInnerHTML={{ __html: content }}
+          />
+        </div>
+        {reviewMode && !(lastAttempt?.answer?.toLowerCase()) && isCorrect && (
+          <p>You did not select any answer for this question.</p>
+        )}
       </>
     );
   };
@@ -777,165 +798,165 @@ function SATPage() {
         {
           excludedQuestionIds.has(questionDetails.questionId) && (
             <div className="ai-question-tag">
-            AI-Suggested Question
+              AI-Suggested Question
             </div>
           )
         }
         if (questionDetails.category === "Math") {
           return (
             <div className={`question-container math-layout`}>
-            {questionDetails.details && (
-              <>
-              <div className="question-control-header">
-              <button className="control-button save-button">
-              <Bookmark size={18} />
-              <span>Coming Soon</span>
-              </button>
-              {!shouldShowFreeResponse(questionDetails.answerChoices) && (
-                <button
-                className={`control-button eliminate-button ${isCrossOutMode ? "active" : ""}`}
-                onClick={() => setIsCrossOutMode(!isCrossOutMode)}
-                >
-                <X size={18} />
-                <span>Eliminate Answer</span>
-                </button>
-              )}
+              {questionDetails.details && (
+                <>
+                  <div className="question-control-header">
+                    <button className="control-button save-button">
+                      <Bookmark size={18} />
+                      <span>Coming Soon</span>
+                    </button>
+                    {!shouldShowFreeResponse(questionDetails.answerChoices) && (
+                      <button
+                        className={`control-button eliminate-button ${isCrossOutMode ? "active" : ""}`}
+                        onClick={() => setIsCrossOutMode(!isCrossOutMode)}
+                      >
+                        <X size={18} />
+                        <span>Eliminate Answer</span>
+                      </button>
+                    )}
 
-              {/* Show Ask AI button for all question types after incorrect attempt */}
-              {attempts[currentQuestionIndex] && attempts[currentQuestionIndex] > 0 && (
-                <button
-                className="control-button ai-help-button"
-                onClick={() => handleAIHelp()}
-                >
-                <HelpCircle size={18} />
-                <span>Ask AI</span>
-                </button>
+                    {/* Show Ask AI button for all question types after incorrect attempt */}
+                    {attempts[currentQuestionIndex] && attempts[currentQuestionIndex] > 0 && (
+                      <button
+                        className="control-button ai-help-button"
+                        onClick={() => handleAIHelp()}
+                      >
+                        <HelpCircle size={18} />
+                        <span>Ask AI</span>
+                      </button>
+                    )}
+                  </div>
+                  <div
+                    className="question-additional-details"
+                    dangerouslySetInnerHTML={{
+                      __html: questionDetails.details,
+                    }}
+                  />
+                </>
               )}
-              </div>
-              <div
-              className="question-additional-details"
-              dangerouslySetInnerHTML={{
-                __html: questionDetails.details,
-              }}
-              />
-              </>
-            )}
-            <div className="question-right-side">
-            {!questionDetails.details && (
-              <div className="question-control-header">
-              <button className="control-button save-button">
-              <Bookmark size={18} />
-              <span>Coming Soon</span>
-              </button>
-              {!shouldShowFreeResponse(questionDetails.answerChoices) && (
-                <button
-                className={`control-button eliminate-button ${isCrossOutMode ? "active" : ""}`}
-                onClick={() => setIsCrossOutMode(!isCrossOutMode)}
-                >
-                <X size={18} />
-                <span>Eliminate Answer</span>
-                </button>
-              )}
-              {/* Show AI button after any attempt */}
-              {attempts[currentQuestionIndex] && attempts[currentQuestionIndex] > 0 && (
-                <button
-                className="control-button ai-help-button"
-                onClick={() => handleAIHelp()}
-                >
-                <HelpCircle size={18} />
-                <span>Ask AI</span>
-                </button>
-              )}
-              </div>
-            )}
+              <div className="question-right-side">
+                {!questionDetails.details && (
+                  <div className="question-control-header">
+                    <button className="control-button save-button">
+                      <Bookmark size={18} />
+                      <span>Coming Soon</span>
+                    </button>
+                    {!shouldShowFreeResponse(questionDetails.answerChoices) && (
+                      <button
+                        className={`control-button eliminate-button ${isCrossOutMode ? "active" : ""}`}
+                        onClick={() => setIsCrossOutMode(!isCrossOutMode)}
+                      >
+                        <X size={18} />
+                        <span>Eliminate Answer</span>
+                      </button>
+                    )}
+                    {/* Show AI button after any attempt */}
+                    {attempts[currentQuestionIndex] && attempts[currentQuestionIndex] > 0 && (
+                      <button
+                        className="control-button ai-help-button"
+                        onClick={() => handleAIHelp()}
+                      >
+                        <HelpCircle size={18} />
+                        <span>Ask AI</span>
+                      </button>
+                    )}
+                  </div>
+                )}
 
-            <div className="question-text">
-            <div
-            dangerouslySetInnerHTML={{
-              __html: questionDetails.question,
-            }}
-            />
-            </div>
-            <br />
-            <div className="answer-choices">
-            {renderAnswerChoices(
-              questionDetails.answerChoices,
-              questionDetails.answer,
-              questionDetails.rationale,
-              questionDetails.questionType,
-              questionDetails.externalId,
-            )}
-            </div>
-            <div className={`feedback-link ${showSidebar ? "with-sidebar" : ""}`}>
-            <a href={`/feedback?questionId=${questionDetails.questionId}`} target="_blank" rel="noopener noreferrer">
-            Feedback
-            </a>
-            </div>
-            </div>
+                <div className="question-text">
+                  <div
+                    dangerouslySetInnerHTML={{
+                      __html: questionDetails.question,
+                    }}
+                  />
+                </div>
+                <br />
+                <div className="answer-choices">
+                  {renderAnswerChoices(
+                    questionDetails.answerChoices,
+                    questionDetails.answer,
+                    questionDetails.rationale,
+                    questionDetails.questionType,
+                    questionDetails.externalId,
+                  )}
+                </div>
+                <div className={`feedback-link ${showSidebar ? "with-sidebar" : ""}`}>
+                  <a href={`/feedback?questionId=${questionDetails.questionId}`} target="_blank" rel="noopener noreferrer">
+                    Feedback
+                  </a>
+                </div>
+              </div>
             </div>
           );
         } else {
           return (
             <div className={`question-container`}>
-            {questionDetails.details && (
-              <>
-              <div
-              className="question-additional-details"
-              dangerouslySetInnerHTML={{
-                __html: questionDetails.details,
-              }}
-              />
-              <div className="vertical-bar"></div>
-              </>
-            )}
-            <div className="question-right-side">
-            <div className="question-control-header">
-            <button className="control-button save-button">
-            <Bookmark size={18} />
-            <span>Coming Soon</span>
-            </button>
-            <button
-            className={`control-button eliminate-button 
+              {questionDetails.details && (
+                <>
+                  <div
+                    className="question-additional-details"
+                    dangerouslySetInnerHTML={{
+                      __html: questionDetails.details,
+                    }}
+                  />
+                  <div className="vertical-bar"></div>
+                </>
+              )}
+              <div className="question-right-side">
+                <div className="question-control-header">
+                  <button className="control-button save-button">
+                    <Bookmark size={18} />
+                    <span>Coming Soon</span>
+                  </button>
+                  <button
+                    className={`control-button eliminate-button 
         ${isCrossOutMode ? "active" : ""}`}
-            onClick={() => setIsCrossOutMode(!isCrossOutMode)}
-            >
-            <X size={18} />
-            <span>Eliminate Answer</span>
-            </button>
-            {/* Add AI Help button for English */}
-            {attempts[currentQuestionIndex] && attempts[currentQuestionIndex] > 0 && (
-              <button
-              className="control-button ai-help-button"
-              onClick={() => handleAIHelp()}
-              >
-              <HelpCircle size={18} />
-              <span>Ask AI</span>
-              </button>
-            )}
-            </div>
-            <div className="question-text">
-            <div
-            dangerouslySetInnerHTML={{
-              __html: questionDetails.question,
-            }}
-            />
-            </div>
-            <br />
-            <div className="answer-choices">
-            {renderAnswerChoices(
-              questionDetails.answerChoices,
-              questionDetails.answer,
-              questionDetails.rationale,
-              questionDetails.questionType,
-              questionDetails.externalId,
-            )}
-            </div>
-            <div className={`feedback-link ${showSidebar ? "with-sidebar" : ""}`}>
-            <a href={`/feedback?questionId=${questionDetails.questionId}`} target="_blank" rel="noopener noreferrer">
-            Feedback
-            </a>
-            </div>
-            </div>
+                    onClick={() => setIsCrossOutMode(!isCrossOutMode)}
+                  >
+                    <X size={18} />
+                    <span>Eliminate Answer</span>
+                  </button>
+                  {/* Add AI Help button for English */}
+                  {attempts[currentQuestionIndex] && attempts[currentQuestionIndex] > 0 && (
+                    <button
+                      className="control-button ai-help-button"
+                      onClick={() => handleAIHelp()}
+                    >
+                      <HelpCircle size={18} />
+                      <span>Ask AI</span>
+                    </button>
+                  )}
+                </div>
+                <div className="question-text">
+                  <div
+                    dangerouslySetInnerHTML={{
+                      __html: questionDetails.question,
+                    }}
+                  />
+                </div>
+                <br />
+                <div className="answer-choices">
+                  {renderAnswerChoices(
+                    questionDetails.answerChoices,
+                    questionDetails.answer,
+                    questionDetails.rationale,
+                    questionDetails.questionType,
+                    questionDetails.externalId,
+                  )}
+                </div>
+                <div className={`feedback-link ${showSidebar ? "with-sidebar" : ""}`}>
+                  <a href={`/feedback?questionId=${questionDetails.questionId}`} target="_blank" rel="noopener noreferrer">
+                    Feedback
+                  </a>
+                </div>
+              </div>
             </div>
           );
         }
@@ -955,43 +976,43 @@ function SATPage() {
 
         return (
           <div className="fixed-bottom-bar">
-          <div className="left-section">
-          {userEmail ? (
-            <span className="user-email-bottom">{userEmail}</span>
-          ) : (
-            <span className="login-status">Not Logged In</span>
-          )}
-          </div>
+            <div className="left-section">
+              {userEmail ? (
+                <span className="user-email-bottom">{userEmail}</span>
+              ) : (
+                <span className="login-status">Not Logged In</span>
+              )}
+            </div>
 
-          <div className="middle-section">
-          <button
-          className="progress-button"
-          onClick={() => setShowQuestionGrid(true)}
-          >
-          {`${navigation.currentIndex} / ${navigation.totalQuestions}`}
-          <ChevronDown size={16} className="dropdown-icon" />
-          </button>
-          </div>
+            <div className="middle-section">
+              <button
+                className="progress-button"
+                onClick={() => setShowQuestionGrid(true)}
+              >
+                {`${navigation.currentIndex} / ${navigation.totalQuestions}`}
+                <ChevronDown size={16} className="dropdown-icon" />
+              </button>
+            </div>
 
-          <div className="right-section">
-          <button
-          onClick={handleNavigatePrevious}
-          disabled={!navigation.hasPrevious}
-          className="nav-button"
-          >
-          Previous
-          </button>
-          <button 
-          onClick={handleNavigateNext} 
-          disabled={showReviewScreen ? !navigation.hasNext : false}
-          className="nav-button"
-          >
-          Next
-          </button>
-          {!practiceTestMode && (
-            <button onClick={handleCheckAnswer}>Check</button>
-          )}
-          </div>
+            <div className="right-section">
+              <button
+                onClick={handleNavigatePrevious}
+                disabled={!navigation.hasPrevious}
+                className="nav-button"
+              >
+                Previous
+              </button>
+              <button
+                onClick={handleNavigateNext}
+                disabled={showReviewScreen ? !navigation.hasNext : false}
+                className="nav-button"
+              >
+                Next
+              </button>
+              {!practiceTestMode && (
+                <button onClick={handleCheckAnswer}>Check</button>
+              )}
+            </div>
           </div>
         );
       default:
@@ -1005,49 +1026,48 @@ function SATPage() {
 
     return (
       <div className="question-grid-overlay" onClick={() => setShowQuestionGrid(false)}>
-      <div className="question-grid-container" onClick={(e) => e.stopPropagation()}>
-      <div className="question-grid-header">
-      <h3>Questions</h3>
-      <button 
-      className="close-grid-button"
-      onClick={() => setShowQuestionGrid(false)}
-      >
-      <X size={20} />
-      </button>
-      </div>
-      <QuestionGrid
-      questions={currentQuestions}
-      attempts={attempts}
-      currentQuestionIndex={currentQuestionIndex}
-      />
-      </div>
+        <div className="question-grid-container" onClick={(e) => e.stopPropagation()}>
+          <div className="question-grid-header">
+            <h3>Questions</h3>
+            <button
+              className="close-grid-button"
+              onClick={() => setShowQuestionGrid(false)}
+            >
+              <X size={20} />
+            </button>
+          </div>
+          <QuestionGrid
+            questions={currentQuestions}
+            attempts={attempts}
+            currentQuestionIndex={currentQuestionIndex}
+          />
+        </div>
       </div>
     );
   };
 
-  const QuestionGrid = ({ 
-    questions, 
-    attempts, 
+  const QuestionGrid = ({
+    questions,
+    attempts,
     currentQuestionIndex,
   }) => {
     return (
       <div className="question-grid">
-      {questions.map((_, index) => (
-        <button
-        key={index}
-        className={`question-grid-item ${
-          attempts[index] ? 'answered' : 'unanswered'
-        } ${currentQuestionIndex === index ? 'current' : ''}`}
-        onClick={() => {
-          setCurrentQuestionIndex(index);
-          setShowQuestionGrid(false);
-          setShowReviewScreen(false);
-          clearChanges();
-        }}
-        >
-        {index + 1}
-        </button>
-      ))}
+        {questions.map((_, index) => (
+          <button
+            key={index}
+            className={`question-grid-item ${attempts[index] ? 'answered' : 'unanswered'
+              } ${currentQuestionIndex === index ? 'current' : ''}`}
+            onClick={() => {
+              setCurrentQuestionIndex(index);
+              setShowQuestionGrid(false);
+              setShowReviewScreen(false);
+              clearChanges();
+            }}
+          >
+            {index + 1}
+          </button>
+        ))}
       </div>
     );
   };
@@ -1092,32 +1112,32 @@ function SATPage() {
 
     return (
       <div className="review-screen">
-      <div className="review-content">
-      <h2>Review Your Answers</h2>
-      <QuestionGrid
-      questions={questions}
-      attempts={attempts}
-      currentQuestionIndex={-1}
-      onQuestionSelect={() => {}} // No-op for now
-      />
-      <div className="review-buttons">
-      <button 
-      className="review-button"
-      onClick={onClose}
-      >
-      Back
-      </button>
-      <button
-      className="review-button submit-button"
-      onClick={() => {
-        handleTimeUp();
-        onClose();
-      }}
-      >
-      Submit
-      </button>
-      </div>
-      </div>
+        <div className="review-content">
+          <h2>Review Your Answers</h2>
+          <QuestionGrid
+            questions={questions}
+            attempts={attempts}
+            currentQuestionIndex={-1}
+            onQuestionSelect={() => { }} // No-op for now
+          />
+          <div className="review-buttons">
+            <button
+              className="review-button"
+              onClick={onClose}
+            >
+              Back
+            </button>
+            <button
+              className="review-button submit-button"
+              onClick={() => {
+                handleTimeUp();
+                onClose();
+              }}
+            >
+              Submit
+            </button>
+          </div>
+        </div>
       </div>
     );
   };
@@ -1257,19 +1277,18 @@ function SATPage() {
     const data = JSON.parse(message);
     return (
       <div>
-      {data.map((item, index) => {
-        console.log(item.thinking_process);
-        return (
-          <Collapsible key={item.leads_to} title={item.leads_to == "user" ? "Your Answer" : "Correct Answer"}>
-          <Markdown>{item.thinking_process}</Markdown>
-          </Collapsible>);
-      }
-      )}
+        {data.map((item, index) => {
+          console.log(item.thinking_process);
+          return (
+            <Collapsible key={item.leads_to} title={item.leads_to == "user" ? "Your Answer" : "Correct Answer"}>
+              <Markdown>{item.thinking_process}</Markdown>
+            </Collapsible>);
+        }
+        )}
       </div>
     );
   };
 
-  // In SatPage.jsx - Update handleSimilarQuestions function
   const handleSimilarQuestions = async () => {
     try {
       const currentQuestion = currentQuestions[currentQuestionIndex];
@@ -1326,9 +1345,9 @@ function SATPage() {
           }
 
           // Also check for questions with the same content
-          const isDuplicateContent = currentQuestions.some(q => 
-            q.question === question.question || 
-            (q.question && question.question && 
+          const isDuplicateContent = currentQuestions.some(q =>
+            q.question === question.question ||
+            (q.question && question.question &&
               q.question.trim() === question.question.trim())
           );
 
@@ -1432,8 +1451,8 @@ function SATPage() {
             <img src="/aquLogo.png" alt="Aquarc Logo" className="logo-image" />
           </div>
 
-          <PomodoroTimer 
-            ref={pomodoroTimerRef} 
+          <PomodoroTimer
+            ref={pomodoroTimerRef}
             onTimeUp={handleTimeUp}
           />
 
@@ -1534,8 +1553,8 @@ function SATPage() {
                 <h3>Difficulty</h3>
                 <div className="filter-group">
                   {["Easy", "Medium", "Hard"].map((difficulty) => (
-                    <div 
-                      key={difficulty} 
+                    <div
+                      key={difficulty}
                       className={`horizontal-checkbox-group ${difficulty.toLowerCase()}`}
                     >
                       <input
@@ -1551,21 +1570,33 @@ function SATPage() {
               </div>
 
               <div>
-                <h3>15-Question Practice Set</h3>
+                <h3 style={{ display: 'inline-block' }}>15-Question Practice Set</h3>
+                <div className="tooltip-container">
+                  <span className="tooltip-icon">
+                    <HelpCircle size={16} />
+                  </span>
+                  <div className="tooltip-text">
+                    {userEmail ? (
+                      "Timed 15-question practice set that simulates a real test section"
+                    ) : (
+                      "You must be logged in to use this feature. This is a timed 15-question practice set that simulates a real test section."
+                    )}
+                  </div>
+                </div>
                 <div className="filter-group">
-                  <button 
+                  <button
                     key="practice-test-mode-yes"
                     className={`horizontal-checkbox-group 
-                                                ${practiceTestMode ? 'selected' : ''}`} 
+                  ${practiceTestMode ? 'selected' : ''}`}
                     onClick={() => setPracticeTestMode(true)}
                     disabled={!userEmail}
                   >
                     Yes
                   </button>
-                  <button 
-                    key="practice-test-mode-no" 
+                  <button
+                    key="practice-test-mode-no"
                     className={`horizontal-checkbox-group 
-                                                ${!practiceTestMode ? 'selected' : ''}`} 
+                  ${!practiceTestMode ? 'selected' : ''}`}
                     onClick={() => setPracticeTestMode(false)}
                   >
                     No
@@ -1578,52 +1609,44 @@ function SATPage() {
               <div className="error-message">{questionDisplay.content}</div>
             )}
 
-            <br/>
+            <br />
 
             <div class="filter-main-group">
+              {/* Move auth buttons here at the top */}
               {!userEmail && (
-                <>
-                  <i style={{ color: 'black' }}>
-                    Please sign in for 15-question practice sets.
-                  </i>
-                </>
-              )} 
+                <div className="auth-buttons-top-right">
+                  <button
+                    className="horizontal-checkbox-group auth-button-primary"
+                    onClick={() => navigate('/signup')}
+                  >
+                    Sign Up
+                  </button>
+                  <button
+                    className="horizontal-checkbox-group auth-button-secondary"
+                    onClick={() => navigate('/login')}
+                  >
+                    Login
+                  </button>
+                </div>
+              )}
 
-              <br/>
+              <br />
 
-              <div class="filter-group action-buttons"> 
+              <div class="filter-group action-buttons">
                 {userEmail ? (
                   <button
                     className="horizontal-checkbox-group auth-button-secondary"
                     onClick={() => {
                       Cookies.remove('user');
                       setUserEmail(null);
-                        // Instead of navigating immediately, let the user stay on current page
-                        if (window.location.pathname === '/sat') {
-                            navigate('/');
-                          }
+                      if (window.location.pathname === '/sat') {
+                        navigate('/');
+                      }
                     }}
                   >
                     Log Out
                   </button>
-                ) : (
-                  <>
-                    <div className="auth-buttons-container">
-                      <button
-                        className="horizontal-checkbox-group auth-button-primary"
-                        onClick={() => navigate('/signup')}
-                      >
-                        Sign Up 
-                      </button>
-                      <button
-                        className="horizontal-checkbox-group auth-button-secondary"
-                        onClick={() => navigate('/login')}
-                      >
-                        Login
-                      </button>
-                    </div>
-                  </>
-                )}
+                ) : null}
 
                 <button
                   className="horizontal-checkbox-group easy"
@@ -1658,7 +1681,7 @@ function SATPage() {
                     :
                     <Markdown>{message.parts[0]}</Markdown>)
                   :
-                    message.parts[0]}
+                  message.parts[0]}
               </div>
             ))}
           </div>

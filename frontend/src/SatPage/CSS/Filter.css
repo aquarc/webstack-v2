@@ -221,15 +221,23 @@
 } 
 
 .filter-container {
-    background-color: #dcdcdc;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 2px solid rgba(0, 0, 0, 0.2);
     padding: 10px;
+    
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    
     border-radius: 8px;
-} 
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
 .filter-group.action-buttons {
     margin-left: auto;
 }
 
 .horizontal-checkbox-group.easy {
+    
     border: 1px solid #00a61a;
     color: #00a61a;
 } 
