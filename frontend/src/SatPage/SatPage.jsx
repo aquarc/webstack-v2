@@ -130,11 +130,6 @@ function SATPage() {
     setShowCalculator((prev) => !prev);
   };
 
-  // Add near other useEffect hooks
-  useEffect(() => {
-    console.log("Attempts updated:", attempts);
-  }, [attempts]);
-
   useEffect(() => {
     console.log("Current question index:", currentQuestionIndex);
   }, [currentQuestionIndex]);
@@ -370,13 +365,16 @@ function SATPage() {
     return isCorrect;
   };
 
-  const handleCheckAnswer = () => {
+  const handleCheckAnswer = async () => {
     // Determine correctness
     const isCorrect = checkCorrectAnswer();
+    const currentQuestion = currentQuestions[currentQuestionIndex];
+    const choice =  shouldShowFreeResponse(currentQuestion.answerChoices) 
+          ? tempAnswer : selectedAnswer;
 
     // Always log the attempt
     const attempt = { 
-      answer: tempAnswer || selectedAnswer, 
+      answer: choice,
       timestamp: Date.now(),
       correct: isCorrect 
     };
@@ -390,6 +388,43 @@ function SATPage() {
       ...prev,
       [currentQuestionIndex]: (prev[currentQuestionIndex] || 0) + 1,
     }));
+
+    if (userEmail) {
+      // send an http request
+      const payload = [
+        {
+          questionId: currentQuestions[currentQuestionIndex].questionId,
+          lastAnswer: choice,
+          correct: isCorrect,
+        },
+      ];
+
+      try {
+          const response = await fetch("/sat/set-results", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          let errorMessage;
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.error || `HTTP error ${response.status}`;
+          } catch (parseError) {
+            errorMessage = `HTTP error ${response.status}`;
+          }
+          throw new Error(errorMessage);
+        }
+
+        return await response.json();
+      } catch (error) {
+        console.error("Error submitting answer:", error);
+        throw error;
+      }
+    } 
   };
 
   const handleSearch = async () => {

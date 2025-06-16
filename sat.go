@@ -38,6 +38,7 @@ type QuestionDetails struct {
 	AnswerChoices string `json:"answerChoices"`
 	Answer        string `json:"answer"`
 	Rationale     string `json:"rationale"`
+	Correct       bool   `json:"correct,omitempty"`
 }
 
 // SATQuestion is used to query questions via JSON.
@@ -226,97 +227,209 @@ func FindQuestionsHandlerv2(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	query := `
-        SELECT questionId, id, test, category, domain, skill, difficulty, details,
-               question, answer_choices, answer, rationale
-        FROM (
-            SELECT *, 
-                ROW_NUMBER() OVER (
-                    PARTITION BY category 
-                    ORDER BY RANDOM()
-                ) AS rn
-            FROM sat_questions
-            WHERE test = $1
-              AND difficulty = ANY($2)
-              AND skill = ANY($3)
-    `
-
-	diffArray := pq.Array(data.Difficulty)
-	subdomainArray := pq.Array(data.Subdomain)
-
-	args := []interface{}{data.Test, diffArray, subdomainArray}
-
-	var email string
-	hasLimit := data.Limit != nil && *data.Limit > 0
-
-	// Session validation only when limit is specified
-	if hasLimit {
-		cookie, err := r.Cookie("session")
-		if err != nil {
-			if err == http.ErrNoCookie {
-				http.Error(w, "Session cookie required for limited requests", http.StatusUnauthorized)
-				return
-			}
-			http.Error(w, "Bad request", http.StatusBadRequest)
-			return
-		}
-
-		err = db.QueryRow(
-			"SELECT email FROM user_sessions WHERE token = $1",
-			cookie.Value,
-		).Scan(&email)
-		if err != nil {
-			if err == sql.ErrNoRows {
-				http.Error(w, "Invalid session token", http.StatusUnauthorized)
-				return
-			}
-			http.Error(w, "Database error", http.StatusInternalServerError)
-			return
-		}
-
-		query += `
-              AND NOT EXISTS (
-                  SELECT 1 FROM practiced_questions 
-                  WHERE email = $4 
-                    AND questionId = sat_questions.questionId
-              )
-        `
-		args = append(args, email)
-	}
-
-	query += `
-        ) AS sub
-        ORDER BY rn, category
-    `
-
-	if hasLimit {
-		query += " LIMIT $5"
-		args = append(args, *data.Limit)
-	}
-
-	fmt.Println(query)
-	fmt.Println(args)
-
-	rows, err := db.Query(query, args...)
+    var email = ""
+	cookie, err := r.Cookie("session")
 	if err != nil {
-		http.Error(w, "262: Error querying: "+err.Error(), http.StatusInternalServerError)
+		if err == http.ErrNoCookie {
+			http.Error(w, "Session cookie required for limited requests", http.StatusUnauthorized)
+			return
+		}
+		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
-	defer rows.Close()
 
-	var questions []QuestionDetails
-	for rows.Next() {
-		var question QuestionDetails
-		err = rows.Scan(&question.QuestionID, &question.ID, &question.Test,
-			&question.Category, &question.Domain, &question.Skill,
-			&question.Difficulty, &question.Details, &question.Question,
-			&question.AnswerChoices, &question.Answer, &question.Rationale)
-		if err != nil {
-			http.Error(w, "Error querying the database: "+err.Error(), http.StatusInternalServerError)
+	err = db.QueryRow(
+		"SELECT email FROM user_sessions WHERE token = $1",
+		cookie.Value,
+	).Scan(&email)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			http.Error(w, "Invalid session token", http.StatusUnauthorized)
 			return
 		}
-		questions = append(questions, question)
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
 	}
+
+    var questions []QuestionDetails
+
+    if (email != "") {
+        query := `
+            SELECT 
+                sub.questionId, sub.id, sub.test, sub.category, sub.domain, 
+                sub.skill, sub.difficulty, sub.details, sub.question, 
+                sub.answer_choices, sub.answer, sub.rationale,
+                (
+                    SELECT isCorrect 
+                    FROM practiced_questions 
+                    WHERE email = $4 
+                        AND questionId = sub.questionId 
+                    ORDER BY timestamp DESC 
+                    LIMIT 1
+                ) AS correct
+            FROM (
+                SELECT *, 
+                    ROW_NUMBER() OVER (
+                        PARTITION BY category 
+                        ORDER BY RANDOM()
+                    ) AS rn
+                FROM sat_questions
+                WHERE test = $1
+                  AND difficulty = ANY($2)
+                  AND skill = ANY($3)
+        `
+
+        diffArray := pq.Array(data.Difficulty)
+        subdomainArray := pq.Array(data.Subdomain)
+
+        args := []interface{}{data.Test, diffArray, subdomainArray, email}
+
+        hasLimit := data.Limit != nil && *data.Limit > 0
+
+        // Session validation only when limit is specified
+        if hasLimit {
+            query += `
+                  AND NOT EXISTS (
+                      SELECT 1 FROM practiced_questions 
+                      WHERE email = $4 
+                        AND questionId = sat_questions.questionId
+                  )
+            `
+        }
+
+        query += `
+            ) AS sub
+            ORDER BY rn, category
+        `
+
+        if hasLimit {
+            query += " LIMIT $5"
+            args = append(args, *data.Limit)
+        }
+
+        rows, err := db.Query(query, args...)
+        fmt.Println(query)
+        fmt.Println(args)
+        if err != nil {
+            http.Error(w, "262: Error querying: "+err.Error(), http.StatusInternalServerError)
+            return
+        }
+        defer rows.Close()
+
+        for rows.Next() {
+            var question QuestionDetails
+            var correct sql.NullBool
+
+            err = rows.Scan(&question.QuestionID, &question.ID, &question.Test,
+                &question.Category, &question.Domain, &question.Skill,
+                &question.Difficulty, &question.Details, &question.Question,
+                &question.AnswerChoices, &question.Answer, &question.Rationale,
+                &correct)
+            if err != nil {
+                http.Error(w, "Error querying the database: "+err.Error(), http.StatusInternalServerError)
+                return
+            }
+
+            // Handle correctness status
+            if correct.Valid {
+                question.Correct = correct.Bool
+            }
+
+            questions = append(questions, question)
+        }
+
+        fmt.Println(questions[0].Question)
+        fmt.Println(questions[0].QuestionID)
+        fmt.Println(questions[0].Correct)
+    } else {
+        query := `
+            SELECT questionId, id, test, category, domain, skill, difficulty, details,
+                   question, answer_choices, answer, rationale
+            FROM (
+                SELECT *, 
+                    ROW_NUMBER() OVER (
+                        PARTITION BY category 
+                        ORDER BY RANDOM()
+                    ) AS rn
+                FROM sat_questions
+                WHERE test = $1
+                  AND difficulty = ANY($2)
+                  AND skill = ANY($3)
+        `
+
+        diffArray := pq.Array(data.Difficulty)
+        subdomainArray := pq.Array(data.Subdomain)
+
+        args := []interface{}{data.Test, diffArray, subdomainArray}
+
+        var email string
+        hasLimit := data.Limit != nil && *data.Limit > 0
+
+        // Session validation only when limit is specified
+        if hasLimit {
+            cookie, err := r.Cookie("session")
+            if err != nil {
+                if err == http.ErrNoCookie {
+                    http.Error(w, "Session cookie required for limited requests", http.StatusUnauthorized)
+                    return
+                }
+                http.Error(w, "Bad request", http.StatusBadRequest)
+                return
+            }
+
+            err = db.QueryRow(
+                "SELECT email FROM user_sessions WHERE token = $1",
+                cookie.Value,
+            ).Scan(&email)
+            if err != nil {
+                if err == sql.ErrNoRows {
+                    http.Error(w, "Invalid session token", http.StatusUnauthorized)
+                    return
+                }
+                http.Error(w, "Database error", http.StatusInternalServerError)
+                return
+            }
+
+            query += `
+                  AND NOT EXISTS (
+                      SELECT 1 FROM practiced_questions 
+                      WHERE email = $4 
+                        AND questionId = sat_questions.questionId
+                  )
+            `
+            args = append(args, email)
+        }
+
+        query += `
+            ) AS sub
+            ORDER BY rn, category
+        `
+
+        if hasLimit {
+            query += " LIMIT $5"
+            args = append(args, *data.Limit)
+        }
+
+        rows, err := db.Query(query, args...)
+        if err != nil {
+            http.Error(w, "262: Error querying: "+err.Error(), http.StatusInternalServerError)
+            return
+        }
+        defer rows.Close()
+
+        for rows.Next() {
+            var question QuestionDetails
+            err = rows.Scan(&question.QuestionID, &question.ID, &question.Test,
+                &question.Category, &question.Domain, &question.Skill,
+                &question.Difficulty, &question.Details, &question.Question,
+                &question.AnswerChoices, &question.Answer, &question.Rationale)
+            if err != nil {
+                http.Error(w, "Error querying the database: "+err.Error(), http.StatusInternalServerError)
+                return
+            }
+            questions = append(questions, question)
+        }
+    } 
 
 	jsonData, err := json.Marshal(questions)
 	if err != nil {
@@ -815,6 +928,8 @@ func setResults(w http.ResponseWriter, r *http.Request) {
 
 	// Insert each result
 	for _, result := range results {
+        fmt.Println(result)
+
 		_, err := stmt.Exec(
 			email,
 			result.QuestionID,
