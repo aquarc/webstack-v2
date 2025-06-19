@@ -875,6 +875,9 @@ func initializeSat(db *sql.DB) {
 		log.Printf("✅ Initial email connection test successful")
 	}
 
+	// NOTE: I get an error when running this on my computer. Not sure if it's only on my side:
+	//       gomail: could not send email 1: gomail: invalid message, "From" field is absent
+
 	// Create tables if they do not exist.
 	_, err := db.Exec(`CREATE TABLE IF NOT EXISTS sat_questions (
 		questionId TEXT PRIMARY KEY,
