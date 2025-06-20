@@ -39,6 +39,7 @@ type QuestionDetails struct {
 	Answer        string `json:"answer"`
 	Rationale     string `json:"rationale"`
 	Correct       bool   `json:"correct,omitempty"`
+    Answered      bool   `json:"answered,omitempty"`
 }
 
 // SATQuestion is used to query questions via JSON.
@@ -308,8 +309,6 @@ func FindQuestionsHandlerv2(w http.ResponseWriter, r *http.Request) {
         }
 
         rows, err := db.Query(query, args...)
-        fmt.Println(query)
-        fmt.Println(args)
         if err != nil {
             http.Error(w, "262: Error querying: "+err.Error(), http.StatusInternalServerError)
             return
@@ -331,16 +330,15 @@ func FindQuestionsHandlerv2(w http.ResponseWriter, r *http.Request) {
             }
 
             // Handle correctness status
+            question.Answered = correct.Valid 
             if correct.Valid {
                 question.Correct = correct.Bool
             }
 
             questions = append(questions, question)
-        }
 
-        fmt.Println(questions[0].Question)
-        fmt.Println(questions[0].QuestionID)
-        fmt.Println(questions[0].Correct)
+            fmt.Println(question)
+        }
     } else {
         query := `
             SELECT questionId, id, test, category, domain, skill, difficulty, details,
@@ -432,6 +430,7 @@ func FindQuestionsHandlerv2(w http.ResponseWriter, r *http.Request) {
     } 
 
 	jsonData, err := json.Marshal(questions)
+    fmt.Println(questions)
 	if err != nil {
 		log.Printf("Error converting questions to JSON: %v", err)
 		http.Error(w, "Error generating JSON response", http.StatusInternalServerError)

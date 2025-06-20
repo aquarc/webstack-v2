@@ -3,7 +3,7 @@ import './AboutPage.css';
 import Pfp1 from '../Assets/omR.jpeg';
 import Pfp2 from '../Assets/RonithN.jpeg';
 import Pfp4 from '../Assets/MufK.jpg';
-import Pfp5 from '../Assets/NikilP.jpeg';
+import Pfp5 from '../Assets/RonithN.jpeg';
 import Pfp6 from '../Assets/DhanyaV.jpeg';
 import defMpfp from '../Assets/defaultMpfp.png';
 

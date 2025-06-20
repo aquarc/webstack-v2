@@ -12,6 +12,21 @@ html {
   width: 100%;
 }
 
+.sat-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.nav-tools {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
 /*imported fonts*/
 @import url("https://fonts.googleapis.com/css2?family=Archivo:ital,wght@1,600&display=swap");
 
@@ -31,7 +46,8 @@ html {
   bottom: 0;
   right: 0;
   left: 0;
-  padding: 0.5rem; /* 8px if root font-size is 16px */
+  padding: 0.5rem;
+  /* 8px if root font-size is 16px */
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -93,16 +109,36 @@ html {
   border: none;
   cursor: pointer;
   color: #666;
-  /* Add these new styles */
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  min-height: 40px; /* Match icon button height */
+  min-height: 40px;
+}
+
+.check-answer-button {
+  margin-top: 10px;
+  padding: 10px 20px;
+  background-color: #6366F1;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  align-self: flex-start;
+}
+
+.check-answer-button:hover {
+  background-color: #4F46E5;
+}
+
+.check-answer-button:disabled {
+  background-color: #adb5bd;
+  cursor: not-allowed;
 }
 
 /* Remove sr-only class since we want to show the text */
 .calculator-icon-button span {
-  font-size: 24px; /* Match clock icon size */
+  font-size: 14px;
   line-height: 1;
   margin: 0;
   padding: 0;
@@ -117,12 +153,14 @@ html {
 }
 
 .timer-container {
-  padding-top: 50px; /* Matches the header's padding-top */
+  padding-top: 50px;
+  /* Matches the header's padding-top */
   margin-right: 20px;
 }
 
 .timer-wrapper {
-  padding-top: 50px; /* Matches the header's padding-top */
+  padding-top: 50px;
+  /* Matches the header's padding-top */
   margin-right: 20px;
 }
 
@@ -130,9 +168,11 @@ html {
   display: flex;
   align-items: center;
   gap: 16px;
-  padding-top: 50px; /* Matches the header padding */
+  padding-top: 50px;
+  /* Matches the header padding */
   margin-right: 20px;
 }
+
 .calculator-wrapper {
   position: fixed;
   z-index: 1000;
@@ -168,22 +208,81 @@ html {
   cursor: se-resize;
 }
 
+/* Add these styles to SatPage.css */
+.subtopic-container {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.subdomain-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem;
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.checkbox-group input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+}
+
+.checkbox-group label {
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+/* Collapsible styles */
+.collapsible-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.category-title {
+  font-weight: 600;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid #eee;
+}
+
+.collapsible-content {
+  padding: 0.5rem;
+  transition: all 0.3s ease;
+}
+
 .sidebar-standalone-content-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  gap: 8px;
 }
 
 .sidebar-standalone-content {
   padding: 1rem;
-  border: 1px solid #ccc;
+  border: 1px solid #adadad;
   border-radius: 8px;
   flex: 1;
+  box-shadow: 2px 4px 4px rgba(0, 0, 0, 0.379);
+
 }
 
 .sidebar-standalone-header {
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid #000000;
   margin-bottom: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 10px;
+
 }
 
 .sidebar-standalone-category {
@@ -207,7 +306,8 @@ html {
 
 .sidebar-toggle-button {
   position: absolute;
-  right: -50px; /* Position outside the sidebar */
+  right: -50px;
+  /* Position outside the sidebar */
   top: 50%;
   transform: translateY(-50%);
   background: white;
@@ -221,7 +321,8 @@ html {
 }
 
 .checkbox-column:not(.collapsed) .sidebar-toggle-button {
-  right: 20px; /* Position inside the sidebar when open */
+  right: 20px;
+  /* Position inside the sidebar when open */
 }
 
 /* Transition animations */
@@ -292,35 +393,45 @@ html {
   background: #6366f1;
   color: white;
 }
+
 /* Update these styles in your CSS */
 .input-group {
   display: grid;
-  grid-template-columns: 1fr auto auto auto; /* 1fr takes remaining space */
+  grid-template-columns: 1fr auto auto auto;
+  /* 1fr takes remaining space */
   border: 1px solid #e2e8f0;
   border-radius: 6px;
   overflow: hidden;
   transition: border-color 0.2s;
-  width: 100%; /* Take full width of container */
+  width: 100%;
+  /* Take full width of container */
 }
 
 .input-group-input {
-  width: 133px; /* Reduced from 60px */
-  min-width: 133px; /* Add minimum width */
-  grid-column: 1; /* First column */
+  width: 133px;
+  /* Reduced from 60px */
+  min-width: 133px;
+  /* Add minimum width */
+  grid-column: 1;
+  /* First column */
   border: none;
   border-radius: 0px;
 }
 
 .input-group-button {
-  grid-column: auto; /* Subsequent columns */
-  white-space: nowrap; /* Prevent button text wrapping */
+  grid-column: auto;
+  /* Subsequent columns */
+  white-space: nowrap;
+  /* Prevent button text wrapping */
   border: none;
   border-left: 1px solid #e2e8f0;
   background: white;
-  padding: 6px 10px; /* Reduced padding */
+  padding: 6px 10px;
+  /* Reduced padding */
   cursor: pointer;
   transition: all 0.2s;
-  flex-shrink: 0; /* Prevent button shrinking */
+  flex-shrink: 0;
+  /* Prevent button shrinking */
   border-radius: 0px;
   color: #666666;
 }
@@ -343,19 +454,24 @@ html {
 }
 
 .sidebar-close-button {
-  padding: 4px; /* Matching click area */
-  margin-top: -2px; /* Optical alignment adjustment */
+  padding: 4px;
+  /* Matching click area */
+  margin-top: -2px;
+  /* Optical alignment adjustment */
 }
 
 .sidebar-close-button svg {
-  vertical-align: middle; /* Fix SVG baseline alignment */
+  vertical-align: middle;
+  /* Fix SVG baseline alignment */
 }
 
 /* hover states */
 @media (hover: hover) and (pointer: fine) {
+
   /* Hover state when parent is hovered */
   .format-time:hover {
-    color: #ffffff; /* pure white */
+    color: #ffffff;
+    /* pure white */
   }
 
   .next-button:hover {
@@ -377,6 +493,7 @@ html {
 
 /* Touch device styles (mobile/tablet) */
 @media (hover: none) and (pointer: coarse) {
+
   .format-time:active,
   .next-button:active,
   .calculator-icon-button:active,
@@ -422,6 +539,7 @@ html {
   .checkbox-column:not(.collapsed) .sidebar-toggle-button {
     right: 20px !important;
   }
+
   .checkbox-column {
     padding: 15px;
   }
@@ -475,6 +593,7 @@ html {
     display: none;
   }
 }
+
 .attempts-counter {
   margin: 10px 0;
   font-weight: bold;
@@ -496,34 +615,23 @@ html {
   cursor: not-allowed;
 }
 
-.sidebar-tab {
-  position: fixed;
-  top: 50%;
-  right: 0;
-  transform: translateY(-50%);
-  background-color: #6366F1;
-  padding: 12px 8px;
-  border-radius: 8px 0 0 8px;
-  cursor: pointer;
-  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
-  transition: right 0.3s ease;
-  z-index: 1001; /* Higher than checkbox-column's z-index */
-  display: flex;
-  align-items: center;
-  color: white;
-}
-
-.sidebar-tab:hover {
-  background-color: #4F46E5;
-}
-
-.sidebar-tab.hidden {
-  display: none;
-}
 .filter-tabs {
   display: flex;
   gap: 8px;
   margin-bottom: 1rem;
+}
+
+/* Add this to your existing CSS */
+.filter-sections>div {
+  padding: 0 15px;
+  /* Adds horizontal padding */
+}
+
+
+
+.filter-group {
+  margin-top: 10px;
+  /* Adds space between section header and buttons */
 }
 
 .filter-tab {
@@ -574,6 +682,7 @@ html {
   margin-bottom: 1.5rem;
   text-align: center;
 }
+
 .analytics-message-secondary {
   font-size: 0.9375rem;
   color: #666;
@@ -583,35 +692,69 @@ html {
 
 }
 
-/* Auth Buttons Container */
-.auth-buttons-container {
+.auth-buttons-top-right {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  width: 200px;
+  height: 30px;
+  gap: 8px;
 }
 
-.auth-button-primary {
-  background-color: #6366F1;
-  color: white;
-  border: none;
+.horizontal-checkbox-group.auth-button-primary {
+  color: rgb(255, 255, 255);
+  background-color: #ec9595;
+  border: 1px solid #ec9595;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-.auth-button-secondary {
-  background-color: white;
-  color: #6366F1;
-  border: 1px solid #E0E7FF;
+.horizontal-checkbox-group.auth-button-secondary {
+  background-color: rgb(119, 223, 192);
+  color: #ffffff;
+  border: 1px solid #7ed2c5;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-/* Hover States */
+.auth-button-wrapper {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  gap: 8px;
+}
+
+@media (max-width: 850px) {
+  .auth-button-wrapper {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    top: auto;
+    right: auto;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 999;
+    background-color: white;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  }
+}
+
+/* Update hover states to match */
 @media (hover: hover) and (pointer: fine) {
   .auth-button-primary:hover {
     background-color: #4F46E5;
+    border-color: #4F46E5;
+    /* Darker border on hover */
     transform: translateY(-1px);
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   }
 
   .auth-button-secondary:hover {
     background-color: #F5F7FF;
-    border-color: #C7D2FE;
+    border-color: #4F46E5;
+    /* Darker border on hover */
     transform: translateY(-1px);
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   }
@@ -647,6 +790,7 @@ html {
 .auth-divider::after {
   margin-left: 1rem;
 }
+
 .user-info {
   display: flex;
   flex-direction: column;
@@ -692,8 +836,10 @@ html {
 .ai-chat-sidebar {
   position: fixed;
   left: 0;
-  top: 80px; /* Height of the nav bar */
-  bottom: 60px; /* Height of the bottom bar */
+  top: 80px;
+  /* Height of the nav bar */
+  bottom: 60px;
+  /* Height of the bottom bar */
   width: 35%;
   background: white;
   box-shadow: 2px 0 12px rgba(0, 0, 0, 0.1);
@@ -756,6 +902,7 @@ html {
     z-index: 1002;
   }
 }
+
 .user-message {
   background: #6366F1;
   color: white;
@@ -768,7 +915,8 @@ html {
 .approach-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-} 
+}
+
 .ai-question-tag {
   position: absolute;
   top: 10px;
@@ -848,15 +996,15 @@ html {
     padding: 10px;
     flex-wrap: wrap;
   }
-  
-  .left-section, 
+
+  .left-section,
   .middle-section,
   .right-section {
     flex: 100%;
     justify-content: center;
     margin: 5px 0;
   }
-  
+
   .user-email-bottom {
     max-width: 100%;
     text-align: center;
@@ -923,7 +1071,7 @@ html {
     grid-template-columns: repeat(3, 1fr);
     gap: 0.5rem;
   }
-  
+
   .question-grid-item {
     min-width: 40px;
     font-size: 1.1rem;
@@ -939,7 +1087,8 @@ html {
 .question-grid-item.current {
   border-color: #f59e0b;
   box-shadow: 0 0 0 2px #fde68a;
-  color: #1a1a1a; /* Maintain dark text for current item */
+  color: #1a1a1a;
+  /* Maintain dark text for current item */
 }
 
 .question-grid-item.unanswered {
@@ -950,6 +1099,14 @@ html {
   background: #3b82f6;
   color: white;
   border-color: #2563eb;
+}
+
+.question-grid-item.correct {
+  background: #23e34a;
+}
+
+.question-grid-item.incorrect {
+  background: red;
 }
 
 .question-grid-item.current {
@@ -1024,10 +1181,10 @@ html {
 }
 
 .close-sidebar-button {
-    padding: 0px 2px;
-    background: none;
-    color: black;
-} 
+  padding: 0px 2px;
+  background: none;
+  color: black;
+}
 
 .warning-popup-overlay {
   position: fixed;
@@ -1035,11 +1192,13 @@ html {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+  background-color: rgba(0, 0, 0, 0.5);
+  /* Semi-transparent black */
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000; /* Ensure it's on top of other content */
+  z-index: 1000;
+  /* Ensure it's on top of other content */
 }
 
 .warning-popup {
@@ -1064,12 +1223,191 @@ html {
   font-size: 1em;
 }
 
-.warning-popup button:first-of-type { /* Proceed button */
+.warning-popup button:first-of-type {
+  /* Proceed button */
   background-color: #007bff;
   color: white;
 }
 
-.warning-popup button:last-of-type { /* Cancel button */
+.warning-popup button:last-of-type {
+  /* Cancel button */
   background-color: #6c757d;
   color: white;
+}
+
+/* Add this to SatPage.css */
+.tooltip-container {
+  position: relative;
+  display: inline-block;
+  margin-left: 8px;
+}
+
+.tooltip-icon {
+  color: #666;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tooltip-text {
+  visibility: hidden;
+  max-width: 250px;
+  /* Changed from width: 1000px */
+  width: max-content;
+  /* This makes it expand to fit content up to max-width */
+  background-color: #333;
+  color: #fff;
+  text-align: left;
+  /* Changed from center for better readability */
+  border-radius: 6px;
+  padding: 12px;
+  /* Increased padding */
+  position: absolute;
+  z-index: 1;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity 0.3s;
+  font-size: 14px;
+  font-weight: normal;
+  line-height: 1.4;
+  white-space: normal;
+  /* Added to ensure text wraps */
+}
+
+.tooltip-container:hover .tooltip-text {
+  visibility: visible;
+  opacity: 1;
+}
+
+.tooltip-text::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #333 transparent transparent transparent;
+}
+
+/* Add these media queries at the bottom of the file */
+
+@media (max-width: 1024px) {
+
+  /* Prevent overlap between auth buttons and practice set section */
+  .filter-sections>div {
+    margin-bottom: 1.5rem;
+  }
+
+  .auth-buttons-top-right {
+    position: static;
+    width: 100%;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .filter-group.action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+
+  /* Mobile-specific styles */
+  .checkbox-column {
+    width: 100%;
+    padding: 15px;
+    box-sizing: border-box;
+    overflow-y: auto;
+  }
+
+  .sidebar-standalone-content-container {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .sidebar-standalone-content {
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+
+  .filter-sections>div {
+    padding: 0 10px;
+  }
+
+  .filter-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  .horizontal-checkbox-group {
+    width: 100%;
+    text-align: center;
+    padding: 8px 12px;
+  }
+
+  .auth-buttons-top-right {
+    flex-direction: column;
+    height: auto;
+    gap: 0.5rem;
+  }
+
+  .auth-buttons-top-right button {
+    width: 100px;
+  }
+
+  @media (max-width: 768px) {
+    .auth-buttons-top-right {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      top: auto;
+      right: auto;
+      flex-direction: column;
+      z-index: 999;
+    }
+  }
+
+
+  .filter-main-group {
+    margin-top: 1rem;
+  }
+
+  .tooltip-container {
+    vertical-align: middle;
+    margin-left: 4px;
+  }
+
+  .tooltip-text {
+    max-width: 90vw;
+    width: 300px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+
+  /* Extra small devices */
+  .filter-group {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar-header h2 {
+    font-size: 1.2rem;
+  }
+
+  .filter-sections h3 {
+    font-size: 1rem;
+  }
+
+  .horizontal-checkbox-group {
+    padding: 6px 8px;
+    font-size: 0.9rem;
+  }
 }
