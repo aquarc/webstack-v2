@@ -4,6 +4,7 @@
   font-family:
     -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   max-width: 100%;
+  overflow-x: hidden;
 }
 
 .landing-container {
@@ -128,22 +129,25 @@
 }
 /* Create the gradient border using a pseudo-element */
 .cta-button-outline::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   background: linear-gradient(to right, #2563eb, #3b82f6);
-  border-radius:30px;
+  border-radius: 30px;
   padding: 2px; /* This controls the border thickness */
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
   -webkit-mask-composite: exclude;
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
   mask-composite: exclude;
   z-index: -1;
 }
-
 
 .info {
   display: grid;
@@ -155,7 +159,7 @@
   margin-left: 2.5rem;
 }
 
-.info-mission{
+.info-mission {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 3.5rem;
@@ -177,7 +181,6 @@
   gap: 2rem;
   margin-top: 5rem;
   padding-bottom: 100px;
-
 }
 
 .mission-statement {
@@ -193,12 +196,14 @@
   min-height: 300px;
   overflow: hidden;
   flex-grow: 1;
-  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; 
+  transition:
+    transform 0.3s ease-in-out,
+    box-shadow 0.3s ease-in-out;
 }
 
 .mission-statement:hover {
-  transform: translateY(-5px); 
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12); 
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
 }
 
 .mission-title h1 {
@@ -207,11 +212,11 @@
   margin-bottom: 1.5rem;
   color: #1a202c;
   text-shadow: none;
-  transition: color 0.3s ease-in-out; 
+  transition: color 0.3s ease-in-out;
 }
 
 .mission-statement:hover .mission-title h1 {
-  color: #2563eb; 
+  color: #2563eb;
 }
 
 .mission-text p {
@@ -219,7 +224,7 @@
   line-height: 1.7;
   color: #4a5568;
   text-shadow: none;
-  transition: color 0.3s ease-in-out; 
+  transition: color 0.3s ease-in-out;
 }
 
 @keyframes floatIn {
@@ -237,7 +242,8 @@
 }
 
 @keyframes floating {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
@@ -258,7 +264,9 @@
   gap: 2rem;
   opacity: 0;
   transform: translateY(200px);
-  transition: opacity 0.5s ease, transform 0.5s ease-out;
+  transition:
+    opacity 0.5s ease,
+    transform 0.5s ease-out;
 }
 
 .analytics.animate {
@@ -287,7 +295,7 @@
 
 .analytics:hover .analytics-content h1,
 .analytics:hover .analytics-content p {
-  color: #ffffff; 
+  color: #ffffff;
   transition: color 0.3s ease-in-out;
 }
 
@@ -311,12 +319,12 @@
 }
 
 .mission-statement:hover .mission-text p {
-  color: #1a202c; 
+  color: #1a202c;
 }
 
 @media (max-width: 768px) {
   .headline {
-    font-size: 3.5rem; 
+    font-size: 3.5rem;
     padding: 0 1rem;
   }
 
@@ -475,26 +483,35 @@
 }
 
 .features-container::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: 
-    linear-gradient(45deg, rgba(99, 102, 241, 0.02) 25%, transparent 25%), 
+  background-image:
+    linear-gradient(45deg, rgba(99, 102, 241, 0.02) 25%, transparent 25%),
     linear-gradient(-45deg, rgba(99, 102, 241, 0.02) 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, rgba(168, 85, 247, 0.02) 75%), 
+    linear-gradient(45deg, transparent 75%, rgba(168, 85, 247, 0.02) 75%),
     linear-gradient(-45deg, transparent 75%, rgba(168, 85, 247, 0.02) 75%);
   background-size: 60px 60px;
-  background-position: 0 0, 0 30px, 30px -30px, -30px 0px;
+  background-position:
+    0 0,
+    0 30px,
+    30px -30px,
+    -30px 0px;
   opacity: 0.3;
   animation: patternShift 20s ease-in-out infinite;
 }
 
 @keyframes patternShift {
-  0%, 100% { transform: translateX(0) translateY(0); }
-  50% { transform: translateX(30px) translateY(-30px); }
+  0%,
+  100% {
+    transform: translateX(0) translateY(0);
+  }
+  50% {
+    transform: translateX(30px) translateY(-30px);
+  }
 }
 
 .feature-section {
@@ -507,11 +524,21 @@
   gap: 4rem;
 }
 
-.feature-section:nth-child(1) { animation-delay: 0.1s; }
-.feature-section:nth-child(2) { animation-delay: 0.2s; }
-.feature-section:nth-child(3) { animation-delay: 0.3s; }
-.feature-section:nth-child(4) { animation-delay: 0.4s; }
-.feature-section:nth-child(5) { animation-delay: 0.5s; }
+.feature-section:nth-child(1) {
+  animation-delay: 0.1s;
+}
+.feature-section:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.feature-section:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.feature-section:nth-child(4) {
+  animation-delay: 0.4s;
+}
+.feature-section:nth-child(5) {
+  animation-delay: 0.5s;
+}
 
 @keyframes fadeInUp {
   to {
@@ -527,7 +554,9 @@
   border-radius: 20px;
   padding: 3rem;
   position: relative;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
   display: flex;
   align-items: center;
   gap: 4rem;
@@ -544,13 +573,17 @@
 }
 
 .feature-card::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.05) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(99, 102, 241, 0.1) 0%,
+    rgba(168, 85, 247, 0.05) 100%
+  );
   opacity: 0;
   transition: opacity 0.4s ease;
 }
@@ -649,7 +682,7 @@
     gap: 3rem;
     margin-bottom: 4rem;
   }
-  
+
   .feature-card,
   .feature-card.reverse-layout {
     flex-direction: column;
@@ -658,11 +691,11 @@
     gap: 2.5rem;
     min-height: auto;
   }
-  
+
   .feature-text h2 {
     font-size: 2.5rem;
   }
-  
+
   .feature-text p {
     font-size: 1.2rem;
   }
@@ -672,25 +705,25 @@
   .features-container {
     padding: 4rem 0;
   }
-  
+
   .feature-section {
     margin-bottom: 3rem;
     padding: 0 1.5rem;
   }
-  
+
   .feature-card {
     padding: 2rem;
     gap: 2rem;
   }
-  
+
   .feature-text h2 {
     font-size: 2rem;
   }
-  
+
   .feature-text p {
     font-size: 1.1rem;
   }
-  
+
   .feature-image-wrapper {
     padding: 1.5rem;
   }
@@ -795,7 +828,7 @@
     max-width: 500px;
     margin: 4rem auto 0 auto;
   }
-  
+
   .step-card {
     padding: 2.5rem 2rem;
   }
@@ -805,26 +838,25 @@
   .how-it-works-section {
     padding: 4rem 0;
   }
-  
+
   .how-it-works-container {
     padding: 0 1.5rem;
   }
-  
+
   .how-it-works-title {
     font-size: 2.5rem;
   }
-  
+
   .how-it-works-subtitle {
     font-size: 1.2rem;
     margin-bottom: 3rem;
   }
-  
+
   .step-card {
     padding: 2rem 1.5rem;
   }
-  
+
   .step-description {
     max-width: none;
   }
 }
-

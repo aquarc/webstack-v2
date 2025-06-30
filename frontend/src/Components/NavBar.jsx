@@ -3,11 +3,16 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import "./NavBar.css";
 import PomodoroTimer from "../SatPage/PomodoroTimer";
 import { ChevronLeft, Search } from "lucide-react"; // Import back icon
+import Cookies from 'js-cookie';
 
 const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [userEmail, setUserEmail] = useState(() => {
+    const user = Cookies.get('user');
+    return user ? JSON.parse(user).email : null;
+  });
 
   // Check if current page is SAT page
   const isSatPage = location.pathname.startsWith("/sat");
@@ -50,9 +55,26 @@ const Navbar = () => {
           {/*<Link to="/aboutPage" className="link">About Us</Link>*/}
         </div>
 
-        <Link to="/signup" className="button">
-          Your 1600 starts here →
-        </Link>
+        { !userEmail ? (
+          <Link to="/signup" className="button">
+            Your 1600 starts here →
+          </Link>
+        ) : (
+          <button
+            className="button"
+            onClick={() => {
+              Cookies.remove('user');
+              setUserEmail(null);
+              // Instead of navigating immediately, let the user stay on current page
+              if (window.location.pathname === '/sat') {
+                navigate('/');
+              }
+            }}
+          >
+            Log Out →
+          </button>
+        )}
+
 
         {/* Mobile menu remains the same */}
         <button className="menu-toggle" onClick={toggleMenu}>
@@ -76,10 +98,25 @@ const Navbar = () => {
             Feedback
           </Link>
 
-          {/*<Link to="/aboutPage" className="link">About Us</Link>*/}
-          <Link to="/signup" className="button">
-            Your 1600 starts here →
-          </Link>
+          { !userEmail ? (
+            <Link to="/signup" className="button">
+              Your 1600 starts here →
+            </Link>
+          ) : (
+            <button
+              className="button"
+              onClick={() => {
+                Cookies.remove('user');
+                setUserEmail(null);
+                // Instead of navigating immediately, let the user stay on current page
+                if (window.location.pathname === '/sat') {
+                  navigate('/');
+                }
+              }}
+            >
+              Log Out →
+            </button>
+          )}
         </div>
       </div>
     </div>

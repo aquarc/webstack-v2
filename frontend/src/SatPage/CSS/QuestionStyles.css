@@ -41,7 +41,8 @@
 }
 
 .question-container {
-  max-width: 80%; /*TODO: change on mobile*/
+  max-width: 80%;
+  /*TODO: change on mobile*/
   padding-top: 40px;
   display: flex;
 }
@@ -114,6 +115,12 @@
   color: #ef4444;
 }
 
+.control-button.feedback-button {
+  border-color: #5b9e4f;
+  color: #5b9e4f;
+  text-decoration: none;
+}
+
 .control-button.save-button:hover,
 .control-button.save-button:active,
 .control-button.save-button.active {
@@ -121,11 +128,14 @@
   color: white;
 }
 
-.control-button.eliminate-button:hover {
-  background: #bf3636;
+.control-button.feedback-button:hover,
+.control-button.feedback-button:active,
+.control-button.feedback-button.active {
+  background: #5b9e4f;
   color: white;
 }
 
+.control-button.eliminate-button:hover,
 .control-button.eliminate-button:active,
 .control-button.eliminate-button.active {
   background: #ef4444;
@@ -146,7 +156,8 @@
   border-left: 5px solid #575757;
   max-height: 100%;
   margin: 0px 15px;
-  border-radius: 100px; /* absurdly high constant */
+  border-radius: 100px;
+  /* absurdly high constant */
 }
 
 .crossed-out:not(.eliminating) {
@@ -160,6 +171,7 @@
   top: 50%;
   left: 0;
   width: 100%;
+  /* <<<<<<< HEAD */
   height: 2px;
   transform: translateY(-50%);
 }
@@ -172,8 +184,33 @@
   background: red !important;
 }
 
+.eliminating.crossed-out:hover::before {
+  background: #e3242b;
+}
+
 .crossed-out::before:hover {
   filter: brightness(1.1);
+  /* ======= */
+  /*   height: 100%; */
+  /*   background: linear-gradient( */
+  /*     to top right, */
+  /*     transparent calc(50% - 1px), */
+  /*     #ef4444 calc(50% - 1px), */
+  /*     #ef4444 calc(50% + 1px), */
+  /*     transparent calc(50% + 1px) */
+  /*   ); */
+  /*   animation: cross-out 0.3s ease-out; */
+  /* } */
+  /**/
+  /* @keyframes cross-out { */
+  /*   from { */
+  /*     width: 0; */
+  /*   } */
+  /**/
+  /*   to { */
+  /*     width: 120%; */
+  /*   } */
+  /* >>>>>>> ff189692e042940abcc97ed36869071aca456865 */
 }
 
 .answer-choice.crossed-out label {
@@ -358,3 +395,4 @@
     overflow: visible;
   }
 }
+

@@ -18,6 +18,7 @@ import {
   X,
   HelpCircle,
   ChevronDown,
+  MessageSquare,
 } from "lucide-react";
 import PomodoroTimer from "./PomodoroTimer";
 import Draggable from "react-draggable";
@@ -476,33 +477,54 @@ function SATPage() {
     handleNavigatePrevious,
     handleNavigateNext,
   );
+  function Collapsible({ title, children, initialOpen = false }) {
+    const [isOpen, setIsOpen] = useState(initialOpen);
 
+    return (
+      <div className="collapsible-container">
+        <div className="collapsible-header" onClick={() => setIsOpen(!isOpen)}>
+          <span>{title}</span>
+          <span>{isOpen ? "−" : "+"}</span>
+        </div>
+        {isOpen && <div className="collapsible-content">{children}</div>}
+      </div>
+    );
+  }
   const renderSubdomainInputs = () => {
     if (subdomainData.length <= 0) {
       return null;
     }
 
-    return Object.entries(subdomainData).map(([sectionName, section]) => (
-      <div class="sidebar-standalone-content">
-        <h2 class="sidebar-standalone-header">{sectionName}</h2>
-        {section.map(({ category, subdomains }) => (
-          <React.Fragment key={category}>
-            <h4>{category}</h4>
-            {subdomains.map((subdomain) => (
-              <div key={subdomain.id} className="checkbox-group">
-                <input
-                  type="checkbox"
-                  id={subdomain.id}
-                  onChange={subdomain.onChange}
-                  checked={subdomain.checked}
-                />
-                <label htmlFor={subdomain.id}>{subdomain.label}</label>
+    return (
+      <div class="sidebar-standalone-content-container">
+        {Object.entries(subdomainData).map(([sectionName, section]) => (
+          <div class="sidebar-standalone-content">
+            <h2 class="sidebar-standalone-header">{sectionName}</h2>
+            {section.map(({ category, subdomains }) => (
+              <div key={category} className="subtopic-container">
+                {" "}
+                {/* New container div */}
+                <Collapsible title={category} initialOpen={true}>
+                  <div className="subdomain-group">
+                    {subdomains.map((subdomain) => (
+                      <div key={subdomain.id} className="checkbox-group">
+                        <input
+                          type="checkbox"
+                          id={subdomain.id}
+                          onChange={subdomain.onChange}
+                          checked={subdomain.checked}
+                        />
+                        <label htmlFor={subdomain.id}>{subdomain.label}</label>
+                      </div>
+                    ))}
+                  </div>
+                </Collapsible>
               </div>
             ))}
-          </React.Fragment>
+          </div>
         ))}
       </div>
-    ));
+    );
   };
 
   const shouldShowFreeResponse = (choices) => {
@@ -835,6 +857,15 @@ function SATPage() {
                       <Bookmark size={18} />
                       <span>Coming Soon</span>
                     </button>
+                    <a
+                      href={`/feedback?questionId=${questionDetails.questionId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="control-button feedback-button"
+                    >
+                      <MessageSquare size={18} />
+                      <span>Feedback</span>
+                    </a>
                     {!shouldShowFreeResponse(questionDetails.answerChoices) && (
                       <button
                         className={`control-button eliminate-button ${isCrossOutMode ? "active" : ""}`}
@@ -844,8 +875,6 @@ function SATPage() {
                         <span>Eliminate Answer</span>
                       </button>
                     )}
-
-                    {/* Show Ask AI button for all question types after incorrect attempt */}
                     {attempts[currentQuestionIndex] &&
                       attempts[currentQuestionIndex] > 0 && (
                         <button
@@ -872,6 +901,16 @@ function SATPage() {
                       <Bookmark size={18} />
                       <span>Coming Soon</span>
                     </button>
+
+                    <a
+                      href={`/feedback?questionId=${questionDetails.questionId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="control-button feedback-button"
+                    >
+                      <MessageSquare size={18} />
+                      <span>Feedback</span>
+                    </a>
                     {!shouldShowFreeResponse(questionDetails.answerChoices) && (
                       <button
                         className={`control-button eliminate-button ${isCrossOutMode ? "active" : ""}`}
@@ -881,7 +920,6 @@ function SATPage() {
                         <span>Eliminate Answer</span>
                       </button>
                     )}
-                    {/* Show AI button after any attempt */}
                     {attempts[currentQuestionIndex] &&
                       attempts[currentQuestionIndex] > 0 && (
                         <button
@@ -912,17 +950,17 @@ function SATPage() {
                     questionDetails.externalId,
                   )}
                 </div>
-                <div
-                  className={`feedback-link ${showSidebar ? "with-sidebar" : ""}`}
-                >
-                  <a
-                    href={`/feedback?questionId=${questionDetails.questionId}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Feedback
-                  </a>
-                </div>
+                {/* Add Check button for Math multiple-choice */}
+                {!practiceTestMode &&
+                  !shouldShowFreeResponse(questionDetails.answerChoices) && (
+                    <button
+                      onClick={handleCheckAnswer}
+                      className="check-answer-button"
+                      disabled={!selectedAnswer}
+                    >
+                      Check Answer
+                    </button>
+                  )}
               </div>
             </div>
           );
@@ -946,15 +984,23 @@ function SATPage() {
                     <Bookmark size={18} />
                     <span>Coming Soon</span>
                   </button>
+
+                  <a
+                    href={`/feedback?questionId=${questionDetails.questionId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="control-button feedback-button"
+                  >
+                    <MessageSquare size={18} />
+                    <span>Feedback</span>
+                  </a>
                   <button
-                    className={`control-button eliminate-button 
-        ${isCrossOutMode ? "active" : ""}`}
+                    className={`control-button eliminate-button ${isCrossOutMode ? "active" : ""}`}
                     onClick={() => setIsCrossOutMode(!isCrossOutMode)}
                   >
                     <X size={18} />
                     <span>Eliminate Answer</span>
                   </button>
-                  {/* Add AI Help button for English */}
                   {attempts[currentQuestionIndex] &&
                     attempts[currentQuestionIndex] > 0 && (
                       <button
@@ -983,17 +1029,17 @@ function SATPage() {
                     questionDetails.externalId,
                   )}
                 </div>
-                <div
-                  className={`feedback-link ${showSidebar ? "with-sidebar" : ""}`}
-                >
-                  <a
-                    href={`/feedback?questionId=${questionDetails.questionId}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Feedback
-                  </a>
-                </div>
+                {/* Add Check button for English multiple-choice */}
+                {!practiceTestMode &&
+                  !shouldShowFreeResponse(questionDetails.answerChoices) && (
+                    <button
+                      onClick={handleCheckAnswer}
+                      className="check-answer-button"
+                      disabled={!selectedAnswer}
+                    >
+                      Check Answer
+                    </button>
+                  )}
               </div>
             </div>
           );
@@ -1047,9 +1093,6 @@ function SATPage() {
               >
                 Next
               </button>
-              {!practiceTestMode && (
-                <button onClick={handleCheckAnswer}>Check</button>
-              )}
             </div>
           </div>
         );
@@ -1222,13 +1265,13 @@ function SATPage() {
         ? {
             history: [],
             message: `Evaluate my answer choice for this SAT question:
-        
+
         Question: ${currentQuestion.question}
         My Answer: ${selectedAnswer?.toUpperCase()}
         My Reasoning: ${inputMessage}
         Correct Answer: ${currentQuestion.answer}
         Official Rationale: ${currentQuestion.rationale}
-        
+
         Please:
         1. Present the strongest argument FOR my answer
         2. Present the strongest argument AGAINST my answer
@@ -1342,7 +1385,6 @@ function SATPage() {
     );
   };
 
-  // In SatPage.jsx - Update handleSimilarQuestions function
   const handleSimilarQuestions = async () => {
     try {
       const currentQuestion = currentQuestions[currentQuestionIndex];
@@ -1481,24 +1523,59 @@ function SATPage() {
     }
   };
 
+  const [showWarning, setShowWarning] = useState(false);
+
+  const handleLogoClick = () => {
+    setShowWarning(true); // Show the warning popup
+  };
+
+  const handleConfirmNavigation = () => {
+    setShowWarning(false); // Hide the warning
+    navigate("/"); // Proceed with navigation
+  };
+
+  const handleCancelNavigation = () => {
+    setShowWarning(false); // Hide the warning
+  };
+
   return (
     <>
       <div style={{ position: "relative" }}>
+        {showWarning && (
+          <div className="warning-popup-overlay">
+            {" "}
+            {/* Overlay for dimming background */}
+            <div className="warning-popup">
+              <p>
+                Are you sure you want to return to the main page? Your progress
+                will not be saved.
+              </p>
+              <button onClick={handleConfirmNavigation}>Proceed</button>
+              <button onClick={handleCancelNavigation}>Cancel</button>
+            </div>
+          </div>
+        )}
+
         <nav className={`nav sat-nav`}>
           <div
             className="logo"
-            onClick={() => navigate("/")}
+            onClick={handleLogoClick}
             style={{ cursor: "pointer" }}
           >
             <img src="/aquLogo.png" alt="Aquarc Logo" className="logo-image" />
           </div>
 
-          <PomodoroTimer ref={pomodoroTimerRef} onTimeUp={handleTimeUp} />
+          <div className="nav-tools">
+            <button onClick={toggleSidebar} className="calculator-icon-button">
+              <ListFilter size={24} />
+              <span>Filters</span>
+            </button>
 
-          <div>
+            <PomodoroTimer ref={pomodoroTimerRef} onTimeUp={handleTimeUp} />
+
             {questionDisplay.content?.questionDetails?.category == "Math" && (
               <button
-                onClick={() => toggleCalculator()} // Fixed: Call toggleCalculator function when clicked
+                onClick={() => toggleCalculator()}
                 className={`calculator-icon-button format-time`}
               >
                 <Calculator size={24} />
@@ -1506,14 +1583,6 @@ function SATPage() {
             )}
           </div>
         </nav>
-      </div>
-
-      <div
-        className="sidebar-tab"
-        style={{ display: showSidebar ? "none" : "grid" }}
-        onClick={toggleSidebar}
-      >
-        <ListFilter size={20} />
       </div>
 
       <div className="sat-page">
@@ -1528,6 +1597,7 @@ function SATPage() {
             </>
           )}
         </div>
+
         {showCalculator && (
           <Draggable bounds="html" handle=".calculator-handle">
             <div className="calculator-wrapper">
@@ -1548,10 +1618,22 @@ function SATPage() {
             </div>
           </Draggable>
         )}
+
         <div className={`checkbox-column ${showSidebar ? "" : "collapsed"}`}>
           {/* Search button inside sidebar header */}
           <div className="sidebar-header">
             <div className="filter-tabs">
+              <div
+                className="logo"
+                onClick={handleConfirmNavigation}
+                style={{ cursor: "pointer" }}
+              >
+                <img
+                  src="/aquLogo.png"
+                  alt="Aquarc Logo"
+                  className="logo-image"
+                />
+              </div>
               <h2 class="sidebar-header">Practice Questions</h2>
               <button className="close-sidebar-button" onClick={toggleSidebar}>
                 <X size={18} />
@@ -1575,7 +1657,6 @@ function SATPage() {
                   ))}
                 </div>
               </div>
-
               <div>
                 <h3>Difficulty</h3>
                 <div className="filter-group">
@@ -1599,12 +1680,24 @@ function SATPage() {
               </div>
 
               <div>
-                <h3>15-Question Practice Set</h3>
+                <h3 style={{ display: "inline-block" }}>
+                  15-Question Practice Set
+                </h3>
+                <div className="tooltip-container">
+                  <span className="tooltip-icon">
+                    <HelpCircle size={16} />
+                  </span>
+                  <div className="tooltip-text">
+                    {userEmail
+                      ? "Timed 15-question practice set that simulates a real test section"
+                      : "You must be logged in to use this feature. This is a timed 15-question practice set that simulates a real test section."}
+                  </div>
+                </div>
                 <div className="filter-group">
                   <button
                     key="practice-test-mode-yes"
                     className={`horizontal-checkbox-group 
-                                ${practiceTestMode ? "selected" : ""}`}
+                  ${practiceTestMode ? "selected" : ""}`}
                     onClick={() => setPracticeTestMode(true)}
                     disabled={!userEmail}
                   >
@@ -1613,7 +1706,7 @@ function SATPage() {
                   <button
                     key="practice-test-mode-no"
                     className={`horizontal-checkbox-group 
-                                ${!practiceTestMode ? "selected" : ""}`}
+                  ${!practiceTestMode ? "selected" : ""}`}
                     onClick={() => setPracticeTestMode(false)}
                   >
                     No
@@ -1621,20 +1714,34 @@ function SATPage() {
                 </div>
               </div>
             </div>
+
             {questionDisplay.type === "error" && (
               <div className="error-message">{questionDisplay.content}</div>
             )}
 
             <br />
+
             <div class="filter-main-group">
+              {/* Move auth buttons here at the top */}
               {!userEmail && (
-                <>
-                  <i style={{ color: "red" }}>
-                    Please sign in for 15-question practice sets.
-                  </i>
-                </>
+                <div className="auth-buttons-top-right">
+                  <button
+                    className="horizontal-checkbox-group auth-button-primary"
+                    onClick={() => navigate("/signup")}
+                  >
+                    Sign Up
+                  </button>
+                  <button
+                    className="horizontal-checkbox-group auth-button-secondary"
+                    onClick={() => navigate("/login")}
+                  >
+                    Login
+                  </button>
+                </div>
               )}
+
               <br />
+
               <div class="filter-group action-buttons">
                 {userEmail ? (
                   <button
@@ -1642,7 +1749,6 @@ function SATPage() {
                     onClick={() => {
                       Cookies.remove("user");
                       setUserEmail(null);
-                      // Instead of navigating immediately, let the user stay on current page
                       if (window.location.pathname === "/sat") {
                         navigate("/");
                       }
@@ -1650,24 +1756,8 @@ function SATPage() {
                   >
                     Log Out
                   </button>
-                ) : (
-                  <>
-                    <div className="auth-buttons-container">
-                      <button
-                        className="horizontal-checkbox-group auth-button-primary"
-                        onClick={() => navigate("/signup")}
-                      >
-                        Sign Up
-                      </button>
-                      <button
-                        className="horizontal-checkbox-group auth-button-secondary"
-                        onClick={() => navigate("/login")}
-                      >
-                        Login
-                      </button>
-                    </div>
-                  </>
-                )}
+                ) : null}
+
                 <button
                   className="horizontal-checkbox-group easy"
                   onClick={handleSearch}
@@ -1682,10 +1772,13 @@ function SATPage() {
           {renderSubdomainInputs()}
         </div>
       </div>
+
       {currentQuestions.length > 0 && renderNavigationView()}
+
       {showChat && (
         <div className="ai-chat-sidebar">
           <div className="ai-chat-header">SAT AI Tutor</div>
+
           <div className="ai-chat-messages">
             {messages.map((message, index) => (
               <div
@@ -1706,6 +1799,7 @@ function SATPage() {
               </div>
             ))}
           </div>
+
           <form onSubmit={handleChatSubmit} className="ai-chat-input-container">
             {/* Approach buttons row */}
             <div className="approach-buttons">
@@ -1717,6 +1811,7 @@ function SATPage() {
               >
                 Approaches
               </button>
+
               <button
                 type="button"
                 className="approach-button"
@@ -1746,7 +1841,9 @@ function SATPage() {
           </form>
         </div>
       )}
+
       {renderQuestionGrid()}
+
       {showReviewScreen && (
         <ReviewScreen
           questions={currentQuestions}

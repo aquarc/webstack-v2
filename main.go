@@ -55,39 +55,6 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	var connectionSB strings.Builder
-	user := os.Getenv("DB_USER")
-	password := os.Getenv("DB_PASSWORD")
-	host := os.Getenv("DB_HOST")
-	port := os.Getenv("DB_PORT")
-	name := os.Getenv("DB_NAME")
-	sslmode := os.Getenv("DB_SSLMODE")
-
-	if len(user) != 0 {
-		connectionSB.WriteString("user=")
-		connectionSB.WriteString(user)
-	}
-	if len(password) != 0 {
-		connectionSB.WriteString(" password=")
-		connectionSB.WriteString(password)
-	}
-	if len(host) != 0 {
-		connectionSB.WriteString(" host=")
-		connectionSB.WriteString(host)
-	}
-	if len(port) != 0 {
-		connectionSB.WriteString(" port=")
-		connectionSB.WriteString(port)
-	}
-	if len(name) != 0 {
-		connectionSB.WriteString(" dbname=")
-		connectionSB.WriteString(name)
-	}
-	if len(sslmode) != 0 {
-		connectionSB.WriteString(" sslmode=")
-		connectionSB.WriteString(sslmode)
-	}
-
 	// Build the PostgreSQL connection string.
 	connectionString := fmt.Sprintf("user=%s password=%s host=%s port=%s dbname=%s sslmode=%s",
 		os.Getenv("DB_USER"),
