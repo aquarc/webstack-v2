@@ -1,7 +1,6 @@
 html {
   height: 100%;
   background-color: #ffffff;
-  margin-top: 70px;
 }
 
 .error-message {
@@ -39,6 +38,7 @@ html {
   overflow-x: hidden;
   display: flex;
   justify-content: center;
+  margin-top: 70px;
 }
 
 .fixed-bottom-bar {
@@ -1392,4 +1392,3 @@ html {
     font-size: 0.9rem;
   }
 }
-
