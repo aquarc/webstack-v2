@@ -19,10 +19,6 @@
   padding-top: 10px;
 }
 
-.headline-container.fade {
-  opacity: 0;
-}
-
 .headline {
   font-size: 5rem;
   font-weight: bold;

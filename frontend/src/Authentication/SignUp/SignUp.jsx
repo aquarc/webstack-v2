@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import './SignUp.css';
 import GoogleLoginButton from '../../Components/GoogleLoginButton.jsx';
+import Cookies from 'js-cookie';
 
 const SignUpPage = () => {
     const navigate = useNavigate();
@@ -92,24 +93,43 @@ const SignUpPage = () => {
         e.preventDefault();
 
         try {
-            const response = await fetch('/sat/verifyRegistration', {
+            // 1. Verify the registration code
+            const verifyResponse = await fetch('/sat/verifyRegistration', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     email: formData.email,
                     code: verificationCode
                 })
             });
 
-            if (!response.ok) {
-                const errorText = await response.text();
+            if (!verifyResponse.ok) {
+                const errorText = await verifyResponse.text();
                 setApiError(errorText || 'Verification failed');
                 return;
             }
 
-            navigate('/sat', { state: { username: formData.username } });
+            // 2. Automatically log in after successful verification
+            const loginResponse = await fetch('/sat/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: formData.email,
+                    password: formData.password
+                }),
+                credentials: 'include'
+            });
+
+            if (!loginResponse.ok) {
+                const errorText = await loginResponse.text();
+                setApiError(errorText || 'Automatic login failed');
+                return;
+            }
+
+            // 3. Process successful login
+            const userData = await loginResponse.json();
+            Cookies.set('user', JSON.stringify(userData), { expires: 7 });
+            navigate('/sat');
             
         } catch (error) {
             console.error('Verification error:', error);

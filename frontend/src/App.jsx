@@ -11,6 +11,7 @@ import LandingPage from "./LandingPage/LandingPage";
 import LPFooter from "./Components/Footer";
 import FeedBackPage from "./LandingPage/FeedBackPage/FeedBack";
 import SatPage from "./SatPage/SatPage";
+import MyPractice from "./SatPage/MyPractice";
 import ECPage from "./ECPage/ECPage";
 import ApPage from "./ApPage/ApPage";
 import SignUpPage from "./Authentication/SignUp/SignUp";
@@ -78,6 +79,7 @@ const AppContent = () => {
         <Route path="/notes" element={<ApPage />} />
         <Route path="/feedback" element={<FeedBackPage />} />
         <Route path="/sat" element={<SatPage />} />
+        <Route path="/my" element={<MyPractice />} />
         <Route path="/extracurricular" element={<ECPage />} />
         <Route path="/signup" element={<SignUpPage />} />
         <Route path="/aboutPage" element={<AboutUsPage />} />

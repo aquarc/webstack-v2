@@ -9,50 +9,11 @@ import understandImage from '../Assets/understand.png';
 import approachImage from '../Assets/approach.png';
 import grindImage from '../Assets/grind.png';
 
-// Headlines for the landing page
-const headlines = {
-  0: (
-    <div className="headline">
-      <span className="highlight-text">Start scoring higher</span>
-      <br />
-      <span className="headline-text">in 2 clicks.</span>
-    </div>
-  ),
-  1: (
-    <div className="headline">
-      <span className="highlight-text">Your mistakes</span>
-      <br />
-      <span className="headline-text">in clear sight.</span>
-    </div>
-  ),
-  2: (
-    <div className="headline">
-      <span className="highlight-text">Learn with</span>
-      <br />
-      <span className="headline-text">AI-powered feedback.</span>
-    </div>
-  ),
-};
-
 const LandingPage = () => {
   const [currentHeadline, setCurrentHeadline] = useState(0);
-  const [fadeOut, setFadeOut] = useState(false);
   const [isInView, setIsInView] = useState(false); // Track if the .analytics section is in view
   const analyticsRef = useRef(null); // Reference to the analytics section
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const headlineKeys = Object.keys(headlines);
-    const interval = setInterval(() => {
-      setFadeOut(true);
-      setTimeout(() => {
-        setCurrentHeadline((prev) => (prev + 1) % headlineKeys.length);
-        setFadeOut(false);
-      }, 500);
-    }, 4000);
-
-    return () => clearInterval(interval);
-  }, []);
 
   // Use IntersectionObserver to detect when the .analytics section is in view
   useEffect(() => {
@@ -83,12 +44,16 @@ const LandingPage = () => {
   return (
     <div className="landing-container">
       <div className="main-content">
-        <div className={`headline-container ${fadeOut ? "fade" : ""}`}>
-          {headlines[`${currentHeadline}`]}
+        <div className={`headline-container`}>
+          <div className="headline">
+            <span className="highlight-text">Free SAT practice</span>
+            <br />
+            <span className="headline-text">that doesn't suck.</span>
+          </div>
         </div>
 
         <div className="subheadline">
-          You don't need to be tired and overwhelmed to succeed. Aquarc is how that happens.
+          You don't need to be tired and stressed to score high. Because of Aquarc.
         </div>
 
         <div className="sat-button">
@@ -96,7 +61,7 @@ const LandingPage = () => {
             Start Your Streak →
           </button>
           <button onClick={() => navigate("/sat")} className="cta-button-outline">
-            Practice For Free
+            Try Question Bank
           </button>
         </div>
 

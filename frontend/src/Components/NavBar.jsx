@@ -42,8 +42,11 @@ const Navbar = () => {
         </div>
 
         <div className="nav-links">
+          <Link to="/my" className="link">
+            My Practice
+          </Link>
           <Link to="/sat" className="link">
-            SAT Practice
+            Question Bank
           </Link>
           <Link to="/notes" className="link">
             Notes
@@ -87,8 +90,11 @@ const Navbar = () => {
       {/* Mobile drawer - add SAT page check */}
       <div className={`mobile-drawer ${isMenuOpen ? "open" : "closed"}`}>
         <div className="mobile-link-container">
+          <Link to="/my" className="link">
+            My Practice
+          </Link>
           <Link to="/sat" className="link">
-            SAT Practice{" "}
+            Question Bank{" "}
           </Link>
           <Link to="/notes" className="link">
             AP Notes
