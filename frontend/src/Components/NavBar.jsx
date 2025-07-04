@@ -55,6 +55,9 @@ const Navbar = () => {
           <Link to="/feedback" className="link">
             Feedback
           </Link>
+          <Link to="/mypracticepage" className="link">
+            My Practice
+          </Link>
           {/*<Link to="/aboutPage" className="link">About Us</Link>*/}
         </div>
 
