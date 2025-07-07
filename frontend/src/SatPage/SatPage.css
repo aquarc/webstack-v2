@@ -1094,6 +1094,14 @@ html {
   border-color: #2563eb;
 }
 
+.question-grid-item.correct {
+  background: #23e34a;
+}
+
+.question-grid-item.incorrect {
+  background: red;
+}
+
 .question-grid-item.current {
   border-color: #f59e0b;
   box-shadow: 0 0 0 2px #fde68a;
@@ -1340,6 +1348,8 @@ html {
     height: auto;
     gap: 0.5rem;
   }
+
+  
 
   .auth-buttons-top-right button {
     width: 100px;

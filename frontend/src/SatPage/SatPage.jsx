@@ -140,13 +140,12 @@ function SATPage() {
     setShowCalculator((prev) => !prev);
   };
 
-  // Add near other useEffect hooks
-  useEffect(() => {
-    console.log("Attempts updated:", attempts);
-  }, [attempts]);
-
   useEffect(() => {
     console.log("Current question index:", currentQuestionIndex);
+    console.log(
+      "Was previously attepted and was: " +
+        currentQuestions[currentQuestionIndex]?.correct,
+    );
   }, [currentQuestionIndex]);
 
   // Initialize and cleanup the Desmos calculator when showCalculator changes
@@ -388,13 +387,17 @@ function SATPage() {
     return isCorrect;
   };
 
-  const handleCheckAnswer = () => {
+  const handleCheckAnswer = async () => {
     // Determine correctness
     const isCorrect = checkCorrectAnswer();
+    const currentQuestion = currentQuestions[currentQuestionIndex];
+    const choice = shouldShowFreeResponse(currentQuestion.answerChoices)
+      ? tempAnswer
+      : selectedAnswer;
 
     // Always log the attempt
     const attempt = {
-      answer: tempAnswer || selectedAnswer,
+      answer: choice,
       timestamp: Date.now(),
       correct: isCorrect,
     };
@@ -408,6 +411,46 @@ function SATPage() {
       ...prev,
       [currentQuestionIndex]: (prev[currentQuestionIndex] || 0) + 1,
     }));
+
+    currentQuestions[currentQuestionIndex].answered = true;
+    currentQuestions[currentQuestionIndex].correct = isCorrect;
+
+    if (userEmail) {
+      // send an http request
+      const payload = [
+        {
+          questionId: currentQuestions[currentQuestionIndex].questionId,
+          lastAnswer: choice,
+          correct: isCorrect,
+        },
+      ];
+
+      try {
+        const response = await fetch("/sat/set-results", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          let errorMessage;
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.error || `HTTP error ${response.status}`;
+          } catch (parseError) {
+            errorMessage = `HTTP error ${response.status}`;
+          }
+          throw new Error(errorMessage);
+        }
+
+        return await response.json();
+      } catch (error) {
+        console.error("Error submitting answer:", error);
+        throw error;
+      }
+    }
   };
 
   const handleSearch = async () => {
@@ -872,7 +915,7 @@ function SATPage() {
                         onClick={() => setIsCrossOutMode(!isCrossOutMode)}
                       >
                         <X size={18} />
-                        <span>Eliminate Answer</span>
+                        <span>Eliminate</span>
                       </button>
                     )}
                     {attempts[currentQuestionIndex] &&
@@ -899,7 +942,7 @@ function SATPage() {
                   <div className="question-control-header">
                     <button className="control-button save-button">
                       <Bookmark size={18} />
-                      <span>Coming Soon</span>
+                      <span>Soon</span>
                     </button>
 
                     <a
@@ -932,6 +975,35 @@ function SATPage() {
                       )}
                   </div>
                 )}
+
+                <div className="question-text">
+                  <div
+                    dangerouslySetInnerHTML={{
+                      __html: questionDetails.question,
+                    }}
+                  />
+                </div>
+                <br />
+                <div className="answer-choices">
+                  {renderAnswerChoices(
+                    questionDetails.answerChoices,
+                    questionDetails.answer,
+                    questionDetails.rationale,
+                    questionDetails.questionType,
+                    questionDetails.externalId,
+                  )}
+                </div>
+                {/* Add Check button for Math multiple-choice */}
+                {!practiceTestMode &&
+                  !shouldShowFreeResponse(questionDetails.answerChoices) && (
+                    <button
+                      onClick={handleCheckAnswer}
+                      className="check-answer-button"
+                      disabled={!selectedAnswer}
+                    >
+                      Check Answer
+                    </button>
+                  )}
 
                 <div className="question-text">
                   <div
@@ -1040,7 +1112,45 @@ function SATPage() {
                       Check Answer
                     </button>
                   )}
+                {attempts[currentQuestionIndex] &&
+                  attempts[currentQuestionIndex] > 0 && (
+                    <button
+                      className="control-button ai-help-button"
+                      onClick={() => handleAIHelp()}
+                    >
+                      <HelpCircle size={18} />
+                      <span>Ask AI</span>
+                    </button>
+                  )}
               </div>
+              <div className="question-text">
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: questionDetails.question,
+                  }}
+                />
+              </div>
+              <br />
+              <div className="answer-choices">
+                {renderAnswerChoices(
+                  questionDetails.answerChoices,
+                  questionDetails.answer,
+                  questionDetails.rationale,
+                  questionDetails.questionType,
+                  questionDetails.externalId,
+                )}
+              </div>
+              {/* Add Check button for English multiple-choice */}
+              {!practiceTestMode &&
+                !shouldShowFreeResponse(questionDetails.answerChoices) && (
+                  <button
+                    onClick={handleCheckAnswer}
+                    className="check-answer-button"
+                    disabled={!selectedAnswer}
+                  >
+                    Check Answer
+                  </button>
+                )}
             </div>
           );
         }
@@ -1136,22 +1246,40 @@ function SATPage() {
   const QuestionGrid = ({ questions, attempts, currentQuestionIndex }) => {
     return (
       <div className="question-grid">
-        {questions.map((_, index) => (
-          <button
-            key={index}
-            className={`question-grid-item ${
-              attempts[index] ? "answered" : "unanswered"
-            } ${currentQuestionIndex === index ? "current" : ""}`}
-            onClick={() => {
-              setCurrentQuestionIndex(index);
-              setShowQuestionGrid(false);
-              setShowReviewScreen(false);
-              clearChanges();
-            }}
-          >
-            {index + 1}
-          </button>
-        ))}
+        {questions.map((question, index) => {
+          const questionId = question.questionId;
+          const questionAttempts = attemptLogs[questionId] || [];
+          const lastAttempt = questionAttempts[questionAttempts.length - 1];
+
+          return (
+            <button
+              key={index}
+              className={`question-grid-item ${
+                practiceTestMode
+                  ? reviewMode
+                    ? lastAttempt?.correct
+                      ? "correct"
+                      : "incorrect"
+                    : lastAttempt
+                      ? "answered"
+                      : "unanswered"
+                  : currentQuestions[index].answered
+                    ? currentQuestions[index].correct
+                      ? "correct"
+                      : "incorrect"
+                    : "unanswered"
+              } ${currentQuestionIndex === index ? "current" : ""}`}
+              onClick={() => {
+                setCurrentQuestionIndex(index);
+                setShowQuestionGrid(false);
+                setShowReviewScreen(false);
+                clearChanges();
+              }}
+            >
+              {index + 1}
+            </button>
+          );
+        })}
       </div>
     );
   };
@@ -1565,13 +1693,13 @@ function SATPage() {
             <img src="/aquLogo.png" alt="Aquarc Logo" className="logo-image" />
           </div>
 
+          <PomodoroTimer ref={pomodoroTimerRef} onTimeUp={handleTimeUp} />
+
           <div className="nav-tools">
             <button onClick={toggleSidebar} className="calculator-icon-button">
               <ListFilter size={24} />
               <span>Filters</span>
             </button>
-
-            <PomodoroTimer ref={pomodoroTimerRef} onTimeUp={handleTimeUp} />
 
             {questionDisplay.content?.questionDetails?.category == "Math" && (
               <button
@@ -1689,8 +1817,8 @@ function SATPage() {
                   </span>
                   <div className="tooltip-text">
                     {userEmail
-                      ? "Timed 15-question practice set that simulates a real test section"
-                      : "You must be logged in to use this feature. This is a timed 15-question practice set that simulates a real test section."}
+                      ? "Timed 15-question practice set that randomizes questions."
+                      : "You must be logged in to use this feature. This is a timed 15-question practice set that randomizes questions."}
                   </div>
                 </div>
                 <div className="filter-group">
@@ -1719,45 +1847,8 @@ function SATPage() {
               <div className="error-message">{questionDisplay.content}</div>
             )}
 
-            <br />
-
             <div class="filter-main-group">
-              {/* Move auth buttons here at the top */}
-              {!userEmail && (
-                <div className="auth-buttons-top-right">
-                  <button
-                    className="horizontal-checkbox-group auth-button-primary"
-                    onClick={() => navigate("/signup")}
-                  >
-                    Sign Up
-                  </button>
-                  <button
-                    className="horizontal-checkbox-group auth-button-secondary"
-                    onClick={() => navigate("/login")}
-                  >
-                    Login
-                  </button>
-                </div>
-              )}
-
-              <br />
-
               <div class="filter-group action-buttons">
-                {userEmail ? (
-                  <button
-                    className="horizontal-checkbox-group auth-button-secondary"
-                    onClick={() => {
-                      Cookies.remove("user");
-                      setUserEmail(null);
-                      if (window.location.pathname === "/sat") {
-                        navigate("/");
-                      }
-                    }}
-                  >
-                    Log Out
-                  </button>
-                ) : null}
-
                 <button
                   className="horizontal-checkbox-group easy"
                   onClick={handleSearch}
