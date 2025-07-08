@@ -1095,10 +1095,9 @@ func initializeSat(db *sql.DB) {
 	http.HandleFunc("/sat/set-results", setResults)
 
 	// If you have legacy SAT initialization, call it here.
-	initializeLegacySat(db)
-	initializeGoogleOAuth()
-	initializeGoogleOAuthTables(db)
-	registerOAuthRoutes()
+    initializeLegacySat(db)
+    initializeFirebase()
+    registerFirebaseRoutes()
 }
 
 // Dummy placeholder for initializeLegacySat.
