@@ -1181,10 +1181,15 @@ html {
 }
 
 .close-sidebar-button {
-  padding: 0px 2px;
+  padding: 10px;
   background: none;
   color: black;
 }
+
+.close-sidebar-button:hover {
+  padding: 10px;
+}
+
 
 .warning-popup-overlay {
   position: fixed;
@@ -1358,7 +1363,7 @@ html {
     gap: 0.5rem;
   }
 
-  
+
 
   .auth-buttons-top-right button {
     width: 100px;

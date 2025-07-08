@@ -30,9 +30,6 @@ type GoogleUserInfo struct {
 	Picture       string `json:"picture"`
 }
 
-// OAuth state store (in production, use Redis or database)
-var oauthStateStore = make(map[string]time.Time)
-
 // Generate random state string for OAuth security
 func generateOAuthState() string {
 	b := make([]byte, 32)
@@ -40,13 +37,30 @@ func generateOAuthState() string {
 	return fmt.Sprintf("%x", b)
 }
 
-// Clean expired OAuth states
-func cleanupOAuthStates() {
-	for state, timestamp := range oauthStateStore {
-		if time.Since(timestamp) > 10*time.Minute {
-			delete(oauthStateStore, state)
-		}
+// Generate and store state in DB
+func generateAndStoreOAuthState() (string, error) {
+	state := generateOAuthState()
+	
+	_, err := db.Exec(
+		"INSERT INTO oauth_states (state, expires_at) VALUES ($1, $2)",
+		state,
+		time.Now().Add(10*time.Minute),
+	)
+	if err != nil {
+		return "", fmt.Errorf("failed to store state: %v", err)
 	}
+	return state, nil
+}
+
+// Validate and consume state from DB
+func validateOAuthState(state string) bool {
+	var exists bool
+	err := db.QueryRow(
+		"DELETE FROM oauth_states WHERE state = $1 AND expires_at > NOW() RETURNING TRUE",
+		state,
+	).Scan(&exists)
+	
+	return err == nil && exists
 }
 
 // Initialize Google OAuth configuration
@@ -54,7 +68,7 @@ func initializeGoogleOAuth() {
 	googleOAuthConfig = &oauth2.Config{
 		ClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
 		ClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
-		RedirectURL:  os.Getenv("GOOGLE_REDIRECT_URL"), // e.g., "https://yourdomain.com/auth/google/callback"
+		RedirectURL:  os.Getenv("GOOGLE_REDIRECT_URL"),
 		Scopes: []string{
 			"https://www.googleapis.com/auth/userinfo.email",
 			"https://www.googleapis.com/auth/userinfo.profile",
@@ -77,39 +91,36 @@ func initializeGoogleOAuth() {
 
 // Handler to initiate Google OAuth flow
 func googleOAuthLogin(w http.ResponseWriter, r *http.Request) {
-	// Clean up expired states
-	cleanupOAuthStates()
+	state, err := generateAndStoreOAuthState()
+	if err != nil {
+		log.Printf("Failed to generate state: %v", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
 
-	// Generate and store state
-	state := generateOAuthState()
-	oauthStateStore[state] = time.Now()
-
-	// Get authorization URL
+	log.Printf("Initiating OAuth flow with state: %s", state)
 	url := googleOAuthConfig.AuthCodeURL(state, oauth2.AccessTypeOffline)
-
-	// Redirect to Google
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 
 // Handler for Google OAuth callback
-// Updated googleOAuthCallback function with proper redirect handling
 func googleOAuthCallback(w http.ResponseWriter, r *http.Request) {
 	// Get state and code from query parameters
 	state := r.URL.Query().Get("state")
 	code := r.URL.Query().Get("code")
-	log.Println("OAuth callback received")
-	log.Printf("Request URL: %s", r.URL.String())
+	
+	log.Printf("Received callback with state: %s", state)
+
 	// Validate state
-	if timestamp, exists := oauthStateStore[state]; !exists || time.Since(timestamp) > 10*time.Minute {
+	if !validateOAuthState(state) {
+		log.Printf("Invalid state parameter: %s", state)
 		http.Error(w, "Invalid or expired state parameter", http.StatusBadRequest)
 		return
 	}
 
-	// Remove used state
-	delete(oauthStateStore, state)
-
 	// Handle error from Google
 	if errorParam := r.URL.Query().Get("error"); errorParam != "" {
+		log.Printf("OAuth error: %s", errorParam)
 		http.Error(w, "OAuth error: "+errorParam, http.StatusBadRequest)
 		return
 	}
@@ -242,29 +253,15 @@ func googleOAuthCallback(w http.ResponseWriter, r *http.Request) {
 		MaxAge:   86400 * 7, // 7 days
 	})
 
-	// FIXED: Redirect to main landing page instead of /sat
+	// Redirect to frontend with success parameter
 	frontendURL := os.Getenv("FRONTEND_URL")
 	if frontendURL == "" {
 		frontendURL = "http://localhost:3000" // Default for development
 	}
-
-	// Redirect options - choose the one that matches your app structure:
-
-	// Option 1: Redirect to root/landing page
 	http.Redirect(w, r, frontendURL+"/?auth=success", http.StatusTemporaryRedirect)
-
-	// Option 2: Redirect to a dashboard page
-	// http.Redirect(w, r, frontendURL+"/dashboard?auth=success", http.StatusTemporaryRedirect)
-
-	// Option 3: Redirect to wherever the user was trying to go (if you store that info)
-	// redirectTo := r.URL.Query().Get("redirect_to")
-	// if redirectTo == "" {
-	//     redirectTo = "/"
-	// }
-	// http.Redirect(w, r, frontendURL+redirectTo+"?auth=success", http.StatusTemporaryRedirect)
 }
 
-// Update your initializeSat function to include OAuth routes and table modifications
+// Initialize database tables for OAuth
 func initializeGoogleOAuthTables(db *sql.DB) {
 	// Add OAuth columns to existing users table
 	_, err := db.Exec(`
@@ -285,12 +282,21 @@ func initializeGoogleOAuthTables(db *sql.DB) {
 		log.Printf("Could not create OAuth index: %v", err)
 	}
 
+	// Create oauth_states table
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS oauth_states (
+		state TEXT PRIMARY KEY,
+		expires_at TIMESTAMP NOT NULL
+	)`)
+	if err != nil {
+		log.Printf("Could not create oauth_states table: %v", err)
+	}
+
 	log.Println("✅ OAuth database tables initialized")
 }
 
-// Add these routes to your initializeSat function
+// Register OAuth routes
 func registerOAuthRoutes() {
 	http.HandleFunc("/auth/google/login", googleOAuthLogin)
-	http.HandleFunc("/auth/google/callback", googleOAuthCallback) // This handles the callback
+	http.HandleFunc("/auth/google/callback", googleOAuthCallback)
 	log.Println("✅ OAuth routes registered")
 }

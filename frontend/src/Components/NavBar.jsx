@@ -42,9 +42,6 @@ const Navbar = () => {
         </div>
 
         <div className="nav-links">
-          <Link to="/my" className="link">
-            My Practice
-          </Link>
           <Link to="/sat" className="link">
             Question Bank
           </Link>
@@ -55,9 +52,9 @@ const Navbar = () => {
           <Link to="/feedback" className="link">
             Feedback
           </Link>
-          <Link to="/mypracticepage" className="link">
+          {/* <Link to="/mypracticepage" className="link">
             My Practice
-          </Link>
+          </Link> */}
           {/*<Link to="/aboutPage" className="link">About Us</Link>*/}
         </div>
 
