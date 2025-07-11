@@ -1,3 +1,4 @@
+
 html {
   height: 100%;
   background-color: #ffffff;
@@ -31,6 +32,7 @@ html {
 @import url("https://fonts.googleapis.com/css2?family=Archivo:ital,wght@1,600&display=swap");
 
 .sat-main-content {
+  padding-top: 80px;
   flex: 1;
   position: relative;
   background-color: #ffffff;
@@ -564,7 +566,7 @@ html {
     padding-top: 100px;
     margin-bottom: 30px;
   }
-
+  
   .checkbox-column {
     width: 100%;
     padding: 20px;
