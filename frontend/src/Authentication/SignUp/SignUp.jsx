@@ -145,14 +145,6 @@ const SignUpPage = () => {
                     {successMessage && <p className="success-message">{successMessage}</p>}
                     {apiError && <p className="error api-error">{apiError}</p>}
                     
-                    {/* Google OAuth Button */}
-                    <div className="oauth-section">
-                        <GoogleLoginButton text="Sign up with Google" />
-                        <div className="divider">
-                            <span>or</span>
-                        </div>
-                    </div>
-                    
                     <div className="form-group">
                         <label htmlFor="username">Username</label>
                         <input 
@@ -202,6 +194,15 @@ const SignUpPage = () => {
                     </div>
 
                     <button type="submit" className="signup-button">Sign Up</button>
+                    
+                    {/* Google OAuth Button moved below main button */}
+                    <div className="oauth-section">
+                        <div className="divider">
+                            <span>or</span>
+                        </div>
+                        <GoogleLoginButton text="Sign up with Google" />
+                    </div>
+                    
                     <p className="login-link">
                         Already have an account? <Link to="/login">Login</Link>
                     </p>

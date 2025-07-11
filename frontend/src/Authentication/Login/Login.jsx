@@ -90,14 +90,6 @@ const LoginPage = () => {
                 {successMessage && <p className="success-message">{successMessage}</p>}
                 {apiError && <p className="error api-error">{apiError}</p>}
                 
-                {/* Google OAuth Button */}
-                <div className="oauth-section">
-                    <GoogleLoginButton />
-                    <div className="divider">
-                        <span>or</span>
-                    </div>
-                </div>
-                
                 <div className="form-group">
                     <label htmlFor="email">Email</label>
                     <input 
@@ -129,6 +121,14 @@ const LoginPage = () => {
                 >
                     {isLoading ? 'Logging in...' : 'Login'}
                 </button>
+
+                {/* Google OAuth Button moved below main button */}
+                <div className="oauth-section">
+                    <div className="divider">
+                        <span>or</span>
+                    </div>
+                    <GoogleLoginButton />
+                </div>
 
                 <p className="signup-link">
                     Don't have an account? <Link to="/signup">Sign up</Link>

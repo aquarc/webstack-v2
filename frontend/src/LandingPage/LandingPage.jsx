@@ -57,8 +57,8 @@ const LandingPage = () => {
         </div>
 
         <div className="sat-button">
-          <button onClick={() => navigate("/sat")} className="cta-button">
-            Start Your Streak →
+          <button onClick={() => navigate("/signup")} className="cta-button">
+            Start Your Streak → 
           </button>
           <button onClick={() => navigate("/sat")} className="cta-button-outline">
             Try Question Bank
