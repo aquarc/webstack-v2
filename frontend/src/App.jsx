@@ -18,7 +18,7 @@ import SignUpPage from "./Authentication/SignUp/SignUp";
 import AboutUsPage from "./AboutPage/AboutPage";
 import LoginPage from "./Authentication/Login/Login";
 import AuthRedirect from "./Components/AuthRedirect";
-import MyPracticePage from "./MyPracticePage/MyPracticePage";
+import Dashboard from "./Dashboard/Dashboard";
 
 import ReactGA from 'react-ga4';
 
@@ -73,7 +73,7 @@ const AppContent = () => {
   return (
     <>
       {/* Routes that will not render the nav bar */}
-      {location.pathname !== "/sat" && location.pathname !== "/mypracticepage" && <NavBar />}
+      {location.pathname !== "/sat" && location.pathname !== "/dashboard" && <NavBar />}
 
       <Routes>
         <Route path="/" element={<LandingPage />} />
@@ -85,7 +85,7 @@ const AppContent = () => {
         <Route path="/signup" element={<SignUpPage />} />
         <Route path="/aboutPage" element={<AboutUsPage />} />
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/mypracticepage" element={<MyPracticePage />} />
+        <Route path="/dashboard" element={<Dashboard />} />
         {/* Redirect to home if no match */}
       </Routes>
       {/* Use location to conditionally render footer */}

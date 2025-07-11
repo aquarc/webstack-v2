@@ -92,7 +92,6 @@ func main() {
 	http.HandleFunc("/analytics", indexThing)
 	http.HandleFunc("/ec-finder", indexThing)
 	http.HandleFunc("/sat-prep", indexThing)
-	http.HandleFunc("/my", indexThing)
 
 	// Set up CORS with credentials enabled.
 	handler := cors.New(cors.Options{

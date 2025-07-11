@@ -1,0 +1,298 @@
+/* Reset default margins and padding */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+/* Dashboard Container */
+.dashboard-container {
+  display: flex;
+  height: 100vh;
+  background-color: #f9fafb;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 300px;
+  background-color: white;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Logo Section */
+.logo-section {
+  padding: 24px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* Changed from space-between */
+  gap: 12px;
+}
+
+.logo-icon {
+  width: 40px;
+  height: 40px;
+  background-color: #799dea;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+.logo-text {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2563eb;
+  margin: 0;
+}
+
+/* Navigation Container */
+.nav-container {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  flex-grow: 1;
+  position: relative; /* Add this for positioning context */
+}
+
+/* Navigation Section */
+.nav-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Section Title */
+.section-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0;
+  padding: 0 16px;
+  height: 16px; /* Fixed height to maintain space when hidden */
+  overflow: hidden;
+}
+
+/* Navigation Items Container */
+.nav-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Navigation Item */
+.nav-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #4b5563;
+  font-weight: 500;
+  min-height: 44px; /* Fixed minimum height */
+}
+
+.nav-item:hover {
+  background-color: #f9fafb;
+}
+
+/* Active Navigation Item */
+.nav-item-active {
+  background-color: #eff6ff;
+  color: #2563eb;
+  border-left: 4px solid #2563eb;
+}
+
+/* Navigation Item Content */
+.nav-item-content {
+  display: flex;
+  align-items: center;
+  gap: 12px; /* This ensures consistent spacing */
+  width: 100%; /* Add this to prevent pushing content to the right */
+}
+
+/* Navigation Icon */
+.nav-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0; /* Prevent icon from shrinking */
+}
+
+/* Navigation Label */
+.nav-label {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: opacity 0.2s ease;
+}
+
+/* Main Content Area */
+.main-content {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 280px;
+  }
+  
+  .logo-section {
+    padding: 16px;
+  }
+  
+  .nav-container {
+    padding: 12px;
+  }
+  
+  .main-content {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 640px) {
+  .dashboard-container {
+    flex-direction: column;
+  }
+  
+  .sidebar {
+    width: 100%;
+    height: auto;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  
+  .main-content {
+    flex: 1;
+    height: auto;
+  }
+}
+
+.sidebar-toggle {
+  width: 28px;
+  height: 28px;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+.sidebar-toggle-container {
+  margin-top: auto; /* Pushes the toggle to the bottom */
+  padding: 16px;
+  display: flex;
+  justify-content: center;
+}
+
+.sidebar-toggle:hover {
+  background-color: #e2e8f0;
+  border-color: #cbd5e1;
+  color: #2563eb;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-toggle:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-toggle-icon {
+  width: 14px;
+  height: 14px;
+  transition: transform 0.2s ease;
+}
+
+/* Collapsed Sidebar Styles */
+.sidebar.collapsed {
+  width: 90px;
+  overflow: hidden;
+}
+
+.sidebar.collapsed .logo-text {
+  opacity: 0;
+  width: 0;
+}
+
+.sidebar.collapsed .section-title {
+  opacity: 0;
+  /* Keep height to maintain spacing */
+}
+
+.sidebar.collapsed .nav-label {
+  opacity: 0;
+  width: 0;
+}
+
+.sidebar.collapsed .nav-item {
+  justify-content: center;
+  padding: 12px;
+  min-height: 44px; /* Maintain same height */
+}
+
+.sidebar.collapsed .nav-item-content {
+  justify-content: center;
+  gap: 0; /* Remove gap when collapsed */
+}
+
+.sidebar.collapsed .nav-item-active {
+  border-left: none;
+  border-radius: 8px;
+  background-color: #eff6ff;
+}
+
+.sidebar.collapsed .sidebar-toggle-icon {
+  transform: rotate(180deg);
+}
+
+/* Keep all sections visible in collapsed state with proper spacing */
+.sidebar.collapsed .nav-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px; /* Maintain same gap */
+}
+
+.sidebar.collapsed .nav-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* Maintain same gap */
+}
+
+/* Add divider lines between sections when collapsed */
+.sidebar.collapsed .nav-section:not(:first-child) {
+  position: relative;
+  padding-top: 24px;
+}
+
+.sidebar.collapsed .nav-section:not(:first-child)::before {
+  content: '';
+  position: absolute;
+  top: 12px;
+  left: 16px;
+  right: 16px;
+  height: 1px;
+  background-color: #e5e7eb;
+}
