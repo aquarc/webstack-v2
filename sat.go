@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"crypto/rand"
 	"crypto/sha512"
 	"crypto/tls"
@@ -15,6 +16,7 @@ import (
 	"os"
 	"time"
 
+	"firebase.google.com/go/auth"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/lib/pq"
 	"gopkg.in/gomail.v2"
@@ -449,10 +451,38 @@ func register(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
+	// Check if email exists in either our database or Firebase
+	var existsInDB bool
+	err := db.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE email = $1)", data.Email).Scan(&existsInDB)
+	if err != nil {
+		log.Printf("Database error checking email: %v", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	// Check Firebase if not found in our DB
+	if !existsInDB {
+		ctx := context.Background()
+		_, err := authClient.GetUserByEmail(ctx, data.Email)
+		if err == nil {
+			// User exists in Firebase
+			existsInDB = true
+		} else if !auth.IsUserNotFound(err) {
+			// Only error if it's NOT a "user not found" error
+			log.Printf("Firebase error checking email: %v", err)
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+	}
+
+	if existsInDB {
+		http.Error(w, "Email already registered with either password or Google", http.StatusConflict)
+		return
+	}
 
 	var existingEmail string
 	var isVerified bool
-	err := db.QueryRow("SELECT email, verified FROM users WHERE email = $1", data.Email).Scan(&existingEmail, &isVerified)
+	err = db.QueryRow("SELECT email, verified FROM users WHERE email = $1", data.Email).Scan(&existingEmail, &isVerified)
 	if err != sql.ErrNoRows {
 		if err == nil {
 			if isVerified {
@@ -1095,9 +1125,9 @@ func initializeSat(db *sql.DB) {
 	http.HandleFunc("/sat/set-results", setResults)
 
 	// If you have legacy SAT initialization, call it here.
-    initializeLegacySat(db)
-    initializeFirebase()
-    registerFirebaseRoutes()
+	initializeLegacySat(db)
+	initializeFirebase()
+	registerFirebaseRoutes()
 }
 
 // Dummy placeholder for initializeLegacySat.

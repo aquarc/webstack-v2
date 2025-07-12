@@ -40,14 +40,14 @@ const SignUpPage = () => {
 
     const validateForm = () => {
         let formErrors = {};
-        
+
         if (!formData.username) formErrors.username = 'Username is required';
         if (!formData.email) formErrors.email = 'Email is required';
         else if (!/\S+@\S+\.\S+/.test(formData.email)) formErrors.email = 'Email is invalid';
-        
+
         if (!formData.password) formErrors.password = 'Password is required';
         else if (formData.password.length < 6) formErrors.password = 'Password must be at least 6 characters';
-        
+
         if (formData.password !== formData.confirmPassword) {
             formErrors.confirmPassword = 'Passwords do not match';
         }
@@ -78,7 +78,11 @@ const SignUpPage = () => {
 
             if (!response.ok) {
                 const errorText = await response.text();
-                setApiError(errorText || 'Registration failed');
+                if (response.status === 409) {
+                    setApiError('This email is already registered. Try logging in instead.');
+                } else {
+                    setApiError(errorText || 'Registration failed');
+                }
                 return;
             }
 
@@ -130,7 +134,7 @@ const SignUpPage = () => {
             const userData = await loginResponse.json();
             Cookies.set('user', JSON.stringify(userData), { expires: 7 });
             navigate('/sat');
-            
+
         } catch (error) {
             console.error('Verification error:', error);
             setApiError('Network error. Please try again.');
@@ -144,11 +148,11 @@ const SignUpPage = () => {
                     <h2>Sign Up</h2>
                     {successMessage && <p className="success-message">{successMessage}</p>}
                     {apiError && <p className="error api-error">{apiError}</p>}
-                    
+
                     <div className="form-group">
                         <label htmlFor="username">Username</label>
-                        <input 
-                            type="text" 
+                        <input
+                            type="text"
                             id="username"
                             name="username"
                             value={formData.username}
@@ -159,8 +163,8 @@ const SignUpPage = () => {
 
                     <div className="form-group">
                         <label htmlFor="email">Email</label>
-                        <input 
-                            type="email" 
+                        <input
+                            type="email"
                             id="email"
                             name="email"
                             value={formData.email}
@@ -171,8 +175,8 @@ const SignUpPage = () => {
 
                     <div className="form-group">
                         <label htmlFor="password">Password</label>
-                        <input 
-                            type="password" 
+                        <input
+                            type="password"
                             id="password"
                             name="password"
                             value={formData.password}
@@ -183,8 +187,8 @@ const SignUpPage = () => {
 
                     <div className="form-group">
                         <label htmlFor="confirmPassword">Confirm Password</label>
-                        <input 
-                            type="password" 
+                        <input
+                            type="password"
                             id="confirmPassword"
                             name="confirmPassword"
                             value={formData.confirmPassword}
@@ -194,7 +198,7 @@ const SignUpPage = () => {
                     </div>
 
                     <button type="submit" className="signup-button">Sign Up</button>
-                    
+
                     {/* Google OAuth Button moved below main button */}
                     <div className="oauth-section">
                         <div className="divider">
@@ -202,7 +206,7 @@ const SignUpPage = () => {
                         </div>
                         <GoogleLoginButton text="Sign up with Google" />
                     </div>
-                    
+
                     <p className="login-link">
                         Already have an account? <Link to="/login">Login</Link>
                     </p>
@@ -217,11 +221,11 @@ const SignUpPage = () => {
                 <h2>Verify Your Email</h2>
                 <p className="verification-text">A verification code has been sent to {formData.email}</p>
                 {apiError && <p className="error api-error">{apiError}</p>}
-                
+
                 <div className="form-group">
                     <label htmlFor="verificationCode">Verification Code</label>
-                    <input 
-                        type="text" 
+                    <input
+                        type="text"
                         id="verificationCode"
                         name="verificationCode"
                         value={verificationCode}

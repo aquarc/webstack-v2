@@ -8,6 +8,7 @@ import (
     "net/http"
     "os"
     "time"
+    "strings"
 
     firebase "firebase.google.com/go"
     "firebase.google.com/go/auth"
@@ -87,13 +88,41 @@ func firebaseAuthCallback(w http.ResponseWriter, r *http.Request) {
     // Check if user exists in database
     var existingEmail string
     var username string
-    err = db.QueryRow("SELECT email, username FROM users WHERE email = $1", user.Email).Scan(&existingEmail, &username)
+    var hasPassword bool
+    var isVerified bool
+    err = db.QueryRow(`
+        SELECT email, username, password != '' as has_password, verified 
+        FROM users WHERE email = $1`, 
+        user.Email,
+    ).Scan(&existingEmail, &username, &hasPassword, &isVerified)
 
-    if err == sql.ErrNoRows {
+    if err == nil {
+        // User exists in our database
+        if hasPassword {
+            // User registered with password - don't allow Google login
+            http.Error(w, "Email already registered with password", http.StatusConflict)
+            return
+        }
+        
+        // User exists but registered with Google - update Firebase info if needed
+        _, err = db.Exec(`
+            UPDATE users 
+            SET oauth_provider = 'firebase', oauth_id = $1, verified = 1 
+            WHERE email = $2`,
+            user.UID,
+            user.Email,
+        )
+        if err != nil {
+            log.Printf("Failed to update Firebase info: %v", err)
+            // Continue anyway, this is not critical
+        }
+        log.Printf("✅ Existing user logged in via Firebase: %s", user.Email)
+    } else if err == sql.ErrNoRows {
         // User doesn't exist, create new user
         username = user.DisplayName
         if username == "" {
-            username = "User" // Default username
+            // Default username from email prefix
+            username = strings.Split(user.Email, "@")[0]
         }
 
         // Insert new user (no password needed for Firebase users)
@@ -111,24 +140,10 @@ func firebaseAuthCallback(w http.ResponseWriter, r *http.Request) {
             return
         }
         log.Printf("✅ Created new Firebase user: %s", user.Email)
-    } else if err != nil {
+    } else {
         log.Printf("Database error checking user: %v", err)
         http.Error(w, "Database error", http.StatusInternalServerError)
         return
-    } else {
-        // User exists, update Firebase info if needed
-        _, err = db.Exec(`
-            UPDATE users 
-            SET oauth_provider = 'firebase', oauth_id = $1, verified = 1 
-            WHERE email = $2`,
-            user.UID,
-            user.Email,
-        )
-        if err != nil {
-            log.Printf("Failed to update Firebase info: %v", err)
-            // Continue anyway, this is not critical
-        }
-        log.Printf("✅ Existing user logged in via Firebase: %s", user.Email)
     }
 
     // Create session token
@@ -172,12 +187,12 @@ func firebaseAuthCallback(w http.ResponseWriter, r *http.Request) {
         MaxAge:   86400 * 7, // 7 days
     })
 
-    // In the firebaseAuthCallback function, after successful authentication:
+    // Return success response
     w.WriteHeader(http.StatusOK)
     json.NewEncoder(w).Encode(map[string]string{
         "status":   "success",
         "email":    user.Email,
-        "username": username, // This was set earlier in your code
+        "username": username,
     })
 }
 
