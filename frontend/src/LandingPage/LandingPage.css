@@ -43,6 +43,7 @@
   background-clip: text;
   color: transparent;
   display: inline-block;
+  padding-top: 20px;
 }
 
 .highlight-text br {

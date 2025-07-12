@@ -172,10 +172,12 @@ func firebaseAuthCallback(w http.ResponseWriter, r *http.Request) {
         MaxAge:   86400 * 7, // 7 days
     })
 
+    // In the firebaseAuthCallback function, after successful authentication:
     w.WriteHeader(http.StatusOK)
     json.NewEncoder(w).Encode(map[string]string{
-        "status": "success",
-        "email":  user.Email,
+        "status":   "success",
+        "email":    user.Email,
+        "username": username, // This was set earlier in your code
     })
 }
 

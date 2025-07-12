@@ -25,7 +25,7 @@ function SATPage() {
   const pomodoroTimerRef = useRef();
 
   // State variables for managing the SAT question interface
-  const [selectedTest, setSelectedTest] = useState("SAT");
+  const [selectedTest, setSelectedTest] = useState("");
   const selectedRef = useRef([]);
   let selectedRefLength = 0;
   const [selectedSubdomains, setSelectedSubdomains] = useState({});
@@ -80,7 +80,7 @@ function SATPage() {
   const [showQuestionGrid, setShowQuestionGrid] = useState(false);
 
   // practice test mode
-  const [practiceTestMode, setPracticeTestMode] = useState(userEmail !== null);
+  const [practiceTestMode, setPracticeTestMode] = useState(false);
   // review screen for practice mode
   const [showReviewScreen, setShowReviewScreen] = useState(false);
   // review mode so you can go back and check your answers
@@ -1631,7 +1631,8 @@ function SATPage() {
                   {["SAT", "PSAT 10/11", "PSAT 8/9"].map((test) => (
                     <button
                       key={test}
-                      className={`horizontal-checkbox-group ${selectedTest == test ? 'selected' : ''}`}
+                      className={`horizontal-checkbox-group ${selectedTest === test ? 'selected' : ''}`}
+
                       onClick={() => setSelectedTest(test)}
                     >
                       {test}
@@ -1676,21 +1677,11 @@ function SATPage() {
                 </div>
                 <div className="filter-group">
                   <button
-                    key="practice-test-mode-yes"
-                    className={`horizontal-checkbox-group 
-                  ${practiceTestMode ? 'selected' : ''}`}
-                    onClick={() => setPracticeTestMode(true)}
+                    className={`horizontal-checkbox-group ${practiceTestMode ? 'selected' : ''}`}
+                    onClick={() => setPracticeTestMode(!practiceTestMode)}
                     disabled={!userEmail}
                   >
-                    Yes
-                  </button>
-                  <button
-                    key="practice-test-mode-no"
-                    className={`horizontal-checkbox-group 
-                  ${!practiceTestMode ? 'selected' : ''}`}
-                    onClick={() => setPracticeTestMode(false)}
-                  >
-                    No
+                    {practiceTestMode ? "Enabled" : "Enable"}
                   </button>
                 </div>
               </div>

@@ -2,6 +2,7 @@ import React from 'react';
 import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { app } from '../firebase'; // Import your Firebase config
 import './GoogleLoginButton.css';
+import Cookies from 'js-cookie';
 
 const GoogleLoginButton = ({ text = "Continue with Google" }) => {
   const handleGoogleLogin = async () => {
@@ -25,6 +26,14 @@ const GoogleLoginButton = ({ text = "Continue with Google" }) => {
       if (!response.ok) {
         throw new Error('Firebase authentication failed');
       }
+
+      const data = await response.json();
+      
+      // Store user info in cookies
+      Cookies.set('user', JSON.stringify({
+        email: data.email,
+        username: data.username || data.email.split('@')[0] // Fallback to email prefix if no username
+      }), { expires: 7 }); // Expires in 7 days
 
       // Redirect or handle success
       window.location.href = '/?auth=success';
