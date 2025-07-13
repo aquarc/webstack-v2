@@ -1,9 +1,5 @@
-/* Reset default margins and padding */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+/* IMPORTANT */
+/* THESE ARE STYLES FOR THE SIDEBAR AND TOP NAV BAR */
 
 body,
 html {
@@ -250,15 +246,6 @@ html {
   color: #374151;
 }
 
-.header-button.notification {
-  position: relative;
-}
-
-
-
-/* Leaderboard Button Styles */
-
-
 /* Add Friend Button SVG */
 .add-friend-button svg {
   width: 18px;
@@ -469,10 +456,6 @@ html {
     left: 114px;
   }
 
-  .search-container {
-    width: 200px;
-  }
-
   .main-content-body {
     padding: 118px 16px 16px;
   }
@@ -509,10 +492,6 @@ html {
 
   .main-content-body {
     padding: 24px 16px 16px;
-  }
-
-  .search-container {
-    width: 150px;
   }
 
   .user-details {

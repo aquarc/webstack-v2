@@ -12,14 +12,30 @@ import {
   Users,
   Gamepad
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import Cookies from 'js-cookie';
+import Homepage from './D-HomePage';
+import PracticeExamsPage from './D-PracticeExamPage';
+import Gamespage from './D-GamesPage';
+import PerformancePage from "./D-PerformancePage";
+import PracticeHistoryPage from "./D-PracticeHIstoryPage";
+import YourFriendsPage from "./D-FriendsPage";
+
 
 const Dashboard = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [user, setUser] = useState(null);
   const [activeItem, setActiveItem] = useState("Home"); // Track active item
   const navigate = useNavigate();
+  const location = useLocation();
+  const isActive = (path) => {
+    // Special case for Home since it's the index route
+    if (path === "/dashboard") {
+      return location.pathname === "/dashboard";
+    }
+    return location.pathname === path || location.pathname.startsWith(`${path}/`);
+  };
+
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -80,6 +96,14 @@ const Dashboard = () => {
     // Add your add friend logic here
   };
 
+  const handleNavigation = (item) => {
+    if (item.action) {
+      item.action();
+    } else if (item.path) {
+      navigate(item.path);
+    }
+  };
+
   const getInitials = (name) => {
     if (!name) return '';
 
@@ -94,22 +118,22 @@ const Dashboard = () => {
   };
 
   const menuItems = [
-    { icon: Home, label: "Home" },
+    { icon: Home, label: "Home", path: "/dashboard" },
   ];
 
   const assessmentItems = [
-    { icon: CheckSquare, label: "Practice Exams" },
-    { icon: Gamepad, label: "Games" },
+    { icon: CheckSquare, label: "Practice Exams", path: "/dashboard/practice-exams" },
+    { icon: Gamepad, label: "Games", path: "/dashboard/games" },
   ];
 
   const performanceItems = [
-    { icon: TrendingUp, label: "Performance" },
-    { icon: History, label: "Practice History" },
+    { icon: TrendingUp, label: "Performance", path: "/dashboard/performance" },
+    { icon: History, label: "Practice History", path: "/dashboard/practice-history" },
   ];
 
   const accountItems = [
-    { icon: MessageSquare, label: "Share Feedback" },
-    { icon: Users, label: "Your Friends" },
+    { icon: MessageSquare, label: "Share Feedback", path: "/dashboard/share-feedback" },
+    { icon: Users, label: "Your Friends", path: "/dashboard/your-friends" },
     { icon: LogOut, label: "Logout", action: handleLogout },
   ];
 
@@ -138,8 +162,8 @@ const Dashboard = () => {
             {menuItems.map((item, index) => (
               <div
                 key={index}
-                className={`nav-item ${activeItem === item.label ? 'nav-item-active' : ''}`}
-                onClick={() => handleItemClick(item.label)}
+                className={`nav-item ${isActive(item.path) ? 'nav-item-active' : ''}`}
+                onClick={() => handleNavigation(item)}
               >
                 <div className="nav-item-content">
                   <item.icon className="nav-icon" />
@@ -156,8 +180,8 @@ const Dashboard = () => {
               {assessmentItems.map((item, index) => (
                 <div
                   key={index}
-                  className={`nav-item ${activeItem === item.label ? 'nav-item-active' : ''}`}
-                  onClick={() => handleItemClick(item.label)}
+                  className={`nav-item ${isActive(item.path) ? 'nav-item-active' : ''}`}
+                  onClick={() => handleNavigation(item)}
                 >
                   <div className="nav-item-content">
                     <item.icon className="nav-icon" />
@@ -175,8 +199,8 @@ const Dashboard = () => {
               {performanceItems.map((item, index) => (
                 <div
                   key={index}
-                  className={`nav-item ${activeItem === item.label ? 'nav-item-active' : ''}`}
-                  onClick={() => handleItemClick(item.label)}
+                  className={`nav-item ${isActive(item.path) ? 'nav-item-active' : ''}`}
+                  onClick={() => handleNavigation(item)}
                 >
                   <div className="nav-item-content">
                     <item.icon className="nav-icon" />
@@ -194,8 +218,8 @@ const Dashboard = () => {
               {accountItems.map((item, index) => (
                 <div
                   key={index}
-                  className={`nav-item ${item.action ? 'logout-item' : activeItem === item.label ? 'nav-item-active' : ''}`}
-                  onClick={item.action || (() => handleItemClick(item.label))}
+                  className={`nav-item ${item.action ? 'logout-item' : isActive(item.path) ? 'nav-item-active' : ''}`}
+                  onClick={() => handleNavigation(item)}
                 >
                   <div className="nav-item-content">
                     <item.icon className="nav-icon" />
@@ -255,8 +279,7 @@ const Dashboard = () => {
 
         {/* Main Content Body */}
         <div className="main-content-body">
-          <h2>Practice Sets</h2>
-          <p>Your main content goes here...</p>
+          <Outlet />
         </div>
       </div>
     </div>

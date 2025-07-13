@@ -19,7 +19,12 @@ import AboutUsPage from "./AboutPage/AboutPage";
 import LoginPage from "./Authentication/Login/Login";
 import AuthRedirect from "./Components/AuthRedirect";
 import Dashboard from "./Dashboard/Dashboard";
-
+import HomePage from "./Dashboard/D-HomePage";
+import PracticeExamsPage from "./Dashboard/D-PracticeExamPage";
+import PracticeHistoryPage from "./Dashboard/D-PracticeHIstoryPage";
+import GamesPage from "./Dashboard/D-GamesPage";
+import YourFriendsPage from "./Dashboard/D-FriendsPage";
+import PerformancePage from "./Dashboard/D-PerformancePage";
 import ReactGA from 'react-ga4';
 
 // Safely initialize GA only if ID exists
@@ -42,7 +47,7 @@ const trackInteraction = (event) => {
   if (!gaEnabled) return;
 
   const target = event.target.closest('button,a[href],.nav-item,[data-track]');
-  
+
   if (target) {
     const category = target.dataset.category || 'General';
     const action = target.textContent.trim() || target.href || 'Unknown Action';
@@ -73,7 +78,16 @@ const AppContent = () => {
   return (
     <>
       {/* Routes that will not render the nav bar */}
-      {location.pathname !== "/sat" && location.pathname !== "/dashboard" && <NavBar />}
+      {
+        location.pathname !== "/sat"
+        && location.pathname !== "/dashboard"
+        && location.pathname !== "/dashboard/practice-exams"
+        && location.pathname !== "/dashboard/games"
+        && location.pathname !== "/dashboard/performance"
+        && location.pathname !== "/dashboard/practice-history"
+        && location.pathname !== "/dashboard/your-friends"
+        && <NavBar
+        />}
 
       <Routes>
         <Route path="/" element={<LandingPage />} />
@@ -85,7 +99,14 @@ const AppContent = () => {
         <Route path="/signup" element={<SignUpPage />} />
         <Route path="/aboutPage" element={<AboutUsPage />} />
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/dashboard" element={<Dashboard />}>
+          <Route index element={<HomePage />} />
+          <Route path="practice-exams" element={<PracticeExamsPage />} />
+          <Route path="games" element={<GamesPage />} />
+          <Route path="performance" element={<PerformancePage />} />
+          <Route path="practice-history" element={<PracticeHistoryPage />} />
+          <Route path="your-friends" element={<YourFriendsPage />} />
+        </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
 
       </Routes>
@@ -104,7 +125,7 @@ const AppContent = () => {
 const GlobalClickTracker = ({ children }) => {
   useEffect(() => {
     if (!gaEnabled) return;
-    
+
     document.addEventListener('click', trackInteraction, true); // Use capture phase
     return () => document.removeEventListener('click', trackInteraction, true);
   }, []);
