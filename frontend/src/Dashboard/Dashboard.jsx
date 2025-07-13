@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./Dashboard.css";
 import {
   Home,
@@ -17,11 +17,20 @@ import {
   HelpCircle
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
+import Cookies from 'js-cookie';
 
 const Dashboard = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [user, setUser] = useState(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Get user data from cookies
+    const userData = Cookies.get('user');
+    if (userData) {
+      setUser(JSON.parse(userData));
+    }
+  }, []);
 
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
@@ -29,6 +38,20 @@ const Dashboard = () => {
 
   const handleLogoClick = () => {
     navigate("/");
+  };
+
+  // Function to get user initials
+  const getInitials = (name) => {
+    if (!name) return '';
+    
+    const names = name.split(' ');
+    let initials = names[0].charAt(0).toUpperCase();
+    
+    if (names.length > 1) {
+      initials += names[names.length - 1].charAt(0).toUpperCase();
+    }
+    
+    return initials;
   };
 
   const menuItems = [
@@ -55,7 +78,7 @@ const Dashboard = () => {
       {/* Sidebar */}
       <div className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
         {/* Logo Section */}
-                <div className="logo-section" onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
+        <div className="logo-section" onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
           <div className="logo-container">
             <div className="logo-icon">
               <img
@@ -147,10 +170,10 @@ const Dashboard = () => {
           {/* Left Section - User Info */}
           <div className="header-left">
             <div className="user-avatar">
-              JD
+              {user ? getInitials(user.username) : 'U'}
             </div>
             <div className="user-details">
-              <p className="user-name">John Doe</p>
+              <p className="user-name">{user ? user.username : 'User'}</p>
               <p className="user-role">Student</p>
             </div>
           </div>
