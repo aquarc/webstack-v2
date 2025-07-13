@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import "./Dashboard.css";
 import {
   Home,
-  FileText,
   CheckSquare,
   TrendingUp,
   History,
@@ -10,11 +9,8 @@ import {
   MessageSquare,
   ChevronLeft,
   ChevronRight,
-  Bell,
-  Search,
-  Settings,
-  User,
-  HelpCircle
+  Users,
+  Gamepad
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Cookies from 'js-cookie';
@@ -26,11 +22,34 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const userData = Cookies.get('user');
-    if (userData) {
-      setUser(JSON.parse(userData));
-    }
+    const fetchUserData = async () => {
+      try {
+        // Check cookies first
+        const userCookie = Cookies.get('user');
+        if (userCookie) {
+          const parsedUser = JSON.parse(userCookie);
+          setUser(parsedUser);
+          return;
+        }
+
+        // If no cookie, check session via API
+        const response = await fetch('/sat/check-session', {
+          credentials: 'include'
+        });
+
+        if (response.ok) {
+          const userData = await response.json();
+          Cookies.set('user', JSON.stringify(userData), { expires: 7 });
+          setUser(userData);
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+
+    fetchUserData();
   }, []);
+
 
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
@@ -49,6 +68,16 @@ const Dashboard = () => {
     if (label !== "Logout") {
       setActiveItem(label);
     }
+  };
+
+  const handleLeaderboardClick = () => {
+    console.log("Leaderboard clicked");
+    // Add your leaderboard logic here
+  };
+
+  const handleAddFriendClick = () => {
+    console.log("Add friend clicked");
+    // Add your add friend logic here
   };
 
   const getInitials = (name) => {
@@ -70,6 +99,7 @@ const Dashboard = () => {
 
   const assessmentItems = [
     { icon: CheckSquare, label: "Practice Exams" },
+    { icon: Gamepad, label: "Games" },
   ];
 
   const performanceItems = [
@@ -79,6 +109,7 @@ const Dashboard = () => {
 
   const accountItems = [
     { icon: MessageSquare, label: "Share Feedback" },
+    { icon: Users, label: "Your Friends" },
     { icon: LogOut, label: "Logout", action: handleLogout },
   ];
 
@@ -120,11 +151,11 @@ const Dashboard = () => {
 
           {/* Assessments Section */}
           <div className="nav-section">
-            {!isCollapsed && <h3 className="section-title">Assessments</h3>}
+            {!isCollapsed && <h3 className="section-title">Practice</h3>}
             <div className="nav-items">
               {assessmentItems.map((item, index) => (
-                <div 
-                  key={index} 
+                <div
+                  key={index}
                   className={`nav-item ${activeItem === item.label ? 'nav-item-active' : ''}`}
                   onClick={() => handleItemClick(item.label)}
                 >
@@ -142,8 +173,8 @@ const Dashboard = () => {
             {!isCollapsed && <h3 className="section-title">Performance</h3>}
             <div className="nav-items">
               {performanceItems.map((item, index) => (
-                <div 
-                  key={index} 
+                <div
+                  key={index}
                   className={`nav-item ${activeItem === item.label ? 'nav-item-active' : ''}`}
                   onClick={() => handleItemClick(item.label)}
                 >
@@ -192,23 +223,32 @@ const Dashboard = () => {
           {/* Left Section - User Info */}
           <div className="header-left">
             <div className="user-avatar">
-              {user ? getInitials(user.username) : 'U'}
+              {user ? getInitials(user.username || user.email) : 'U'}
             </div>
             <div className="user-details">
-              <p className="user-name">{user ? user.username : 'User'}</p>
-              <p className="user-role">Student</p>
+              <p className="user-name">{user ? (user.username || user.email.split('@')[0]) : 'User'}</p>
+              <p className="user-role">{user ? user.email : 'user@example.com'}</p>
             </div>
           </div>
 
           {/* Right Section - Actions */}
           <div className="header-right">
-            {/* Action Buttons */}
-            <button className="header-button">
-              <HelpCircle size={18} />
+            {/* Leaderboard Button */}
+            <button
+              className="header-button leaderboard-button"
+              onClick={handleLeaderboardClick}
+              title="Leaderboard"
+            >
+              <img src="/leaderboard.svg" alt="Leaderboard" className="button-icon" />
             </button>
 
-            <button className="header-button">
-              <Settings size={18} />
+            {/* Add Friend Button */}
+            <button
+              className="header-button add-friend-button"
+              onClick={handleAddFriendClick}
+              title="Add Friend"
+            >
+              <img src="/add-friend.svg" alt="Add Friend" className="button-icon" />
             </button>
           </div>
         </div>

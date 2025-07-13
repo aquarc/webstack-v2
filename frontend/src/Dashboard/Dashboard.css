@@ -254,16 +254,77 @@ html {
   position: relative;
 }
 
-.notification-badge {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 8px;
-  height: 8px;
-  background-color: #ef4444;
-  border-radius: 50%;
-  border: 2px solid white;
+
+
+/* Leaderboard Button Styles */
+
+
+/* Add Friend Button SVG */
+.add-friend-button svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
 }
+
+/* Leaderboard Button Styles */
+.leaderboard-button {
+  background-color: #fef3c7 !important;
+  padding: 8px;
+  /* Add padding for better click area */
+}
+
+.leaderboard-button:hover {
+  background-color: #fde68a !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(217, 119, 6, 0.2);
+}
+
+.leaderboard-button:active {
+  transform: translateY(0);
+}
+
+/* Add Friend Button Styles */
+.add-friend-button {
+  background-color: #dcfce7 !important;
+  padding: 8px;
+  /* Add padding for better click area */
+}
+
+.add-friend-button:hover {
+  background-color: #bbf7d0 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(22, 163, 74, 0.2);
+}
+
+.add-friend-button:active {
+  transform: translateY(0);
+}
+
+/* SVG Image Styles */
+.button-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+/* Color the SVGs using filters */
+.leaderboard-button .button-icon {
+  filter: brightness(0) saturate(100%) invert(68%) sepia(22%) saturate(1561%) hue-rotate(349deg) brightness(89%) contrast(89%);
+}
+
+.add-friend-button .button-icon {
+  filter: brightness(0) saturate(100%) invert(48%) sepia(96%) saturate(376%) hue-rotate(87deg) brightness(95%) contrast(91%);
+}
+
+.leaderboard-button:hover .button-icon {
+  filter: brightness(0) saturate(100%) invert(28%) sepia(100%) saturate(1000%) hue-rotate(15deg) brightness(95%) contrast(95%);
+}
+
+.add-friend-button:hover .button-icon {
+  filter: brightness(0) saturate(100%) invert(24%) sepia(99%) saturate(1354%) hue-rotate(108deg) brightness(95%) contrast(96%);
+}
+
+
 
 /* User Info Section */
 .user-info {
@@ -360,7 +421,7 @@ html {
 .sidebar.collapsed .nav-section {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px; /* Reduced gap to remove extra spacing */
 }
 
 .sidebar.collapsed .nav-items {
@@ -369,15 +430,16 @@ html {
   gap: 8px;
 }
 
+/* Removed the excessive spacing and dividers between sections when collapsed */
 .sidebar.collapsed .nav-section:not(:first-child) {
   position: relative;
-  padding-top: 24px;
+  padding-top: 12px; /* Reduced from 24px to 12px */
 }
 
 .sidebar.collapsed .nav-section:not(:first-child)::before {
   content: '';
   position: absolute;
-  top: 12px;
+  top: 6px; /* Adjusted to match new padding */
   left: 16px;
   right: 16px;
   height: 1px;
