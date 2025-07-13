@@ -86,7 +86,8 @@ const AppContent = () => {
         <Route path="/aboutPage" element={<AboutUsPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        {/* Redirect to home if no match */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+
       </Routes>
       {/* Use location to conditionally render footer */}
       <Routes>

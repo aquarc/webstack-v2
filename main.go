@@ -101,6 +101,7 @@ func main() {
 		ExposedHeaders:   []string{"Link"},
 		AllowCredentials: true,
 		MaxAge:           300,
+		Debug:            true, // Enable for debugging
 	}).Handler(http.DefaultServeMux)
 
 	fmt.Println("Server is running on http://localhost:8080")

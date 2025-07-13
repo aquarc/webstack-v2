@@ -10,10 +10,9 @@ const GoogleLoginButton = ({ text = "Continue with Google" }) => {
       const auth = getAuth(app);
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
-      
-      // Send the ID token to your backend for verification
+
       const idToken = await result.user.getIdToken();
-      
+
       const response = await fetch('/auth/firebase/callback', {
         method: 'POST',
         headers: {
@@ -23,35 +22,41 @@ const GoogleLoginButton = ({ text = "Continue with Google" }) => {
         credentials: 'include'
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error('Firebase authentication failed');
+        if (response.status === 409) {
+          // Email already registered with password
+          alert('This email is already registered with a password. Please log in with your password instead.');
+          return;
+        }
+        throw new Error(data.message || 'Firebase authentication failed');
       }
 
-      const data = await response.json();
-      
       // Store user info in cookies
       Cookies.set('user', JSON.stringify({
         email: data.email,
-        username: data.username || data.email.split('@')[0] // Fallback to email prefix if no username
-      }), { expires: 7 }); // Expires in 7 days
+        username: data.username || data.email.split('@')[0]
+      }), { expires: 7 });
 
-      // Redirect or handle success
-      window.location.href = '/?auth=success';
+      // Redirect to intended page or default to /sat
+      const redirectTo = window.location.state?.from?.pathname || '/sat';
+      window.location.href = redirectTo;
     } catch (error) {
       console.error('Google login error:', error);
-      // Handle error (show message to user)
+      alert(`Login failed: ${error.message}`);
     }
   };
 
   return (
-    <button 
+    <button
       onClick={handleGoogleLogin}
       className="google-login-button"
     >
       <div className="google-icon">
-        <img 
-          src="/googleLogo.png" 
-          alt="Google logo" 
+        <img
+          src="/googleLogo.png"
+          alt="Google logo"
         />
       </div>
       {text}
