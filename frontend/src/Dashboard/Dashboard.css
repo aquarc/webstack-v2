@@ -457,3 +457,20 @@ html {
     display: none;
   }
 }
+
+.logout-item {
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.logout-item:hover {
+  background-color: #fee2e2 !important;
+  color: #dc2626 !important;
+}
+
+.logout-item:hover .nav-icon {
+  color: #dc2626 !important;
+}
+
+.logout-item:hover .nav-label {
+  color: #dc2626 !important;
+}

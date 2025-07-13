@@ -22,10 +22,10 @@ import Cookies from 'js-cookie';
 const Dashboard = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [user, setUser] = useState(null);
+  const [activeItem, setActiveItem] = useState("Home"); // Track active item
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Get user data from cookies
     const userData = Cookies.get('user');
     if (userData) {
       setUser(JSON.parse(userData));
@@ -40,26 +40,35 @@ const Dashboard = () => {
     navigate("/");
   };
 
-  // Function to get user initials
+  const handleLogout = () => {
+    Cookies.remove('user');
+    navigate('/login');
+  };
+
+  const handleItemClick = (label) => {
+    if (label !== "Logout") {
+      setActiveItem(label);
+    }
+  };
+
   const getInitials = (name) => {
     if (!name) return '';
-    
+
     const names = name.split(' ');
     let initials = names[0].charAt(0).toUpperCase();
-    
+
     if (names.length > 1) {
       initials += names[names.length - 1].charAt(0).toUpperCase();
     }
-    
+
     return initials;
   };
 
   const menuItems = [
-    { icon: Home, label: "Home", active: true },
+    { icon: Home, label: "Home" },
   ];
 
   const assessmentItems = [
-    { icon: FileText, label: "Diagnostic Tests" },
     { icon: CheckSquare, label: "Practice Exams" },
   ];
 
@@ -70,7 +79,7 @@ const Dashboard = () => {
 
   const accountItems = [
     { icon: MessageSquare, label: "Share Feedback" },
-    { icon: LogOut, label: "Logout" },
+    { icon: LogOut, label: "Logout", action: handleLogout },
   ];
 
   return (
@@ -98,7 +107,8 @@ const Dashboard = () => {
             {menuItems.map((item, index) => (
               <div
                 key={index}
-                className={`nav-item ${item.active ? 'nav-item-active' : ''}`}
+                className={`nav-item ${activeItem === item.label ? 'nav-item-active' : ''}`}
+                onClick={() => handleItemClick(item.label)}
               >
                 <div className="nav-item-content">
                   <item.icon className="nav-icon" />
@@ -113,7 +123,11 @@ const Dashboard = () => {
             {!isCollapsed && <h3 className="section-title">Assessments</h3>}
             <div className="nav-items">
               {assessmentItems.map((item, index) => (
-                <div key={index} className="nav-item">
+                <div 
+                  key={index} 
+                  className={`nav-item ${activeItem === item.label ? 'nav-item-active' : ''}`}
+                  onClick={() => handleItemClick(item.label)}
+                >
                   <div className="nav-item-content">
                     <item.icon className="nav-icon" />
                     {!isCollapsed && <span className="nav-label">{item.label}</span>}
@@ -128,7 +142,11 @@ const Dashboard = () => {
             {!isCollapsed && <h3 className="section-title">Performance</h3>}
             <div className="nav-items">
               {performanceItems.map((item, index) => (
-                <div key={index} className="nav-item">
+                <div 
+                  key={index} 
+                  className={`nav-item ${activeItem === item.label ? 'nav-item-active' : ''}`}
+                  onClick={() => handleItemClick(item.label)}
+                >
                   <div className="nav-item-content">
                     <item.icon className="nav-icon" />
                     {!isCollapsed && <span className="nav-label">{item.label}</span>}
@@ -143,7 +161,11 @@ const Dashboard = () => {
             {!isCollapsed && <h3 className="section-title">Account</h3>}
             <div className="nav-items">
               {accountItems.map((item, index) => (
-                <div key={index} className="nav-item">
+                <div
+                  key={index}
+                  className={`nav-item ${item.action ? 'logout-item' : activeItem === item.label ? 'nav-item-active' : ''}`}
+                  onClick={item.action || (() => handleItemClick(item.label))}
+                >
                   <div className="nav-item-content">
                     <item.icon className="nav-icon" />
                     {!isCollapsed && <span className="nav-label">{item.label}</span>}
