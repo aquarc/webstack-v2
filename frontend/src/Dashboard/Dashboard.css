@@ -187,6 +187,7 @@ html {
   flex: 1;
   position: relative;
   overflow: hidden;
+  margin-left: 0; 
 }
 
 /* Floating User Info Header */
@@ -194,7 +195,7 @@ html {
   position: fixed;
   top: 15px;
   left: 304px;
-  /* 300px sidebar + 24px margin */
+  /* 280px sidebar + 24px margin */
   right: 24px;
   height: 75px;
   background-color: white;
@@ -209,8 +210,8 @@ html {
 }
 
 .floating-header.sidebar-collapsed {
-  left: 114px;
-  /* 90px collapsed sidebar + 24px margin */
+  left: 124px;
+  /* 100px collapsed sidebar + 24px margin */
 }
 
 /* Header Left Section */
@@ -362,11 +363,19 @@ html {
 
 /* Main Content Body */
 .main-content-body {
-  padding: 118px 24px 24px;
+  padding: 118px 24px 24px 24px;
   /* Top padding to account for fixed header */
   height: 100vh;
   overflow-y: auto;
+  transition: all 0.3s ease;
+  position: relative;
+  margin-left: 0; /* Ensure no additional margin */
 }
+
+.sidebar.collapsed ~ .main-content .main-content-body {
+  padding-left: 24px; /* Same as right padding */
+}
+
 
 /* Collapsed Sidebar Styles */
 .sidebar.collapsed {
@@ -453,7 +462,7 @@ html {
   }
 
   .floating-header.sidebar-collapsed {
-    left: 114px;
+    left: 124px;
   }
 
   .main-content-body {

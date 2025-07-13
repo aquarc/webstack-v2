@@ -132,7 +132,7 @@ const Dashboard = () => {
   ];
 
   const accountItems = [
-    { icon: MessageSquare, label: "Share Feedback", path: "/dashboard/share-feedback" },
+    { icon: MessageSquare, label: "Share Feedback", path: "/feedback" },
     { icon: Users, label: "Your Friends", path: "/dashboard/your-friends" },
     { icon: LogOut, label: "Logout", action: handleLogout },
   ];
