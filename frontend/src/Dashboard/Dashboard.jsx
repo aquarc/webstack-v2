@@ -1,4 +1,3 @@
-// Dashboard.jsx changes
 import React, { useState } from "react";
 import "./Dashboard.css";
 import {
@@ -11,14 +10,25 @@ import {
   MessageSquare,
   ChevronLeft,
   ChevronRight,
-  Menu
+  Bell,
+  Search,
+  Settings,
+  User,
+  HelpCircle
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+
 
 const Dashboard = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const navigate = useNavigate();
 
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
+  };
+
+  const handleLogoClick = () => {
+    navigate("/");
   };
 
   const menuItems = [
@@ -45,18 +55,16 @@ const Dashboard = () => {
       {/* Sidebar */}
       <div className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
         {/* Logo Section */}
-        <div className="logo-section">
+                <div className="logo-section" onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
           <div className="logo-container">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div className="logo-icon">
-                <img
-                  src="/aquLogoWhiteCircle.png"
-                  alt="Aquarc Logo"
-                  className="logo-image"
-                />
-              </div>
-              {!isCollapsed && <h1 className="logo-text">Aquarc</h1>}
+            <div className="logo-icon">
+              <img
+                src="/aquLogoWhiteCircle.png"
+                alt="Aquarc Logo"
+                className="logo-image"
+              />
             </div>
+            {!isCollapsed && <h1 className="logo-text">Aquarc</h1>}
           </div>
         </div>
 
@@ -123,17 +131,48 @@ const Dashboard = () => {
           </div>
 
           {/* Toggle Button at Bottom */}
-          <button className={`sidebar-toggle-icon-button ${isCollapsed ? 'collapsed' : ''}`} onClick={toggleSidebar}>
+          <button
+            className="sidebar-toggle-icon-button"
+            onClick={toggleSidebar}
+          >
             {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
           </button>
-
-
         </div>
       </div>
 
-      {/* Main Content Area */}
+      {/* Main Content */}
       <div className="main-content">
-        {/* Your main dashboard content goes here */}
+        {/* Floating User Info Header */}
+        <div className={`floating-header ${isCollapsed ? 'sidebar-collapsed' : ''}`}>
+          {/* Left Section - User Info */}
+          <div className="header-left">
+            <div className="user-avatar">
+              JD
+            </div>
+            <div className="user-details">
+              <p className="user-name">John Doe</p>
+              <p className="user-role">Student</p>
+            </div>
+          </div>
+
+          {/* Right Section - Actions */}
+          <div className="header-right">
+            {/* Action Buttons */}
+            <button className="header-button">
+              <HelpCircle size={18} />
+            </button>
+
+            <button className="header-button">
+              <Settings size={18} />
+            </button>
+          </div>
+        </div>
+
+        {/* Main Content Body */}
+        <div className="main-content-body">
+          <h2>Practice Sets</h2>
+          <p>Your main content goes here...</p>
+        </div>
       </div>
     </div>
   );
