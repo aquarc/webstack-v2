@@ -1678,10 +1678,15 @@ function SATPage() {
                 <div className="filter-group">
                   <button
                     className={`horizontal-checkbox-group ${practiceTestMode ? 'selected' : ''}`}
-                    onClick={() => setPracticeTestMode(!practiceTestMode)}
-                    disabled={!userEmail}
+                    onClick={() => {
+                        if (userEmail) {
+                            setPracticeTestMode(!practiceTestMode);
+                        } else {
+                            navigate("/signup");
+                        } 
+                    }}
                   >
-                    {practiceTestMode ? "Enabled" : "Enable"}
+                    {userEmail ? (practiceTestMode ? "On" : "Off") : "Sign Up"}
                   </button>
                 </div>
               </div>

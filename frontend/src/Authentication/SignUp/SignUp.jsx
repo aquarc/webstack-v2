@@ -216,27 +216,33 @@ const SignUpPage = () => {
     }
 
     return (
-        <div className="signup-container">
-            <form onSubmit={handleVerification} className="signup-form">
-                <h2>Verify Your Email</h2>
-                <p className="verification-text">A verification code has been sent to {formData.email}</p>
-                {apiError && <p className="error api-error">{apiError}</p>}
+        <>
+          <br />
+          <br />
+          <br />
+          <br />
+          <div className="signup-container">
+              <form onSubmit={handleVerification} className="signup-form">
+                  <h2>Verify Your Email</h2>
+                  <p className="verification-text">A verification code has been sent to {formData.email}</p>
+                  {apiError && <p className="error api-error">{apiError}</p>}
 
-                <div className="form-group">
-                    <label htmlFor="verificationCode">Verification Code</label>
-                    <input
-                        type="text"
-                        id="verificationCode"
-                        name="verificationCode"
-                        value={verificationCode}
-                        onChange={(e) => setVerificationCode(e.target.value)}
-                        placeholder="Enter 7-digit code"
-                    />
-                </div>
+                  <div className="form-group">
+                      <label htmlFor="verificationCode">Verification Code</label>
+                      <input
+                          type="text"
+                          id="verificationCode"
+                          name="verificationCode"
+                          value={verificationCode}
+                          onChange={(e) => setVerificationCode(e.target.value)}
+                          placeholder="Enter 7-digit code"
+                      />
+                  </div>
 
-                <button type="submit" className="signup-button">Verify</button>
-            </form>
-        </div>
+                  <button type="submit" className="signup-button">Verify</button>
+              </form>
+          </div>
+        </>
     );
 };
 
