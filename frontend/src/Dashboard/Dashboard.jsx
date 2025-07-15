@@ -14,18 +14,10 @@ import {
 } from "lucide-react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import Cookies from 'js-cookie';
-import Homepage from './D-HomePage';
-import PracticeExamsPage from './D-PracticeExamPage';
-import Gamespage from './D-GamesPage';
-import PerformancePage from "./D-PerformancePage";
-import PracticeHistoryPage from "./D-PracticeHIstoryPage";
-import YourFriendsPage from "./D-FriendsPage";
-
 
 const Dashboard = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [user, setUser] = useState(null);
-  const [activeItem, setActiveItem] = useState("Home"); // Track active item
   const navigate = useNavigate();
   const location = useLocation();
   const isActive = (path) => {
@@ -35,7 +27,6 @@ const Dashboard = () => {
     }
     return location.pathname === path || location.pathname.startsWith(`${path}/`);
   };
-
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -62,10 +53,8 @@ const Dashboard = () => {
         console.error("Error fetching user data:", error);
       }
     };
-
     fetchUserData();
   }, []);
-
 
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
@@ -78,12 +67,6 @@ const Dashboard = () => {
   const handleLogout = () => {
     Cookies.remove('user');
     navigate('/login');
-  };
-
-  const handleItemClick = (label) => {
-    if (label !== "Logout") {
-      setActiveItem(label);
-    }
   };
 
   const handleLeaderboardClick = () => {
@@ -132,8 +115,8 @@ const Dashboard = () => {
   ];
 
   const accountItems = [
-    { icon: MessageSquare, label: "Share Feedback", path: "/feedback" },
     { icon: Users, label: "Your Friends", path: "/dashboard/your-friends" },
+    { icon: MessageSquare, label: "Share Feedback", path: "/feedback" },
     { icon: LogOut, label: "Logout", action: handleLogout },
   ];
 
@@ -241,7 +224,7 @@ const Dashboard = () => {
       </div>
 
       {/* Main Content */}
-      <div className="main-content">
+      <div className="main-content-d">
         {/* Floating User Info Header */}
         <div className={`floating-header ${isCollapsed ? 'sidebar-collapsed' : ''}`}>
           {/* Left Section - User Info */}

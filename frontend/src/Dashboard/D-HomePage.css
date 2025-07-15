@@ -1,0 +1,54 @@
+/* D-HomePage.css */
+.homepage-container {
+  position: fixed;
+  top: 105px; /* 75px header height + 30px gap */
+  left: 304px; /* 280px sidebar + 24px margin */
+  right: 24px;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  padding: 24px;
+  z-index: 4;
+  transition: left 0.3s ease;
+  margin-left: 0;
+}
+
+.homepage-container.sidebar-collapsed {
+  left: 124px; /* 100px collapsed sidebar + 24px margin */
+  
+}
+
+.homepage-content h2 {
+  margin-top: 0;
+  color: #1f2937;
+}
+
+.homepage-content p {
+  color: #4b5563;
+  margin-bottom: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .homepage-container {
+    left: 304px;
+  }
+
+  .homepage-container.sidebar-collapsed {
+    left: 124px;
+  }
+}
+
+@media (max-width: 640px) {
+  .homepage-container {
+    position: static;
+    margin: 16px;
+    left: auto;
+    right: auto;
+    top: auto;
+  }
+
+  .homepage-container.sidebar-collapsed {
+    left: auto;
+  }
+}

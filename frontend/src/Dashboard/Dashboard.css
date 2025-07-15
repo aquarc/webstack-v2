@@ -183,11 +183,11 @@ html {
 }
 
 /* Main Content Area */
-.main-content {
+.main-content-d {
   flex: 1;
   position: relative;
   overflow: hidden;
-  margin-left: 0; 
+  margin:0
 }
 
 /* Floating User Info Header */
