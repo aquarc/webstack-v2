@@ -25,7 +25,7 @@ function SATPage() {
   const pomodoroTimerRef = useRef();
 
   // State variables for managing the SAT question interface
-  const [selectedTest, setSelectedTest] = useState("");
+  const [selectedTest, setSelectedTest] = useState("SAT");
   const selectedRef = useRef([]);
   let selectedRefLength = 0;
   const [selectedSubdomains, setSelectedSubdomains] = useState({});

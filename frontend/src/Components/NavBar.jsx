@@ -52,9 +52,11 @@ const Navbar = () => {
           <Link to="/feedback" className="link">
             Feedback
           </Link>
-          <Link to="/dashboard" className="link">
-            My Practice
-          </Link> 
+          {/*
+            <Link to="/dashboard" className="link">
+              My Practice
+            </Link> 
+          */}
           {/*<Link to="/aboutPage" className="link">About Us</Link>*/}
         </div>
 
@@ -90,9 +92,11 @@ const Navbar = () => {
       {/* Mobile drawer - add SAT page check */}
       <div className={`mobile-drawer ${isMenuOpen ? "open" : "closed"}`}>
         <div className="mobile-link-container">
-          <Link to="/my" className="link">
-            My Practice
-          </Link>
+          {/*
+            <Link to="/dashboard" className="link">
+              My Practice
+            </Link>
+          */}
           <Link to="/sat" className="link">
             Question Bank{" "}
           </Link>
