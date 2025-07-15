@@ -232,26 +232,15 @@ func FindQuestionsHandlerv2(w http.ResponseWriter, r *http.Request) {
 
 	var email = ""
 	cookie, err := r.Cookie("session")
-	if err != nil {
-		if err == http.ErrNoCookie {
-			http.Error(w, "Session cookie required for limited requests", http.StatusUnauthorized)
-			return
-		}
-		http.Error(w, "Bad request", http.StatusBadRequest)
-		return
-	}
+	if err == nil {
+        err = db.QueryRow(
+            "SELECT email FROM user_sessions WHERE token = $1",
+            cookie.Value,
+        ).Scan(&email)
 
-	err = db.QueryRow(
-		"SELECT email FROM user_sessions WHERE token = $1",
-		cookie.Value,
-	).Scan(&email)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			http.Error(w, "Invalid session token", http.StatusUnauthorized)
-			return
-		}
-		http.Error(w, "Database error", http.StatusInternalServerError)
-		return
+        if err != nil {
+            email = ""
+        }
 	}
 
 	var questions []QuestionDetails
@@ -368,36 +357,31 @@ func FindQuestionsHandlerv2(w http.ResponseWriter, r *http.Request) {
 		// Session validation only when limit is specified
 		if hasLimit {
 			cookie, err := r.Cookie("session")
-			if err != nil {
-				if err == http.ErrNoCookie {
-					http.Error(w, "Session cookie required for limited requests", http.StatusUnauthorized)
-					return
-				}
-				http.Error(w, "Bad request", http.StatusBadRequest)
-				return
-			}
+			if err == nil {
+                err = db.QueryRow(
+                    "SELECT email FROM user_sessions WHERE token = $1",
+                    cookie.Value,
+                ).Scan(&email)
+                if err != nil {
+                    if err == sql.ErrNoRows {
+                        http.Error(w, "Invalid session token", http.StatusUnauthorized)
+                        return
+                    }
+                    http.Error(w, "Database error", http.StatusInternalServerError)
+                    return
+                }
 
-			err = db.QueryRow(
-				"SELECT email FROM user_sessions WHERE token = $1",
-				cookie.Value,
-			).Scan(&email)
-			if err != nil {
-				if err == sql.ErrNoRows {
-					http.Error(w, "Invalid session token", http.StatusUnauthorized)
-					return
-				}
-				http.Error(w, "Database error", http.StatusInternalServerError)
-				return
-			}
-
-			query += `
-                  AND NOT EXISTS (
-                      SELECT 1 FROM practiced_questions 
-                      WHERE email = $4 
-                        AND questionId = sat_questions.questionId
-                  )
-            `
-			args = append(args, email)
+                query += `
+                      AND NOT EXISTS (
+                          SELECT 1 FROM practiced_questions 
+                          WHERE email = $4 
+                            AND questionId = sat_questions.questionId
+                      )
+                `
+                args = append(args, email)
+            } else {
+                log.Println("No session cookie")
+            } 
 		}
 
 		query += `
