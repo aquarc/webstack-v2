@@ -56,16 +56,21 @@ func main() {
 	}
 
 	// Build the PostgreSQL connection string.
-	connectionString := fmt.Sprintf("user=%s password=%s host=%s port=%s dbname=%s sslmode=%s",
-		os.Getenv("DB_USER"),
-		os.Getenv("DB_PASSWORD"),
-		os.Getenv("DB_HOST"),
-		os.Getenv("DB_PORT"),
-		os.Getenv("DB_NAME"),
-		os.Getenv("DB_SSLMODE"),
-	)
+    connectionString := ""
+    if (os.Getenv("DB_STRING") != "") {
+        connectionString = os.Getenv("DB_STRING")
+    } else {
+        connectionString = fmt.Sprintf("user=%s password=%s host=%s port=%s dbname=%s sslmode=%s",
+            os.Getenv("DB_USER"),
+            os.Getenv("DB_PASSWORD"),
+            os.Getenv("DB_HOST"),
+            os.Getenv("DB_PORT"),
+            os.Getenv("DB_NAME"),
+            os.Getenv("DB_SSLMODE"),
+        )
+    } 
 
-	log.Println("DB Connection String:", connectionString)
+	log.Println("Connecting to DB...")
 
 	var err error
 	db, err = sql.Open("postgres", connectionString)
@@ -73,9 +78,11 @@ func main() {
 		log.Fatal("Error connecting to the database:", err)
 	}
 	defer db.Close()
+	log.Println("Connected")
 
 	// Initialize additional modules.
-	initializeEc(db)
+
+	// initializeEc(db)
 	initializeSat(db)
 	initializeAI(db)
 

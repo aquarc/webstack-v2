@@ -28,8 +28,8 @@ import (
 
 // QuestionDetails holds question info.
 type QuestionDetails struct {
-	QuestionID    string `json:"questionId"`
 	ID            string `json:"id"`
+	ExternalID    string `json:"external_id"`
 	Test          string `json:"test"`
 	Category      string `json:"category"`
 	Domain        string `json:"domain"`
@@ -37,7 +37,10 @@ type QuestionDetails struct {
 	Difficulty    string `json:"difficulty"`
 	Details       string `json:"details"`
 	Question      string `json:"question"`
-	AnswerChoices string `json:"answerChoices"`
+	A             string `json:"a"`
+	B             string `json:"b"`
+	C             string `json:"c"`
+	D             string `json:"d"`
 	Answer        string `json:"answer"`
 	Rationale     string `json:"rationale"`
 	Correct       bool   `json:"correct,omitempty"`
@@ -154,9 +157,9 @@ func viewQuestionDetails(w http.ResponseWriter, matchingQuestions []string) {
 
 		var question QuestionDetails
 		err := db.QueryRow(queryDetails, questionId).Scan(
-			&question.QuestionID, &question.ID, &question.Test, &question.Category, &question.Domain,
+			&question.ID, &question.ExternalID, &question.Test, &question.Category, &question.Domain,
 			&question.Skill, &question.Difficulty, &question.Details, &question.Question,
-			&question.AnswerChoices, &question.Answer, &question.Rationale,
+			&question.A, &question.B, &question.C, &question.D, &question.Answer, &question.Rationale,
 		)
 		if err != nil {
 			if err == sql.ErrNoRows {
@@ -248,14 +251,14 @@ func FindQuestionsHandlerv2(w http.ResponseWriter, r *http.Request) {
 	if email != "" {
 		query := `
             SELECT 
-                sub.questionId, sub.id, sub.test, sub.category, sub.domain, 
+                sub.id, sub.external_id, sub.test, sub.category, sub.domain, 
                 sub.skill, sub.difficulty, sub.details, sub.question, 
-                sub.answer_choices, sub.answer, sub.rationale,
+                sub.a, sub.b, sub.c, sub.d, sub.answer, sub.rationale,
                 (
                     SELECT isCorrect 
                     FROM practiced_questions 
                     WHERE email = $4 
-                        AND questionId = sub.questionId 
+                        AND questionId = sub.ExternalID
                     ORDER BY timestamp DESC 
                     LIMIT 1
                 ) AS correct
@@ -284,7 +287,7 @@ func FindQuestionsHandlerv2(w http.ResponseWriter, r *http.Request) {
                   AND NOT EXISTS (
                       SELECT 1 FROM practiced_questions 
                       WHERE email = $4 
-                        AND questionId = sat_questions.questionId
+                        AND questionId = sat_questions.id
                   )
             `
 		}
@@ -310,10 +313,10 @@ func FindQuestionsHandlerv2(w http.ResponseWriter, r *http.Request) {
 			var question QuestionDetails
 			var correct sql.NullBool
 
-			err = rows.Scan(&question.QuestionID, &question.ID, &question.Test,
+			err = rows.Scan(&question.ID, &question.ExternalID, &question.Test,
 				&question.Category, &question.Domain, &question.Skill,
 				&question.Difficulty, &question.Details, &question.Question,
-				&question.AnswerChoices, &question.Answer, &question.Rationale,
+				&question.A, &question.B, &question.C, &question.D, &question.Answer, &question.Rationale,
 				&correct)
 			if err != nil {
 				http.Error(w, "Error querying the database: "+err.Error(), http.StatusInternalServerError)
@@ -332,8 +335,8 @@ func FindQuestionsHandlerv2(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		query := `
-            SELECT questionId, id, test, category, domain, skill, difficulty, details,
-                   question, answer_choices, answer, rationale
+            SELECT id, external_id, test, category, domain, skill, difficulty, details,
+                   question, a, b, c, d, answer, rationale
             FROM (
                 SELECT *, 
                     ROW_NUMBER() OVER (
@@ -375,7 +378,7 @@ func FindQuestionsHandlerv2(w http.ResponseWriter, r *http.Request) {
                       AND NOT EXISTS (
                           SELECT 1 FROM practiced_questions 
                           WHERE email = $4 
-                            AND questionId = sat_questions.questionId
+                            AND questionId = sat_questions.id
                       )
                 `
                 args = append(args, email)
@@ -403,10 +406,10 @@ func FindQuestionsHandlerv2(w http.ResponseWriter, r *http.Request) {
 
 		for rows.Next() {
 			var question QuestionDetails
-			err = rows.Scan(&question.QuestionID, &question.ID, &question.Test,
+			err = rows.Scan(&question.ID, &question.ExternalID, &question.Test,
 				&question.Category, &question.Domain, &question.Skill,
 				&question.Difficulty, &question.Details, &question.Question,
-				&question.AnswerChoices, &question.Answer, &question.Rationale)
+				&question.A, &question.B, &question.C, &question.D, &question.Answer, &question.Rationale)
 			if err != nil {
 				http.Error(w, "Error querying the database: "+err.Error(), http.StatusInternalServerError)
 				return
@@ -1087,7 +1090,7 @@ func initializeSat(db *sql.DB) {
 
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS practiced_questions (
         email TEXT NOT NULL,
-        questionId TEXT NOT NULL,
+        questionId TEXT REFERENCES sat_questions(id) ON DELETE CASCADE,
         timestamp decimal default extract(epoch from now()) NOT NULL,
         answer VARCHAR(6),
         isCorrect BOOLEAN DEFAULT false NOT NULL

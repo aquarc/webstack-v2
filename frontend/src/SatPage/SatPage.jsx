@@ -29,11 +29,15 @@ function SATPage() {
   const selectedRef = useRef([]);
   let selectedRefLength = 0;
   const [selectedSubdomains, setSelectedSubdomains] = useState({});
-  const [selectedDifficulties, setSelectedDifficulties] = useState({
-    Easy: false,
-    Medium: false,
-    Hard: false,
-  });
+  const [selectedDifficulties, setSelectedDifficulties] = useState([
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+  ]);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [currentQuestions, setCurrentQuestions] = useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -202,7 +206,7 @@ function SATPage() {
   const handleTestChange = (test) => {
     setSelectedTest(test);
     setSelectedSubdomains({});
-    setSelectedDifficulties({ Easy: false, Medium: false, Hard: false });
+    setSelectedDifficulties([false, false, false, false, false, false, false]);
     sendClickEvent("test-change");
   };
 
@@ -234,12 +238,17 @@ function SATPage() {
     }));
   };
 
-  const handleDifficultyChange = (difficulty) => {
-    setSelectedDifficulties((prev) => ({
-      ...prev,
-      [difficulty]: !prev[difficulty],
-    }));
+  const handleDifficultyChange = (index) => {
+    setSelectedDifficulties(prev => {
+      const newDifficulties = [...prev];  // Create a copy of the array
+      newDifficulties[index] = !newDifficulties[index];  // Toggle the specific index
+      return newDifficulties;
+    });
   };
+
+  // print whhen "difficulty changed"
+  useEffect(() => {
+  }, [selectedDifficulties]);
 
   const sendAttemptsToBackend = (questionId, attempts) => {
     if (attempts.length === 0) return;
@@ -307,15 +316,17 @@ function SATPage() {
   const handleSubmitAnswer = () => {
     if (tempAnswer.trim()) {
       const currentQuestion = currentQuestions[currentQuestionIndex];
-      const correctAnswer = currentQuestion.answer;
+      let correctAnswer = currentQuestion.answer;
       let isCorrect = false;
       let finalAnswer = tempAnswer;
 
       // Handle fraction input
-      if (tempAnswer.includes("/")) {
+      if (tempAnswer.includes("/") || correctAnswer.includes("/")) {
         const [numerator, denominator] = tempAnswer.split("/");
-        finalAnswer = (numerator / denominator).toFixed(4);
-        isCorrect = finalAnswer === correctAnswer;
+        finalAnswer = (numerator / denominator).toFixed(5);
+        const [numerator2, denominator2] = correctAnswer.split("/");
+        correctAnswer = (numerator2 / denominator2).toFixed(5);
+        isCorrect = finalAnswer - correctAnswer < 0.0001;
       } else {
         isCorrect = tempAnswer === correctAnswer;
       }
@@ -347,10 +358,10 @@ function SATPage() {
     const currentQuestion = currentQuestions[currentQuestionIndex];
     let isCorrect = false;
 
-    choice = choice || (shouldShowFreeResponse(currentQuestion.answerChoices) ? tempAnswer : selectedAnswer);
+    choice = choice || (currentQuestion.a ? selectedAnswer : tempAnswer );
 
     // Determine correctness
-    if (shouldShowFreeResponse(currentQuestion.answerChoices)) {
+    if (!currentQuestion.a) {
       // Free-response validation
       if (choice.includes("/")) {
         const [n, d] = choice.split("/");
@@ -370,8 +381,8 @@ function SATPage() {
     // Determine correctness
     const isCorrect = checkCorrectAnswer();
     const currentQuestion = currentQuestions[currentQuestionIndex];
-    const choice = shouldShowFreeResponse(currentQuestion.answerChoices)
-      ? tempAnswer : selectedAnswer;
+    const choice = currentQuestion.a
+      ? selectedAnswer : tempAnswer;
 
     // Always log the attempt
     const attempt = {
@@ -444,9 +455,9 @@ function SATPage() {
     }
 
     if (
-      !selectedDifficulties.Easy &&
-      !selectedDifficulties.Medium &&
-      !selectedDifficulties.Hard
+        !selectedDifficulties.some(function(value, index, array){
+            return value !== false;
+        })
     ) {
       setError("Please select a question difficulty.");
       return;
@@ -553,37 +564,20 @@ function SATPage() {
     );
   };
 
-  const shouldShowFreeResponse = (choices) => {
-    return (
-      !choices ||
-      (Array.isArray(choices) && choices.length === 0) ||
-      choices === "[]" ||
-      choices === '""' ||
-      choices === "" ||
-      choices === '"\\"\\""' ||
-      choices === '\\"\\""' ||
-      choices === '""' ||
-      choices === '\\"\\"'
-    );
-  };
-
   const renderAnswerChoices = (
-    choices,
-    correctAnswer,
-    rationale,
-    questionType,
-    externalId,
+      questionDetails
   ) => {
+
     const currentAttempts = attempts[currentQuestionIndex] || 0;
 
-    if (shouldShowFreeResponse(choices)) {
+    if (!questionDetails.a) {
       const handleKeyPress = (e) => {
         if (e.key === "Enter") {
           handleSubmitAnswer();
         }
       };
 
-      const isCorrect = Math.abs(selectedAnswer - correctAnswer) < 0.001;
+      const isCorrect = Math.abs(selectedAnswer - questionDetails.answer) < 0.001;
 
       return (
         <>
@@ -609,16 +603,23 @@ function SATPage() {
             Submit
           </button>
           <br></br>
-          {(selectedAnswer && (selectedAnswer === correctAnswer || currentAttempts >= 3)) && (
+          {(selectedAnswer && (selectedAnswer === questionDetails.answer || currentAttempts >= 3)) && (
             <div
-              className={`rationale-container ${selectedAnswer === correctAnswer ? "correct" : "incorrect"}`}
+              className={`rationale-container ${selectedAnswer === questionDetails.answer ? "correct" : "incorrect"}`}
             >
               <h4 className="rationale-header">
-                {selectedAnswer === correctAnswer ? "Correct!" : "Incorrect"}
+                {selectedAnswer === questionDetails.answer ? "Correct!" : "Incorrect"}
               </h4>
+              <button
+                className="control-button ai-help-button"
+                onClick={() => handleAIHelp()}
+              >
+                <HelpCircle size={18} />
+                <span>Ask AI</span>
+              </button>
               <div
                 className="rationale-content"
-                dangerouslySetInnerHTML={{ __html: rationale }}
+                dangerouslySetInnerHTML={{ __html: questionDetails.rationale }}
               />
             </div>
           )}
@@ -627,107 +628,44 @@ function SATPage() {
       );
     }
 
-    let parsedChoices = choices;
     try {
-      if (typeof choices === "string") {
-        parsedChoices = JSON.parse(choices);
-      }
-
-      if (
-        externalId?.startsWith("DC-") ||
-        (!Array.isArray(parsedChoices) && typeof parsedChoices === "object")
-      ) {
-
-        return (
-          <>
-            <div className="multiple-choice-container">
-              {["a", "b", "c", "d"]
-                .map((letterChoice, index) => { // Added index parameter here
-                  if (!parsedChoices[letterChoice]) return null;
-
-                  const content =
-                    parsedChoices[letterChoice].body || parsedChoices[letterChoice];
-
-                  return renderMultipleChoiceAnswer(correctAnswer, letterChoice, isCrossOutMode, content);
-                })
-                .filter(Boolean)}
-            </div>
-            {(selectedAnswer && hasSelectedAnswer) && (
-              <div
-                className={`rationale-container ${selectedAnswer.toLowerCase() === correctAnswer.toLowerCase() ? "correct" : "incorrect"}`}
+      return (
+        <>
+          <div className="multiple-choice-container">
+            {["a", "b", "c", "d"]
+              .map((letterChoice, index) => { // Added index parameter here
+                const content = questionDetails[letterChoice];
+                return renderMultipleChoiceAnswer(questionDetails.answer, letterChoice, isCrossOutMode, content);
+              })
+              .filter(Boolean)}
+          </div>
+          {(selectedAnswer && hasSelectedAnswer) && (
+            <div
+              className={`rationale-container ${selectedAnswer.toLowerCase() === questionDetails.answer.toLowerCase() ? "correct" : "incorrect"}`}
+            >
+              <h4 className="rationale-header">
+                {selectedAnswer.toLowerCase() === questionDetails.answer.toLowerCase()
+                  ? "Correct!"
+                  : "Incorrect"}
+              </h4>
+              <button
+                className="control-button ai-help-button"
+                onClick={() => handleAIHelp()}
               >
-                <h4 className="rationale-header">
-                  {selectedAnswer.toLowerCase() === correctAnswer.toLowerCase()
-                    ? "Correct!"
-                    : "Incorrect"}
-                </h4>
-                <div
-                  className="rationale-content"
-                  dangerouslySetInnerHTML={{ __html: rationale }}
-                />
-              </div>
-            )}
-          </>
-        );
-      }
-
-      if (Array.isArray(parsedChoices)) {
-        return (
-          <>
-            <div className="multiple-choice-container">
-              {parsedChoices.map((choice, index) => {
-                const content =
-                  typeof choice === "object"
-                    ? choice.content || choice.body || choice
-                    : choice;
-
-                const letterChoice = String.fromCharCode(
-                  65 + index,
-                ).toLowerCase();
-
-                return renderMultipleChoiceAnswer(correctAnswer, letterChoice, isCrossOutMode, content);
-              })}
-            </div>
-            {(reviewMode || (selectedAnswer && hasSelectedAnswer)) && (
+                <HelpCircle size={18} />
+                <span>Ask AI</span>
+              </button>
               <div
-                className={`rationale-container ${reviewMode ?
-                  (isMCQCorrectReviewMode() ? "correct" : "incorrect")
-                  : (selectedAnswer === correctAnswer.toLowerCase() ? "correct" : "incorrect")}`}
-              >
-                <h4 className="rationale-header">
-                  {reviewMode ?
-                    (isMCQCorrectReviewMode() ? "Correct!" : "Incorrect") :
-                    (selectedAnswer === correctAnswer.toLowerCase()
-                      ? "Correct!"
-                      : "Incorrect")}
-                </h4>
-                <div
-                  className="rationale-content"
-                  dangerouslySetInnerHTML={{ __html: rationale }}
-                />
-              </div>
-            )}
-          </>
-        );
-      }
+                className="rationale-content"
+                dangerouslySetInnerHTML={{ __html: questionDetails.rationale }}
+              />
+            </div>
+          )}
+        </>
+      );
     } catch (error) {
       console.error("Error parsing answer choices:", error);
-      return renderAnswerChoices(
-        null,
-        correctAnswer,
-        rationale,
-        questionType,
-        externalId,
-      );
     }
-
-    return renderAnswerChoices(
-      null,
-      correctAnswer,
-      rationale,
-      questionType,
-      externalId,
-    );
   };
 
   const isMCQCorrectReviewMode = () => {
@@ -743,9 +681,17 @@ function SATPage() {
   const renderMultipleChoiceAnswer = (correctAnswer, letterChoice, isCrossOutMode, content) => {
 
     const choiceKey = `choice-${letterChoice}`;
+    
+    console.log(correctAnswer, letterChoice, isCrossOutMode, content);
+
     const isSelected = selectedAnswer === letterChoice;
+
+    console.log("isSelected", isSelected);
+
     let isCorrect =
       isSelected && letterChoice === correctAnswer.toLowerCase();
+
+    console.log("isCorrect", isCorrect);
 
     const isCrossedOut = !reviewMode &&
       crossedOutAnswers[currentQuestionIndex]?.has(choiceKey);
@@ -861,22 +807,13 @@ function SATPage() {
                       <MessageSquare size={18} />
                       <span>Feedback</span>
                     </a>
-                    {!shouldShowFreeResponse(questionDetails.answerChoices) && (
+                    {questionDetails.a && (
                       <button
                         className={`control-button eliminate-button ${isCrossOutMode ? "active" : ""}`}
                         onClick={() => setIsCrossOutMode(!isCrossOutMode)}
                       >
                         <X size={18} />
                         <span>Eliminate</span>
-                      </button>
-                    )}
-                    {attempts[currentQuestionIndex] && attempts[currentQuestionIndex] > 0 && (
-                      <button
-                        className="control-button ai-help-button"
-                        onClick={() => handleAIHelp()}
-                      >
-                        <HelpCircle size={18} />
-                        <span>Ask AI</span>
                       </button>
                     )}
                   </div>
@@ -905,22 +842,13 @@ function SATPage() {
                       <MessageSquare size={18} />
                       <span>Feedback</span>
                     </a>
-                    {!shouldShowFreeResponse(questionDetails.answerChoices) && (
+                    {questionDetails.a && (
                       <button
                         className={`control-button eliminate-button ${isCrossOutMode ? "active" : ""}`}
                         onClick={() => setIsCrossOutMode(!isCrossOutMode)}
                       >
                         <X size={18} />
                         <span>Eliminate Answer</span>
-                      </button>
-                    )}
-                    {attempts[currentQuestionIndex] && attempts[currentQuestionIndex] > 0 && (
-                      <button
-                        className="control-button ai-help-button"
-                        onClick={() => handleAIHelp()}
-                      >
-                        <HelpCircle size={18} />
-                        <span>Ask AI</span>
                       </button>
                     )}
                   </div>
@@ -935,24 +863,8 @@ function SATPage() {
                 </div>
                 <br />
                 <div className="answer-choices">
-                  {renderAnswerChoices(
-                    questionDetails.answerChoices,
-                    questionDetails.answer,
-                    questionDetails.rationale,
-                    questionDetails.questionType,
-                    questionDetails.externalId,
-                  )}
+                  {renderAnswerChoices(questionDetails)}
                 </div>
-                {/* Add Check button for Math multiple-choice */}
-                {!practiceTestMode && !shouldShowFreeResponse(questionDetails.answerChoices) && (
-                  <button
-                    onClick={handleCheckAnswer}
-                    className="check-answer-button"
-                    disabled={!selectedAnswer}
-                  >
-                    Check Answer
-                  </button>
-                )}
               </div>
             </div>
           );
@@ -993,15 +905,6 @@ function SATPage() {
                     <X size={18} />
                     <span>Eliminate Answer</span>
                   </button>
-                  {attempts[currentQuestionIndex] && attempts[currentQuestionIndex] > 0 && (
-                    <button
-                      className="control-button ai-help-button"
-                      onClick={() => handleAIHelp()}
-                    >
-                      <HelpCircle size={18} />
-                      <span>Ask AI</span>
-                    </button>
-                  )}
                 </div>
                 <div className="question-text">
                   <div
@@ -1012,24 +915,8 @@ function SATPage() {
                 </div>
                 <br />
                 <div className="answer-choices">
-                  {renderAnswerChoices(
-                    questionDetails.answerChoices,
-                    questionDetails.answer,
-                    questionDetails.rationale,
-                    questionDetails.questionType,
-                    questionDetails.externalId,
-                  )}
+                  {renderAnswerChoices(questionDetails)}
                 </div>
-                {/* Add Check button for English multiple-choice */}
-                {!practiceTestMode && !shouldShowFreeResponse(questionDetails.answerChoices) && (
-                  <button
-                    onClick={handleCheckAnswer}
-                    className="check-answer-button"
-                    disabled={!selectedAnswer}
-                  >
-                    Check Answer
-                  </button>
-                )}
               </div>
             </div>
           );
@@ -1069,6 +956,15 @@ function SATPage() {
             </div>
 
             <div className="right-section">
+              {!practiceTestMode && questionDetails.a && (
+                <button
+                  onClick={handleCheckAnswer}
+                  className="nav-button"
+                  disabled={!selectedAnswer}
+                >
+                  Check Answer
+                </button>
+              )}
               <button
                 onClick={handleNavigatePrevious}
                 disabled={!navigation.hasPrevious}
@@ -1322,7 +1218,6 @@ function SATPage() {
       ...prev,
       { parts: ["Generate Alternative Approaches"], role: "user" },
     ]);
-    console.log(requestBody);
 
     const response = await fetch('/ai/think', {
       method: 'POST',
@@ -1644,18 +1539,18 @@ function SATPage() {
               <div>
                 <h3>Difficulty</h3>
                 <div className="filter-group">
-                  {["Easy", "Medium", "Hard"].map((difficulty) => (
+                  {[0, 1, 2, 3, 4, 5, 6].map((difficulty) => (
                     <div
                       key={difficulty}
-                      className={`horizontal-checkbox-group ${difficulty.toLowerCase()}`}
+                      className={`horizontal-checkbox-group ${difficulty}`}
                     >
                       <input
                         type="checkbox"
-                        id={difficulty.toLowerCase()}
+                        id={difficulty}
                         checked={selectedDifficulties[difficulty]}
                         onChange={() => handleDifficultyChange(difficulty)}
                       />
-                      <label htmlFor={difficulty.toLowerCase()}>{difficulty}</label>
+                      <label htmlFor={difficulty + 1}>{difficulty + 1}</label>
                     </div>
                   ))}
                 </div>

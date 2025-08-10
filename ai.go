@@ -426,15 +426,15 @@ func findSimilarQuestions(queryVector string, exclude []string, n int) ([]Questi
 
 	for rows.Next() {
 		var sq QuestionDetails
-		if err := rows.Scan(&sq.QuestionID, &sq.ID, &sq.Test,
+		if err := rows.Scan(&sq.ID, &sq.ExternalID, &sq.Test,
 			&sq.Category, &sq.Domain, &sq.Skill,
 			&sq.Difficulty, &sq.Details, &sq.Question,
-			&sq.AnswerChoices, &sq.Answer, &sq.Rationale); err != nil {
+			&sq.A, &sq.B, &sq.C, &sq.D, &sq.Answer, &sq.Rationale); err != nil {
 			return nil, fmt.Errorf("error scanning similar question row: %w", err)
 		}
-		if !seen[sq.QuestionID] {
+		if !seen[sq.ID] {
 			similarQuestions = append(similarQuestions, sq)
-			seen[sq.QuestionID] = true
+			seen[sq.ID] = true
 		}
 	}
 
@@ -446,11 +446,10 @@ func findSimilarQuestions(queryVector string, exclude []string, n int) ([]Questi
 }
 
 func initializeAI(db *sql.DB) {
-	c, err := genai.NewClient(nil, option.WithAPIKey(os.Getenv("GOOGLE_API_KEY")))
+	client, err := genai.NewClient(nil, option.WithAPIKey(os.Getenv("GOOGLE_API_KEY")))
 	if err != nil {
 		log.Fatal(err)
 	}
-	client = c
 
 	model = client.GenerativeModel("gemini-2.0-flash")
 	thinkingModel = client.GenerativeModel("gemini-2.0-flash")
