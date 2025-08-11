@@ -60,14 +60,24 @@ func main() {
     if (os.Getenv("DB_STRING") != "") {
         connectionString = os.Getenv("DB_STRING")
     } else {
-        connectionString = fmt.Sprintf("user=%s password=%s host=%s port=%s dbname=%s sslmode=%s",
-            os.Getenv("DB_USER"),
-            os.Getenv("DB_PASSWORD"),
-            os.Getenv("DB_HOST"),
-            os.Getenv("DB_PORT"),
-            os.Getenv("DB_NAME"),
-            os.Getenv("DB_SSLMODE"),
-        )
+        if (os.Getenv("DB_PASSWORD") != "") {
+            connectionString = fmt.Sprintf("user=%s password=%s host=%s port=%s dbname=%s sslmode=%s",
+                os.Getenv("DB_USER"),
+                os.Getenv("DB_PASSWORD"),
+                os.Getenv("DB_HOST"),
+                os.Getenv("DB_PORT"),
+                os.Getenv("DB_NAME"),
+                os.Getenv("DB_SSLMODE"),
+            )
+        } else {
+            connectionString = fmt.Sprintf("user=%s host=%s port=%s dbname=%s sslmode=%s",
+                os.Getenv("DB_USER"),
+                os.Getenv("DB_HOST"),
+                os.Getenv("DB_PORT"),
+                os.Getenv("DB_NAME"),
+                os.Getenv("DB_SSLMODE"),
+            )
+        }
     } 
 
 	log.Println("Connecting to DB...")
