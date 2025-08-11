@@ -201,6 +201,11 @@ function SATPage() {
     setHasSelectedAnswer(false); // Add this line
   }, [currentQuestions]);
 
+  useEffect(() => {
+      console.log("Selected Difficulties:")
+      console.log(selectedDifficulties);
+  }, [selectedDifficulties]);
+
 
   // Event handlers for selection changes
   const handleTestChange = (test) => {
@@ -1523,7 +1528,7 @@ function SATPage() {
               <div>
                 <h3>Test</h3>
                 <div className="filter-group">
-                  {["SAT", "PSAT 10/11", "PSAT 8/9"].map((test) => (
+                  {["SAT", "PSAT 8/9", "PSAT/NMSQT & PSAT 10"].map((test) => (
                     <button
                       key={test}
                       className={`horizontal-checkbox-group ${selectedTest === test ? 'selected' : ''}`}
@@ -1540,18 +1545,13 @@ function SATPage() {
                 <h3>Difficulty</h3>
                 <div className="filter-group">
                   {[0, 1, 2, 3, 4, 5, 6].map((difficulty) => (
-                    <div
-                      key={difficulty}
-                      className={`horizontal-checkbox-group ${difficulty}`}
+                    <button
+                      className={`horizontal-checkbox-group difficulty-${difficulty + 1}
+                          ${selectedDifficulties[difficulty] ? 'selected' : ''}`}
+                      onClick={() => handleDifficultyChange(difficulty)}
                     >
-                      <input
-                        type="checkbox"
-                        id={difficulty}
-                        checked={selectedDifficulties[difficulty]}
-                        onChange={() => handleDifficultyChange(difficulty)}
-                      />
-                      <label htmlFor={difficulty + 1}>{difficulty + 1}</label>
-                    </div>
+                      {difficulty + 1}
+                    </button>
                   ))}
                 </div>
               </div>

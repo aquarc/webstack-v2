@@ -258,7 +258,7 @@ func FindQuestionsHandlerv2(w http.ResponseWriter, r *http.Request) {
                     SELECT isCorrect 
                     FROM practiced_questions 
                     WHERE email = $4 
-                        AND questionId = sub.ExternalID
+                        AND questionId = sub.external_id
                     ORDER BY timestamp DESC 
                     LIMIT 1
                 ) AS correct
