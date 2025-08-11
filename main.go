@@ -4,9 +4,12 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os"
-	"strings"
+	"os/signal"
+	"path/filepath"
+	"syscall"
 
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
@@ -35,50 +38,59 @@ func indexThing(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "./frontend/build/index.html")
 }
 
-// Add this to your main.go
-func serveStatic(w http.ResponseWriter, r *http.Request) {
-	path := "./frontend/build" + r.URL.Path
+func main() {
+	// Parse command-line arguments
+	var port = "8080"
+	var unixSocketPath string
 
-	// Set the correct Content-Type based on file extension
-	if strings.HasSuffix(path, ".css") {
-		w.Header().Set("Content-Type", "text/css")
-	} else if strings.HasSuffix(path, ".js") {
-		w.Header().Set("Content-Type", "application/javascript")
+	args := os.Args[1:]
+	for i := 0; i < len(args); i++ {
+		switch args[i] {
+		case "--port":
+			if i+1 < len(args) {
+				port = args[i+1]
+				i++ // Skip next argument
+			}
+		case "--unix":
+			if i+1 < len(args) {
+				unixSocketPath = args[i+1]
+				i++ // Skip next argument
+			}
+		default:
+			// Treat standalone argument as port
+			port = args[i]
+		}
 	}
 
-	http.ServeFile(w, r, path)
-}
-
-func main() {
 	// Load environment variables from .env
 	if err := godotenv.Load(); err != nil {
-		log.Fatal("Error loading .env file")
+		log.Println("Warning: No .env file found - using environment variables")
 	}
 
 	// Build the PostgreSQL connection string.
-    connectionString := ""
-    if (os.Getenv("DB_STRING") != "") {
-        connectionString = os.Getenv("DB_STRING")
-    } else {
-        if (os.Getenv("DB_PASSWORD") != "") {
-            connectionString = fmt.Sprintf("user=%s password=%s host=%s port=%s dbname=%s sslmode=%s",
-                os.Getenv("DB_USER"),
-                os.Getenv("DB_PASSWORD"),
-                os.Getenv("DB_HOST"),
-                os.Getenv("DB_PORT"),
-                os.Getenv("DB_NAME"),
-                os.Getenv("DB_SSLMODE"),
-            )
-        } else {
-            connectionString = fmt.Sprintf("user=%s host=%s port=%s dbname=%s sslmode=%s",
-                os.Getenv("DB_USER"),
-                os.Getenv("DB_HOST"),
-                os.Getenv("DB_PORT"),
-                os.Getenv("DB_NAME"),
-                os.Getenv("DB_SSLMODE"),
-            )
-        }
-    } 
+	connectionString := ""
+	if os.Getenv("DB_STRING") != "" {
+		connectionString = os.Getenv("DB_STRING")
+	} else {
+		if os.Getenv("DB_PASSWORD") != "" {
+			connectionString = fmt.Sprintf("user=%s password=%s host=%s port=%s dbname=%s sslmode=%s",
+				os.Getenv("DB_USER"),
+				os.Getenv("DB_PASSWORD"),
+				os.Getenv("DB_HOST"),
+				os.Getenv("DB_PORT"),
+				os.Getenv("DB_NAME"),
+				os.Getenv("DB_SSLMODE"),
+			)
+		} else {
+			connectionString = fmt.Sprintf("user=%s host=%s port=%s dbname=%s sslmode=%s",
+				os.Getenv("DB_USER"),
+				os.Getenv("DB_HOST"),
+				os.Getenv("DB_PORT"),
+				os.Getenv("DB_NAME"),
+				os.Getenv("DB_SSLMODE"),
+			)
+		}
+	}
 
 	log.Println("Connecting to DB...")
 
@@ -91,14 +103,13 @@ func main() {
 	log.Println("Connected")
 
 	// Initialize additional modules.
-
 	// initializeEc(db)
 	initializeSat(db)
 	initializeAI(db)
 
 	// Register static file handlers.
+	//http.HandleFunc("/ec", indexThing)
 	http.HandleFunc("/sat", indexThing)
-	//http.HandleFunc("/extracurricular", indexThing)
 	http.HandleFunc("/notes", indexThing)
 	http.HandleFunc("/feedback", indexThing)
 	http.HandleFunc("/", index)
@@ -126,8 +137,52 @@ func main() {
 		Debug:            true, // Enable for debugging
 	}).Handler(http.DefaultServeMux)
 
-	fmt.Println("Server is running on http://localhost:8080")
-	if err := http.ListenAndServe(":8080", handler); err != nil {
-		log.Fatal(err)
+	// Create server
+	server := &http.Server{Handler: handler}
+
+	// Start server based on socket type
+	if unixSocketPath != "" {
+		// Ensure directory exists
+		if err := os.MkdirAll(filepath.Dir(unixSocketPath), 0755); err != nil {
+			log.Fatalf("Failed to create socket directory: %v", err)
+		}
+
+		// Remove existing socket file if it exists
+		if _, err := os.Stat(unixSocketPath); err == nil {
+			if err := os.Remove(unixSocketPath); err != nil {
+				log.Fatalf("Failed to remove existing socket: %v", err)
+			}
+		}
+
+		// Create Unix listener
+		listener, err := net.Listen("unix", unixSocketPath)
+		if err != nil {
+			log.Fatalf("Failed to create Unix listener: %v", err)
+		}
+
+		// Set socket permissions
+		if err := os.Chmod(unixSocketPath, 0777); err != nil {
+			log.Printf("Warning: Could not set socket permissions: %v", err)
+		}
+
+		// Handle SIGINT to clean up socket
+		sigChan := make(chan os.Signal, 1)
+		signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+		go func() {
+			<-sigChan
+			os.Remove(unixSocketPath)
+			os.Exit(0)
+		}()
+
+		log.Printf("Server is running on Unix socket: %s", unixSocketPath)
+		if err := server.Serve(listener); err != nil {
+			log.Fatalf("Server error: %v", err)
+		}
+	} else {
+		addr := fmt.Sprintf(":%s", port)
+		log.Printf("Server is running on http://localhost%s", addr)
+		if err := http.ListenAndServe(addr, handler); err != nil {
+			log.Fatal(err)
+		}
 	}
 }

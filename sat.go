@@ -331,7 +331,6 @@ func FindQuestionsHandlerv2(w http.ResponseWriter, r *http.Request) {
 
 			questions = append(questions, question)
 
-			fmt.Println(question)
 		}
 	} else {
 		query := `
@@ -419,7 +418,6 @@ func FindQuestionsHandlerv2(w http.ResponseWriter, r *http.Request) {
 	}
 
 	jsonData, err := json.Marshal(questions)
-	fmt.Println(questions)
 	if err != nil {
 		log.Printf("Error converting questions to JSON: %v", err)
 		http.Error(w, "Error generating JSON response", http.StatusInternalServerError)
@@ -944,7 +942,6 @@ func setResults(w http.ResponseWriter, r *http.Request) {
 
 	// Insert each result
 	for _, result := range results {
-		fmt.Println(result)
 
 		_, err := stmt.Exec(
 			email,
