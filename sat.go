@@ -1009,20 +1009,25 @@ func initializeSat(db *sql.DB) {
 	//       gomail: could not send email 1: gomail: invalid message, "From" field is absent
 
 	// Create tables if they do not exist.
-	_, err := db.Exec(`CREATE TABLE IF NOT EXISTS sat_questions (
-		questionId TEXT PRIMARY KEY,
-		id TEXT,
-		test TEXT,
-		category TEXT,
-		domain TEXT,
-		skill TEXT,
-		difficulty TEXT,
-		details TEXT,
-		question TEXT,
-		answer_choices TEXT,
-		answer TEXT,
-		rationale TEXT
-	)`)
+	_, err := db.Exec(`
+        CREATE TABLE IF NOT EXISTS sat_questions (
+            id VARCHAR(8) PRIMARY KEY,
+            external_id VARCHAR(36) NOT NULL,
+            test VARCHAR(20) NOT NULL,
+            category VARCHAR(100) NOT NULL,
+            domain VARCHAR(100) NOT NULL,
+            skill VARCHAR(100) NOT NULL,
+            difficulty INTEGER NOT NULL,
+            details TEXT NOT NULL,
+            question TEXT NOT NULL,
+            a TEXT,
+            b TEXT,
+            c TEXT,
+            d TEXT,
+            answer VARCHAR(6),
+            rationale TEXT NOT NULL,
+            active BOOLEAN NOT NULL
+        ) `)
 	if err != nil {
 		log.Fatal(err)
 	}
