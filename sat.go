@@ -132,7 +132,7 @@ func findQuestions(w http.ResponseWriter, r *http.Request, test, category, domai
 	matchingQuestions := []string{}
 	for rows.Next() {
 		if err := rows.Scan(&questionId); err != nil {
-			log.Fatal(err)
+			log.Printf("Error scanning row: %v", err)
 		}
 		matchingQuestions = append(matchingQuestions, questionId)
 	}

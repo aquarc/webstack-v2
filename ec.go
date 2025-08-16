@@ -108,7 +108,7 @@ func resultsScholarship(w http.ResponseWriter, r *http.Request) {
 	// execute the query
 	rows, err := db.Query(query, args...)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Error executing query: %v", err)
 	}
 
 	htmlToInsert := ""

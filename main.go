@@ -134,7 +134,7 @@ func main() {
 		ExposedHeaders:   []string{"Link"},
 		AllowCredentials: true,
 		MaxAge:           300,
-		Debug:            true, // Enable for debugging
+		Debug:            false, // Enable for debugging
 	}).Handler(http.DefaultServeMux)
 
 	// Create server
